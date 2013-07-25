@@ -1,0 +1,184 @@
+#+title: Towards a Clojure Autopilot - First Steps
+#+tags: clojure flightgear
+
+[[http://en.wikipedia.org/wiki/Quadrotor][Quadrotors]] are all the rage
+these days, thats why we decided to build one. The idea is to program
+the autopilot in Clojure and run it on board the quadrotor using a
+BeagleBoard. Since building one is going to cost couple hundred bucks
+and nothing I write works the first time round, I would like a way to
+test the controller without endangering the real thing. This is where
+[[http://www.flightgear.org/][FlightGear]] an open source flight simulator
+comes into play, FlightGear allows external applications to control the
+aircraft which makes it a great simulation environment. This document
+goes over the process of creating a simple [[http://en.wikipedia.org/wiki/Proportional_control][proportional controller]] for
+stabilizing the aircraft.
+
+#+BEGIN_HTML
+  <p>
+    <video src="/video/simple-autopilot.m4v" width="80%" controls>
+      Looks like HTML5 Video tag did not work you can download
+      the video <a href="/video/simple-autopilot.m4v">here</a>.
+    </video>
+  </p>
+#+END_HTML
+
+Programs can interact with FlightGear through FlightGear's [[http://wiki.flightgear.org/index.php/Property_Tree][property
+tree]], it contains
+all the information about the aircraft and the game environment, using
+FlightGear's [[http://wiki.flightgear.org/index.php/Generic_Protocol][generic protocols]] we can
+define a data exchange scheme that allows us to get/set values in the
+property tree. We define two protocols an input protocol which allows us
+to control the aileron and the elevator on the plane and an output
+protocol that tells FlightGear to send us sensor readings for [[http://en.wikipedia.org/wiki/Yaw,_pitch,_and_roll][roll and
+pitch]]. All communication is done over UDP.
+
+input-protocol.xml,
+
+#+begin_src xml
+  <?xml version="1.0"?>
+  <PropertyList>
+    <generic>
+      <input>
+        <line_separator>newline</line_separator>
+        <var_separator>,</var_separator>
+        
+        <chunk>
+          <name>/controls/flight/aileron</name>
+          <node>/controls/flight/aileron</node>
+          <type>float</type>
+          <format>%f</format>
+        </chunk>
+        
+        <chunk>
+          <name>/controls/flight/elevator</name>
+          <node>/controls/flight/elevator</node>
+          <type>float</type>
+          <format>%f</format>
+        </chunk>
+      </input>
+    </generic>
+  </PropertyList>
+#+end_src
+
+output-protocol.xml,
+
+#+begin_src xml
+  <?xml version="1.0"?>
+  <PropertyList>
+    <generic>
+      <output>
+        <line_separator>newline</line_separator>
+        <var_separator>,</var_separator>
+        
+        <chunk>
+          <name>/orientation/roll-deg</name>
+          <node>/orientation/roll-deg</node>
+          <type>float</type>
+          <format>[ %f</format>
+        </chunk>
+  
+        <chunk>
+          <name>/orientation/pitch-deg</name>
+          <node>/orientation/pitch-deg</node>
+          <type>float</type>
+          <format>%f ]</format>
+        </chunk>
+      </output>
+    </generic>
+  </PropertyList>
+#+end_src
+
+What the controller needs to do is keep the roll and pitch angle of the
+aircraft at 0 degrees, roll angle is a number thats between 180, -180,
+ailerons which control the roll angle takes a value between 1, -1
+causing one to go down and one to go up. If the current roll angle is
+not between the range 90, -90 we turn them all the way once we are in
+range we map the roll angle to a number between -1 and 1 this way as we
+reach 0 degree roll we make smaller and smaller adjustments. We do the same
+for pitch.
+
+#+begin_src clojure
+  (ns autopilot.core
+    (:use clojure.contrib.swing-utils)
+    (:import (javax.swing JFrame JButton)
+             (java.net InetAddress DatagramSocket DatagramPacket)))
+  
+  (def fg-host (InetAddress/getByName "127.0.0.1"))
+  (def fg-port-out 6666)
+  (def fg-port-in 6789)
+  
+  (defn in-thread [f] (doto (Thread. f) (.start)))
+  
+  (defn map-number [x in-min in-max out-min out-max]
+    (let [val (+ (/ (* (- x in-min)
+                       (- out-max out-min))
+                    (- in-max in-min)) out-min)]
+      (cond (> val out-max) out-max
+            (< val out-min) out-min
+            :default val)))
+  
+  (defn controller [roll pitch]
+    (let [roll-cntrl (float (map-number roll 90 -90 -1 1))
+          pitch-cntrl (float (map-number pitch -45 45 -1 1))]
+      (println "Control: " roll roll-cntrl pitch pitch-cntrl)
+      [roll-cntrl pitch-cntrl]))
+  
+  (defn control-loop [active]
+    (let [socket-in (DatagramSocket. fg-port-out)
+          buffer-in (byte-array 2048)
+          packet-in (DatagramPacket. buffer-in (count buffer-in))
+          socket-out (DatagramSocket.)]
+      (in-thread
+       #(try
+          (while @active
+            (.receive socket-in packet-in)
+            (let [state (read-string
+                         (String. buffer-in 0 (dec (.getLength packet-in))))
+                  [roll-cntrl pitch-cntrl] (apply controller state)]
+              (.setLength packet-in (count buffer-in))
+              (let [msg (.getBytes (str roll-cntrl \, pitch-cntrl "\n"))
+                    packet (DatagramPacket. msg (count msg)
+                                            fg-host fg-port-in)]
+                (.send socket-out packet))))
+          (finally (.close socket-in)
+                   (.close socket-out))))))
+  
+  (defn autopilot []
+    (let [active (ref false)
+          button (JButton. "Autopilot OFF")]
+      (.setFont button (-> button .getFont (.deriveFont (float 40))))
+      (add-action-listener
+       button
+       (fn [_]
+         (if (= false @active)
+           (do (.setText button "Autopilot ON")
+               (dosync (ref-set active true))
+               (control-loop active))
+           (do (.setText button "Autopilot OFF")
+               (dosync (ref-set active false))))))
+      (doto (JFrame.)
+        (.add button)
+        (.pack)
+        (.setVisible true))))
+#+end_src
+
+In our control loop we wait for a packet from FlightGear, from the
+packet we extract the current state of the aircraft, calculate control
+values for ailerons and elevators and send it.
+
+In order run this example, you need to place the xml files to the
+folder,
+
+#+begin_example
+  /path/to/FlightGear/data/Protocol/
+#+end_example
+
+and run FlightGear using,
+
+#+begin_src sh
+  cd /Applications/FlightGear.app/Contents/Resources/
+  ./fgfs.sh --timeofday=morning --aircraft=c172p-2dpanel --shading-flat --disable-textures \
+      --geometry=640x480 --fog-disable --disable-horizon-effect --disable-clouds \
+      --generic=socket,out,40,localhost,6666,udp,output-protocol \
+      --generic=socket,in,45,127.0.0.1,6789,udp,input-protocol
+#+end_src

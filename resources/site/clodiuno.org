@@ -1,0 +1,55 @@
+#+title: Clodiuno - Clojure API for Arduino
+#+tags: clojure clodiuno arduino
+#+description: Clodiuno is a Clojure API for Arduino.
+
+Clodiuno is a library that allows you to control Arduino using Clojure
+allowing Clojure developers to interface with real world using Arduino
+hardware.
+
+Currently Clodiuno supports two interfaces, you can either use the USB
+connection via Firmata or you can connect to your Arduino using WiFi via
+WiShield.
+
+*** Installation
+
+Clodiuno is also available via [[http://clojars.org/clodiuno][Clojars]],
+
+#+begin_src clojure
+  [clodiuno "0.0.4-SNAPSHOT"]
+#+end_src
+
+*** For Firmata Interface
+
+You need to upload Firmata sketch to your Arduino, 
+
+#+begin_example
+   File -> Examples -> Firmata -> StandartFirmata
+#+end_example
+
+*** For WiShield Interface
+
+Make sure [[http://asynclabs.com/wiki/index.php?title=AsyncLabsWiki][WiShield]] library is configured to compile and run [[http://asynclabs.com/wiki/index.php?title=SocketApp_sketch][SocketApp]]
+sketch, once configured you can upload the wishield sketch located in
+the resources folder.
+
+*** Usage
+
+resources/examples/ folder contains  examples to give a feel for the
+API, I also have the following hacks using Clodiuno,
+
+ - [[http://nakkaya.com/2010/01/03/clodiuno-a-clojure-api-for-the-firmata-protocol/][Blinking SOS]]
+ - [[http://nakkaya.com/2010/01/06/making-things-move-with-clojure/][Servo Control]]
+ - [[http://nakkaya.com/2010/02/02/etch-a-sketch/][Etch A Sketch]]
+ - [[http://nakkaya.com/2010/05/21/motor-control-via-esc-using-arduino-and-clodiuno/][ESC Control]]
+ - [[http://nakkaya.com/2010/06/04/motor-control-via-ardumoto-using-arduino-and-clodiuno/][Ardumoto Control]]
+ - [[http://nakkaya.com/2010/08/09/wishield-support-for-clodiuno/][Using WiShield and Firmata Together]]
+ - [[http://nakkaya.com/2010/09/28/clodiuno-processing-adxl335-accelerometer/][Clodiuno/Processing ADXL335 Accelerometer]]
+ - [[http://nakkaya.com/2011/01/04/duck-hunt-experiment/][Duck Hunt Experiment]]
+
+*** Source
+
+Project is hosted at github, grab it [[http://github.com/nakkaya/clodiuno][here]].
+
+*** License
+
+Beerware Revision 42

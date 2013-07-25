@@ -1,0 +1,69 @@
+#+title: Pretty Printing XML with Clojure
+#+tags: clojure compojure xml
+
+The other day, I did some XML cleanup. I am posting the snippet here for
+safekeeping purposes in case I need to refer to it later.
+
+#+BEGIN_SRC clojure
+  (defn ppxml [xml]
+    (let [in (javax.xml.transform.stream.StreamSource.
+              (java.io.StringReader. xml))
+          writer (java.io.StringWriter.)
+          out (javax.xml.transform.stream.StreamResult. writer)
+          transformer (.newTransformer 
+                       (javax.xml.transform.TransformerFactory/newInstance))]
+      (.setOutputProperty transformer 
+                          javax.xml.transform.OutputKeys/INDENT "yes")
+      (.setOutputProperty transformer 
+                          "{http://xml.apache.org/xslt}indent-amount" "2")
+      (.setOutputProperty transformer 
+                          javax.xml.transform.OutputKeys/METHOD "xml")
+      (.transform transformer in out)
+      (-> out .getWriter .toString)))
+#+END_SRC
+
+Now you can pass your XML string,
+
+#+BEGIN_SRC clojure
+  (ppxml "<root><child>aaa</child><child/></root>")
+#+END_SRC
+
+and get the pretty printed version,
+
+#+BEGIN_SRC xml
+  <?xml version="1.0" encoding="UTF-8"?>
+  <root>
+    <child>aaa</child>
+    <child/>
+  </root>
+#+END_SRC
+
+You can also use it to pretty print Compojure output either manually,
+
+#+BEGIN_SRC clojure
+  (ppxml (html
+          [:html
+           [:head
+            [:title "Hello World"]]
+           [:body "Hello World!"]]))
+#+END_SRC
+
+or using a middleware,
+
+#+BEGIN_SRC clojure
+  (defn with-ppxml [handler]
+    (fn [request]
+      (let [response (handler request)]
+        (assoc response :body (ppxml (:body response))))))
+#+END_SRC
+
+and have your pretty printed HTML,
+
+#+BEGIN_SRC xml
+  <html> 
+    <head> 
+      <title>Hello World</title> 
+    </head> 
+    <body>Hello World!</body> 
+  </html> 
+#+END_SRC

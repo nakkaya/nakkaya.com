@@ -1,0 +1,397 @@
+#+title: Controlling an A.R. Drone with the Kinect and Clojure
+#+tags: clojure alter-ego kinect parrot
+#+OPTIONS: toc:nil
+
+Yet another round of code dump, Clojure based gesture controller for
+AR Drone. I started coding without doing a google search to see if
+there is a simple-openni (OpenNI and NITE wrapper for Processing)
+wrapper for Clojure. I found out about [[https://github.com/aperiodic/bifocals][bifocals]], a kinect library for
+[[https://github.com/quil/quil][quil]] while uploading dependencies to Clojars. You can use that instead
+and skip directly to the core namespace.
+
+#+BEGIN_HTML
+  <p>
+    <video src="/video/ar-drone-kinect.mp4" width="80%" controls>
+      Looks like HTML5 Video tag did not work you can download
+      the video <a href="/video/ar-drone-kinect.mp4">here</a>.
+    </video>
+  </p>
+#+END_HTML
+
+#+begin_src clojure :mkdirp yes :tangle src/kinect_ardrone/class.clj
+  (ns kinect-ardrone.class
+    (:gen-class)
+    (:import (processing.core PApplet)))
+  
+  (defonce kinect (atom nil))
+  
+  (gen-class
+   :name         com.nakkaya.SkelTracker
+   :extends      processing.core.PApplet
+   :constructors {[] []}
+   :methods      [[onNewUser [int] void]
+                  [onEndCalibration [int boolean] void]
+                  [onStartPose [String int] void]])
+  
+  (defn -onNewUser
+    [this id]
+    (.startPoseDetection @kinect "Psi" id))
+  
+  (defn -onEndCalibration
+    [this id successful]
+    (if successful
+      (.startTrackingSkeleton @kinect id)
+      (.startPoseDetection @kinect "Psi" id)))
+  
+  (defn -onStartPose [this pose id]
+    (.stopPoseDetection @kinect id)
+    (.requestCalibrationSkeleton @kinect id true))
+#+end_src
+
+For simple-openni to work correctly we need to implement a couple of
+callback functions. Problem is /proxy/ can not add new methods to the
+class that are needed for simple-openni to work and /gen-class/ can
+not overwrite methods (/setup/ / /draw/) needed for Processing to
+work. So we generate SkelTracker class that extends PApplet with the
+callbacks implemented. Later we are going to /proxy/ SkelTracker
+instead of PApplet to override /setup/ and /draw/.
+
+Several callback functions are necessary for skeleton
+tracking. /onNewUser/ is called when a new user enters the field of
+view.  We then call the /startPoseDetection/ to tell the OpenNI to
+begin looking for calibration poses.  Next we define
+/onStartPose/ which is called when the library recognises that a user
+is beginning a calibration pose. We then tell the library to stop
+attempting to recognise a pose and tell it to calibrate the user's
+skeleton.  /onEndCalibration/ is called at the end of the calibration
+process. It is passed a boolean argument which indicates whether the
+calibration was successful or not. If the calibration was successful
+we start tracking the skeleton otherwise we restart pose detection.
+
+#+begin_src clojure
+  (compile 'kinect-ardrone.class)
+#+end_src
+
+Compile it so we can /proxy/ it.
+
+#+begin_src clojure :mkdirp yes :tangle src/kinect_ardrone/skel_tracker.clj
+  (ns kinect-ardrone.skel-tracker
+    (:use kinect-ardrone.class)
+    (:import (processing.core PApplet PVector)
+             (SimpleOpenNI SimpleOpenNI IntVector)))
+
+  (defn draw-skeleton [id]
+    (.drawLimb @kinect id SimpleOpenNI/SKEL_HEAD SimpleOpenNI/SKEL_NECK)
+    (.drawLimb @kinect id SimpleOpenNI/SKEL_NECK SimpleOpenNI/SKEL_LEFT_SHOULDER)
+    (.drawLimb @kinect id SimpleOpenNI/SKEL_LEFT_SHOULDER SimpleOpenNI/SKEL_LEFT_ELBOW)
+    (.drawLimb @kinect id SimpleOpenNI/SKEL_LEFT_ELBOW SimpleOpenNI/SKEL_LEFT_HAND)
+    (.drawLimb @kinect id SimpleOpenNI/SKEL_NECK SimpleOpenNI/SKEL_RIGHT_SHOULDER)
+    (.drawLimb @kinect id SimpleOpenNI/SKEL_RIGHT_SHOULDER SimpleOpenNI/SKEL_RIGHT_ELBOW)
+    (.drawLimb @kinect id SimpleOpenNI/SKEL_RIGHT_SHOULDER SimpleOpenNI/SKEL_RIGHT_ELBOW)
+    (.drawLimb @kinect id SimpleOpenNI/SKEL_RIGHT_ELBOW SimpleOpenNI/SKEL_RIGHT_HAND)
+    (.drawLimb @kinect id SimpleOpenNI/SKEL_LEFT_SHOULDER SimpleOpenNI/SKEL_TORSO)
+    (.drawLimb @kinect id SimpleOpenNI/SKEL_RIGHT_SHOULDER SimpleOpenNI/SKEL_TORSO)
+    (.drawLimb @kinect id SimpleOpenNI/SKEL_TORSO SimpleOpenNI/SKEL_LEFT_HIP)
+    (.drawLimb @kinect id SimpleOpenNI/SKEL_LEFT_HIP SimpleOpenNI/SKEL_LEFT_KNEE)
+    (.drawLimb @kinect id SimpleOpenNI/SKEL_LEFT_KNEE SimpleOpenNI/SKEL_LEFT_FOOT)
+    (.drawLimb @kinect id SimpleOpenNI/SKEL_TORSO SimpleOpenNI/SKEL_RIGHT_HIP)
+    (.drawLimb @kinect id SimpleOpenNI/SKEL_RIGHT_HIP SimpleOpenNI/SKEL_RIGHT_KNEE)
+    (.drawLimb @kinect id SimpleOpenNI/SKEL_RIGHT_KNEE SimpleOpenNI/SKEL_RIGHT_FOOT))
+  
+  (let [font (.createFont (PApplet.) "Arial" 30 true)]
+    (defn draw-text [applet text]
+      (.textFont applet font 30)
+      (.fill applet 204 102 0)
+      (.text applet (str text) (float 10) (float 50))))
+#+end_src 
+
+simple-openni has a function for drawing a line between the joints
+called /drawLimb/. It takes the /id/ of, one of the skeletons being
+tracked and two joints, the joint to draw the line from and the joint
+to the line draw to. /draw-text/ just puts a text to the top left
+corner of the image for debugging purposes.
+
+#+begin_src clojure :mkdirp yes :tangle src/kinect_ardrone/skel_tracker.clj
+  (defn joint-position [id joint]
+    (let [pvector (PVector.)
+          conf (.getJointPositionSkeleton @kinect id joint pvector)]
+      (when (> conf 0.5)
+        pvector)))
+#+end_src 
+
+Joint positions are in millimeters. (0,0,0) is the position of the
+sensor. +X axis goes to the left, +Y goes to the top and +Z goes
+towards the Kinect sensor. We only return a joint position if the
+OpenNI's confidence for that joint is above /0.5/.
+
+#+begin_src clojure :mkdirp yes :tangle src/kinect_ardrone/skel_tracker.clj
+  (defn closest-skel-id []
+    (->> (range 10)
+         (filter #(true? (.isTrackingSkeleton @kinect %)))
+         (map #(vector % (joint-position % SimpleOpenNI/SKEL_TORSO)))
+         (remove #(nil? (second %)))
+         (map first)
+         (sort-by #(.dist (PVector. 0 0 0)
+                          (joint-position % SimpleOpenNI/SKEL_TORSO)))
+         first))
+#+end_src
+
+Kinect can track multiple people but we can't let them control the
+drone all at once so /closest-skel-id/ checks the first 10 skeletons
+Kinect is tracking then sorts them according to their distances to the
+Kinect sensor, closest torso gets to control the drone.
+
+#+begin_src clojure :mkdirp yes :tangle src/kinect_ardrone/skel_tracker.clj
+  (def joints (atom {}))
+  (def gesture (atom :none))
+  
+  (defn applet []
+    (proxy [com.nakkaya.SkelTracker] [] 
+      (setup []
+        (swap! kinect (fn [_] (SimpleOpenNI. this)))
+        (.enableDepth @kinect)
+        (.enableUser @kinect SimpleOpenNI/SKEL_PROFILE_ALL)
+        (.stroke this 0 0 255)
+        (.strokeWeight this 3)
+        (.smooth this)
+        (.size this (.depthWidth @kinect) (.depthHeight @kinect)))
+  
+      (draw []
+        (.update @kinect)
+        (.image this (.depthImage @kinect) 0 0)
+        (draw-text this @gesture)
+        (if-let [id (closest-skel-id)]
+          (do (draw-skeleton id)
+              (swap! joints
+                     #(merge-with
+                       (fn [a b] (if (nil? b) a b))
+                       %1
+                       {:left-hand (joint-position id SimpleOpenNI/SKEL_LEFT_HAND)
+                        :right-hand (joint-position id SimpleOpenNI/SKEL_RIGHT_HAND)
+                        :left-shoulder (joint-position id SimpleOpenNI/SKEL_LEFT_SHOULDER)
+                        :right-shoulder (joint-position id SimpleOpenNI/SKEL_RIGHT_SHOULDER)
+                        :neck (joint-position id SimpleOpenNI/SKEL_NECK)
+                        :left-hip (joint-position id SimpleOpenNI/SKEL_LEFT_HIP)
+                        :right-hip (joint-position id SimpleOpenNI/SKEL_RIGHT_HIP)
+                        :torso (joint-position id SimpleOpenNI/SKEL_TORSO)})))))))
+  
+  (defn skel-tracker []
+    (let [applet (applet)
+          frame (javax.swing.JFrame. "kinect-ardrone")]
+      (.init applet)
+      (doto frame
+        (-> (.getContentPane) (.add applet))
+        (.setSize 640 480)
+        (.setDefaultCloseOperation javax.swing.JFrame/DO_NOTHING_ON_CLOSE)
+        (.setVisible true))))
+#+end_src
+
+Proxy /SkelTracker/ so we can overwrite /setup/ and /draw/.  /setup/
+sets up the atom holding a reference to OpenNI library then turns on
+the depth camera and tells the OpenNI to enable the skeleton
+tracking. Finally it applies some cosmetic changes such as stoke,
+smooth etc. Everytime /draw/ is ticked, it will update the depth image
+on the camera (otherwise you get the same image over and over again),
+paint the image on to the canvas, paint any debug messages /gesture/
+atom holds. Finally we draw the closest skeleton to the Kinect and
+update /joints/ map with the new joint positions.
+
+#+BEGIN_EXAMPLE
+  sudo rmmod gspca_kinect
+#+END_EXAMPLE
+
+If you are on Linux and get this error: /Failed to set USB
+interface!/, remove the gspca\_kinect module.
+
+#+begin_src clojure :mkdirp yes :tangle src/kinect_ardrone/core.clj
+  (ns kinect-ardrone.core
+    (:refer-clojure :exclude [sequence])
+    (:use kinect-ardrone.skel-tracker)
+    (:use [alter-ego.core]
+          [pid.core]
+          [ardrone.core]))
+  
+  (defn gesture-takeoff? []
+    (let [{:keys [left-hand right-hand right-hip torso]} @joints]
+      (and (> (- (.y left-hand) (.y right-hand)) 500)
+           (> (.y left-hand) (.y torso))
+           (< (.y right-hand) (.y right-hip)))))
+  
+  (defn gesture-land? []
+    (let [{:keys [left-hand right-hand right-hip left-hip]} @joints]
+      (and (< (.y right-hand) (.y right-hip))
+           (< (.y left-hand) (.y left-hip)))))
+#+end_src
+
+First two gestures are self explanatory, you raise your left hand
+over your torso and you lower your right hand below your right hip
+for take off and when both hands are below your hips that is the
+gesture for land.
+
+#+begin_src clojure :mkdirp yes :tangle src/kinect_ardrone/core.clj
+  (defn scale-force [a b]
+    (scale (clamp (- a b) 0 100) 0 100 0 0.3))
+  
+  (defn roll-input []
+    (let [{:keys [left-hand neck left-shoulder]} @joints]
+      (cond
+       ;;right
+       (< (.x left-hand) (.x left-shoulder))
+       (* -1 (scale-force (.x left-shoulder) (.x left-hand)))
+       ;;left
+       (> (.x left-hand) (.x neck))
+       (scale-force (.x left-hand) (.x neck))
+       ;;dead zone
+       :default 0)))
+  
+  (defn pitch-input []
+    (let [{:keys [right-hand left-hand torso]} @joints
+          torso-z (- (.z torso) 200)]
+      (cond
+       ;;forward
+       (> (.z right-hand) torso-z)
+       (* -1 (scale-force (.z right-hand) torso-z))
+       ;;backward
+       (< (.z right-hand) (- torso-z 200))
+       (scale-force (- torso-z 200) (.z right-hand))
+       ;;dead zone
+       :default 0)))
+#+end_src
+
+Gestures only controls the roll and pitch angles. Altitude and yaw are
+controlled by PID controllers. With roll and pitch it is actually fun
+to fly when you map all angles to gestures it just turns into a
+workout session.
+
+For roll, the area between your left shoulder and neck is the dead
+zone the further you move your hand away from your left shoulder the
+harder it will try to steer right. Same applies for steering left, the
+further you move your hand from your neck the harder it will try to
+steer left.
+
+Same idea applies for pitch but instead of /x/ values we check /z/
+values for the /torso/ so moving your right hand towards Kinect, away
+from your torso moves the drone backwards, moving your hand away from
+Kinect moves it forward, area around your torso is the dead zone.
+
+How hard/fast it steers in one direction is determined by
+/scale-force/. It takes two numbers (i.e. /x/ values for the left hand
+and neck) the bigger the difference between these values the stronger
+the force. Basically it is a /P/ controller that maps /0 - 100/ to
+/0 - 0.3/.
+
+#+begin_src clojure :mkdirp yes :tangle src/kinect_ardrone/core.clj
+  (defpid alt-hold
+    :kp 0.50
+    :ki 1/400
+    :kd 1/10
+    :set-point 1.5
+    :bounds [0 3 -1 1])
+  
+  (defpid yaw-hold
+    :kp 2
+    :ki 1/20
+    :kd 0
+    :set-point -13
+    :bounds [-180 180 -1 1])
+#+end_src
+
+Above mentioned PID controllers for altitude and yaw. /yaw/ set point
+is set to /-13/ because gestures assume the drone's nose is pointing
+towards the location of Kinect.
+
+#+begin_src clojure :mkdirp yes :tangle src/kinect_ardrone/core.clj
+  (defn fly []
+    (sequence
+     (action (swap! gesture (fn [_] :user-control)))
+     (parallel
+      :sequence
+      
+      (forever
+       (action
+        (Thread/sleep 250)
+        (let [{:keys [alt battery yaw]} (nav-data)]
+          (println :alt alt :battery battery :yaw yaw)
+          true)))
+      
+      (forever
+       (action
+        (Thread/sleep 50)
+        (let [roll-input (roll-input)
+              pitch-input (pitch-input)]
+          (attitude pitch-input roll-input nil nil))))
+      
+      (forever
+       (action
+        (Thread/sleep 10)
+        (attitude nil nil
+                  (yaw-hold (:yaw (nav-data)))
+                  (alt-hold (:alt (nav-data)))))))))
+#+end_src
+
+For flying we use 3 threads, first thread prints out debug
+information (altitude, battery, yaw) every 250 milliseconds, second
+thread reads roll and pitch input every 50 milliseconds and send it to
+the drone, third thread sends yaw and altitude corrections to the
+drone every 10 milliseconds.
+
+#+begin_src clojure :mkdirp yes :tangle src/kinect_ardrone/core.clj
+  (defn land-seq []
+    (action (hover)
+            (dotimes [_ 10] (land))
+            (nav-data-stop)
+            true))
+  
+  (defn take-off-seq []
+    (action (reset-comm-watchdog)
+            (nav-data-start)
+            (trim)
+            (takeoff)))
+  
+  (defn wait-for [f msg]
+    (sequence
+     (until-success
+      (action (Thread/sleep 20)
+              (f)))
+     (action (swap! gesture (fn [_] msg)))))
+  
+  (defn control []
+    (sequence
+     (wait-for #(> (count (keys @joints)) 7) :user-calibrated)
+     (forever
+      (sequence (action (swap! gesture (fn [_] :waiting)))
+                (wait-for gesture-takeoff? :takeoff)
+                (take-off-seq)
+                (wait-for #(> (:alt (nav-data)) 0.5) :alt-wait)
+                (interrupter
+                 (wait-for gesture-land? :landing)
+                 (fly)
+                 (land-seq))))))
+#+end_src
+
+/control/ puts all of the above together. It will first wait for a
+user to be calibrated after that in an infinite loop it will wait for
+a /takeoff/ gesture, execute takeoff sequence wait until the drones is
+half a meter in the air and let the user take control of
+it. /interrupter/ will execute /fly/ sequence while checking for a
+land gesture as soon as it detect a land gesture it will interrupt
+/fly/ sequence and execute /land-seq/.
+
+#+begin_src clojure :mkdirp yes :tangle src/kinect_ardrone/core.clj
+  (comment
+    (exec-repl (control) (land-seq))
+    )
+#+end_src
+
+project.clj
+
+#+begin_src clojure :eval no :tangle project.clj
+  (defproject kinect-ardrone "0.1.0-SNAPSHOT"
+    :dependencies [[org.clojure/clojure "1.4.0"]
+                   [alter-ego "0.0.5-SNAPSHOT"]
+                   [pid "0.1.0-SNAPSHOT"]
+                   [ardrone "0.1.0-SNAPSHOT"]
+                   [org.clojars.processing-core/org.processing.core "1.5.1"]
+                   [simple-open-ni "0.27.0"]]
+    :jvm-opts ["-server"])
+#+end_src

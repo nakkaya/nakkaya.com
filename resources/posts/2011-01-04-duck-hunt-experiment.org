@@ -1,0 +1,198 @@
+#+title: Duck Hunt Experiment
+#+tags: clojure clodiuno
+
+Last week, I came across [[http://www.todayifoundout.com/index.php/2010/12/how-the-gun-on-the-original-duck-hunt-game-worked/][this]] post via [[http://news.ycombinator.com/item?id=2048199][Hacker News]], which explains
+how the gun for the original duck hunt game worked. The idea behind
+the gun seemed simple and elegant that I had to give it a shot.
+
+It works like this, everytime you pull the trigger the screen goes
+black for a while in which time the light sensor on the gun take a
+reading which is used as a reference point, then it paints each target
+on the frame white and takes another reading the difference between the
+two is used to determine if the gun is pointing to the target or not.
+
+#+BEGIN_HTML
+  <p>
+    <video src="/video/duck-hunt.m4v" width="80%" controls>
+      Looks like HTML5 Video tag did not work you can download
+      the video <a href="/video/duck-hunt.m4v">here</a>.
+    </video>
+  </p>
+#+END_HTML
+
+#+begin_src clojure
+  (ns duck-hunt
+    (:use :reload-all [clodiuno core firmata])
+    (:import (java.awt Toolkit Color)
+             (java.awt.image BufferedImage)
+             (java.awt.event KeyAdapter)
+             (javax.swing JFrame JPanel)))
+  
+  (defn screen-size []
+    (let [screen (.getScreenSize (. java.awt.Toolkit getDefaultToolkit))]
+      [(.getWidth screen) (.getHeight screen)]))
+
+  (def photo-pin 0)
+  (def button-pin 5)
+  
+  (defn init-arduino []
+    (doto (arduino :firmata "/dev/tty.usbserial-A6008nhh")
+      (pin-mode button-pin INPUT)
+      (enable-pin :analog photo-pin)
+      (enable-pin :digital button-pin)))
+#+end_src
+
+On the Arduino side we don't need much, we only need a [[http://en.wikipedia.org/wiki/Photoresistor][photoresistor]] /
+[[http://en.wikipedia.org/wiki/Photodiode][photodiode]] and a button. 
+
+#+BEGIN_HTML
+  <img src="/images/post/duck-hunt-schema.png" />
+#+END_HTML
+
+#+begin_src clojure
+  (defn place-duck []
+    (let [[width height] (screen-size)
+          dir-x (if (= (rand-int 2) 0) -1 1)]
+      [(/ width 2) height 50 [dir-x -1]]))
+  
+  (defn move-duck [duck]
+    (let [step 10
+          [x y size [dir-x dir-y]] duck
+          nx (cond (= 1 dir-x) (+ x step)
+                   (= -1 dir-x) (- x step)
+                   :default x)
+          ny (cond (= 1 dir-y) (+ y step)
+                   (= -1 dir-y) (- y step)
+                   :default y)]
+      [nx ny size [dir-x dir-y]]))
+  
+  (defn step-ducks [state]
+    (let [[width height] (screen-size)]
+      (->> (map move-duck (:ducks @state))
+         (reduce (fn[h v]
+                   (let [[x y size [dir-x dir-y]] v]
+                     (if (or (< y 0)
+                             (> y height))
+                       (conj h (place-duck))
+                       (conj h v)))) []))))
+#+end_src
+
+At first the idea was to use a duck sprite but I couldn't find a
+sprite sheet of a flying duck so I used boxes instead. A duck consists
+of its coordinates (x/y), size and direction. Everytime we repaint the
+scene we move the ducks on the screen 10 pixels in their direction.
+
+#+begin_src clojure
+  (defn state []
+    (let [[width height] (screen-size)]
+      (ref {:loop true
+            :scene (BufferedImage. width height BufferedImage/TYPE_INT_RGB)
+            :ducks [(place-duck)]})))
+#+end_src
+
+Game state consists of an image which we will draw the scenes on and a
+list of boxes on the screen.
+
+#+begin_src clojure
+  (defn draw-background [g c]
+    (let [[width height] (screen-size)]
+      (.setColor g c)
+      (.fillRect g 0 0 width height)))
+  
+  (defn draw-duck [g c [x y size _]]
+    (.setColor g c)
+    (.fillRect g x y size size))
+  
+  (defn draw-ducks [g c s]
+    (doseq [duck (:ducks @s)] 
+      (draw-duck g c duck)))
+  
+  (defn draw-scene [g p s]
+    (draw-background g Color/blue)
+    (draw-ducks g Color/red s)
+    (.repaint p))
+  
+#+end_src
+
+There is not much to draw on the scene just some boxes.
+
+#+begin_src clojure
+  (defn read-base [board g panel]
+    (draw-background g Color/black)
+    (.repaint panel)
+    (Thread/sleep 100)
+    (analog-read board photo-pin))
+  
+  (defn read-duck [board g panel duck]
+    (draw-background g Color/black)
+    (draw-duck g Color/white duck)
+    (.repaint panel)
+    (Thread/sleep 100)
+    (analog-read board photo-pin))
+  
+  (defn triggered? [board]
+    (if (= 1 (digital-read board button-pin))
+      true false))
+  
+  (defn handle-trigger [board state g panel]
+    (let [base (read-base board g panel)]
+      (map #(let [[x y size _] %
+                  diff (- base (read-duck board g panel %))]
+              (println "Diff:" diff)
+              (if (> diff -100)
+                [x y size [0 1]] %))
+           (:ducks @state))))
+  
+  (defn game-loop [board state panel]
+    (while (:loop @state)
+      (let [g (.getGraphics (:scene @state))]
+        (dosync
+         (alter state assoc :ducks (step-ducks state))
+         (when (triggered? board)
+           (alter state assoc :ducks (handle-trigger board state g panel))))
+        (draw-scene g panel state)
+        (Thread/sleep 50)))
+    (close board))
+  
+#+end_src
+
+In /game-loop/ we periodically move the boxes around and check if the
+button is triggered, as soon as the button is pressed we paint the
+screen black and get a reading which we use as a reference point,
+then we replace each box on the screen with a white box and get another
+reading, if the difference is above a certain threshold we assume gun
+is pointing at the target.
+
+#+begin_src clojure
+  (defn key-listener [state frame]
+    (proxy [KeyAdapter] [] 
+      (keyReleased 
+       [e]
+       (dosync (alter state assoc :loop false))
+       (.setVisible frame false))))
+  
+#+end_src
+
+We need to make sure, Arduino connection is closed when we are done or
+bad things will happen, any key event will cause the /game-loop/ to
+exit and hide the frame.
+
+#+begin_src clojure
+  (defn sketch []
+    (let [board  (init-arduino)
+          state (state)
+          [width height] (screen-size)
+          panel  (proxy [JPanel] []
+                   (paintComponent [g] (.drawImage g (:scene @state) 0 0 this)))
+          frame (JFrame.)]
+      (doto frame
+        (.add panel)
+        (.addKeyListener (key-listener state frame))
+        (.setBackground (java.awt.Color. 0 0 0 0))
+        (.setUndecorated true)
+        (.setAlwaysOnTop true)
+        (.setSize (java.awt.Dimension. width height))
+        (.setVisible true))
+      (future (game-loop board state panel))))
+#+end_src
+

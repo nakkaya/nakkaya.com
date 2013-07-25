@@ -1,0 +1,91 @@
+#+title: Clodiuno/Processing ADXL335 Accelerometer
+#+tags: clojure clodiuno arduino processing
+
+Another one of my spend sometime doing it and didn't want to throw away
+the code posts, nothing fancy just processing the accelerometer data,
+the accelerometer in question is a ADXL335, you can plug it by
+connecting the VCC connector into the Arduino 3V pin (not the 5V pin.),
+the ground into ground and the x, y, and z pins into 0,1,2 analog pins.
+
+The idea here is to use the accelerometer to sense orientation
+of the Arduino and rotate a 3D object on screen accordingly. Most of the
+code is straightforward the only thing that you need to know is that you
+can't directly map accelerometer reading to an angle, the reason being even
+if you set the thing on the table it will jiggle wildly, to combat that
+we need a filter to smooth out the values, this snippet uses the
+recursive moving average filter (basically it's like saying, "Well, I've
+got a new point, but I don't really trust it, so I'm going to keep 80%
+of my old estimate of the measurement, and only trust this new data
+point 20%"). It does get rid of the jiggling behaviour but introduces
+latency.
+
+#+BEGIN_HTML
+  <p>
+    <video src="/video/accelerometer.m4v" width="80%" controls>
+      Looks like HTML5 Video tag did not work you can download
+      the video <a href="/video/accelerometer.m4v">here</a>.
+    </video>
+  </p>
+#+END_HTML
+
+#+begin_src clojure
+  (ns acc.core
+    (:use [clodiuno core wishield])
+    (:use [incanter core processing]))
+  
+  (defn in-thread [f] (doto (Thread. f) (.start)))
+  (defmacro forever [& body] `(try (while true  ~@body) (catch Exception e#)))
+  ;;WMath.cpp
+  (defn map-range [x in-min in-max out-min out-max]
+    (+ (/ (* (- x in-min) (- out-max out-min)) (- in-max in-min)) out-min))
+  
+  (let [k 0.99
+        xf (ref 0)
+        yf (ref 0)] 
+  
+    (defn moving-filter [x f]
+      (+ (* k f) (* (- 1.0 k) x)))
+  
+    (defn read-val [board axis]
+      (let [val (if (= axis :x) 
+                  (map-range (analog-read board 0) 275 415 -1.5 1.5)
+                  (map-range (analog-read board 1) 275 415 1.5 -1.5))]
+        (if (= axis :x)  
+          (dosync (ref-set xf (moving-filter val @xf)))
+          (dosync (ref-set yf (moving-filter val @yf)))))))
+  
+  (defn wishield []
+    (let [board (arduino :wishield "10.0.2.200" 1000)
+          x-val (ref 0)
+          y-val (ref 0)]
+      (in-thread
+       #(forever
+         (dosync (ref-set x-val (read-val board :x))
+                 (ref-set y-val (read-val board :y)))
+         (Thread/sleep 10)))
+      [board x-val y-val]))
+  
+  (defn frame [board]
+    (let [[board x-val y-val] board]
+      (sketch
+       (setup []
+              (doto this
+                (size 640 480 processing.core.PConstants/P3D)
+                (.noStroke)
+                (framerate 24)
+                smooth))
+       (draw []
+             (doto this
+               (.background 50)
+               (.lights)
+               (.translate 320 240 0)
+               (.rotateZ @y-val)
+               (.rotateX @x-val)
+               (.box 100 20 400))))))
+#+end_src
+
+#+begin_src clojure
+  (def shield (wishield))
+  (view (frame shield) :size [640 480])
+  (close (first shield))
+#+end_src

@@ -1,0 +1,114 @@
+#+title: Poor man's VPN using PPP over SSH
+#+tags: debian ssh ppp vpn
+
+PPP (Point to Point Protocol) is a mechanism for running IP (Internet
+Protocol) over a terminal. Usually the terminal is a modem, but any
+tty will do. SSH creates secure ttys. Running a PPP connection over
+an SSH connection makes for an easy, encrypted VPN. (SSH has native
+tunneling support which requires /root/ access, this method only
+requires /root/ privileges on the client.)
+
+If you run any flavor of *nix (Free/Open/NetBSD, Linux, etc), chances
+are everything you need is already installed (ppp and ssh). and since
+SSH uses a single client/server TCP connection, it NATs cleanly,
+easily passing through firewalls and NAT routers. It has its drawbacks
+though as you have PPP (TCP) inside of SSH (TCP) which is a [[http://sites.inka.de/bigred/devel/tcp-tcp.html][bad idea]]. 
+
+On the remote end, install pppd if not already installed,
+
+#+BEGIN_SRC sh
+  apt-get install ipppd
+#+END_SRC
+
+Enable IP Forwarding by editing */proc/sys/net/ipv4/ip\_forward*
+
+#+BEGIN_SRC sh
+  echo 1 > /proc/sys/net/ipv4/ip_forward
+#+END_SRC
+
+Configure your iptables settings to enable access for PPP Clients,
+
+#+BEGIN_SRC sh
+  iptables -F FORWARD
+  iptables -A FORWARD -j ACCEPT
+  
+  iptables -A POSTROUTING -t nat -o eth0 -j MASQUERADE
+  iptables -A POSTROUTING -t nat -o ppp+ -j MASQUERADE
+#+END_SRC
+
+And make sure you can [[http://nakkaya.com/2009/05/20/passwordless-logins-with-ssh/][login without a password]].
+
+On the local end, start pppd, tell it to connect using SSH in batch
+mode, start pppd on the remote server, and use the SSH connection as
+the communication channel.
+
+#+name: pppd
+#+BEGIN_SRC sh
+  pppd updetach defaultroute replacedefaultroute usepeerdns noauth passive pty \
+      "ssh $remote -o Batchmode=yes /usr/sbin/pppd nodetach notty noauth ms-dns 8.8.8.8" \
+      10.0.0.1:10.0.0.2
+#+END_SRC
+
+When run, both your local and your remote computers will have new PPP
+network interfaces,
+
+ - Local interface ppp0 with IP address 10.0.0.1
+ - Remote interface ppp0 with IP address 10.0.0.2
+
+Once pppd adds default route via ppp0 all traffic will be routed
+through the tunnel thus SSH will go down because OS will try to route
+the tunnel through the tunnel, to fix that we add a route to
+/remote-host/ via /local-gateway/.
+
+#+name: route
+#+BEGIN_SRC sh
+  route add $remote gw $gateway
+#+END_SRC
+
+OS will send all SSH traffic to /remote-host/ through our default
+gateway, so the tunnel keeps working fine, the rest of the traffic
+will go through the tunnel.
+
+The script below automates all of the steps above, when run it will
+figure out the current /gateway/ setup the tunnel and the routes so
+all traffic goes through the tunnel.
+
+#+BEGIN_SRC sh  :noweb yes :tangle vpn.sh :eval never
+  #!/bin/bash
+  
+  pidfile=/var/run/ppp0.pid
+  pid=
+  
+  remote=1.2.3.4
+  gateway=$(/sbin/ip route | awk '/default/ { print $3 }')
+  
+  # trap ctrl-c and signal pppd to shutdown
+  trap close_conn INT
+  
+  function close_conn(){
+      echo "Closing Connection."
+      kill -HUP $pid
+  }
+  
+  function setup_conn(){
+      cd ~/
+      echo "Current Gateway " $gateway
+      <<route>>
+      <<pppd>>
+      pid=`cat $pidfile`
+      echo "Public Facing IP " `curl -s 'http://checkip.dyndns.org' |
+                                sed 's/.*Current IP Address: \([ 0-9\.\.]*\).*/\1/g'`
+  }
+  
+  setup_conn
+  
+  while ps -p $pid > /dev/null; 
+  do 
+      sleep 1; 
+      printf \
+      "\rConnected For: %02d:%02d:%02d:%02d" \
+      "$((SECONDS/86400))" "$((SECONDS/3600%24))" "$((SECONDS/60%60))" "$((SECONDS%60))"
+  done
+  
+  route del $remote gw $gateway
+#+END_SRC

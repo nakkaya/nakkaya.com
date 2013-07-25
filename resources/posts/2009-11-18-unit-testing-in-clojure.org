@@ -1,0 +1,128 @@
+#+title: Unit Testing in Clojure
+#+tags: clojure unit-testing
+
+One thing I love about Clojure is the built in unit tests. Unit tests
+are great for making sure your code does what it needs to do and
+introducing new features or bug fixes doesn't break anything. You can
+refactor your code anytime you want and be sure that you did not break
+anything. Unit tests also serve as a living documentation for your code
+base, newcomers can look at the code base and get basic understanding of
+how your API works.
+
+
+Clojure's core library includes a test framework written by Stuart
+Sierra. If there is anything that is not covered here the best place to
+look for it is the [[http://github.com/richhickey/clojure/blob/master/src/clj/clojure/test.clj][source code]] itself.
+
+Testing framework is under the namespace clojure.test,
+
+#+begin_src clojure
+  (ns your-test-namespace
+    (:use clojure.test))
+#+end_src
+
+is all thats needed to load the framework. Assuming we would like to
+test the following function,
+
+#+begin_src clojure
+  (defn add2 [x] 
+    (+ x 2))
+#+end_src
+
+There are two ways to define tests, you can either define your tests
+with the function itself,
+
+#+begin_src clojure
+  (with-test
+    (defn add2 [x] 
+      (+ x 2))
+    (is (= 4 (add2 2)))
+    (is (= 5 (add2 3))))
+#+end_src
+
+but I believe that just bloats the code base, or you can define your
+tests separately using the deftest macro,
+
+#+begin_src clojure
+    (deftest test-adder
+      (is (= 24  (add2 22))))
+#+end_src
+
+Tests can also be grouped together,
+
+#+begin_src clojure
+  (deftest arithmetic
+    (addition)
+    (subtraction))
+#+end_src
+
+For testing private functions, you need to use the following macro
+(courtesy of chouser),
+
+#+begin_src clojure
+  (defmacro with-private-fns [[ns fns] & tests]
+    "Refers private fns from ns and runs tests in context."
+    `(let ~(reduce #(conj %1 %2 `(ns-resolve '~ns '~%2)) [] fns)
+       ~@tests))
+#+end_src
+
+then wrap your tests with /with-private-fns/,
+
+#+begin_src clojure
+  (with-private-fns [org.foo.bar [fn1 fn2]]
+    (deftest test-fn1..)
+    (deftest test-fn2..))
+#+end_src
+
+If you need to run code before and after tests, to set up
+the context in which tests should be run. Define a fixture which is
+just a function that calls another function passed as 
+an argument.
+
+#+begin_src clojure
+  (defn my-fixture [f]
+    ;;Perform setup, establish bindings, whatever.
+    (f)  ;;Then call the function we were passed.
+    ;;Tear-down / clean-up code here.
+   )
+#+end_src
+
+Fixtures are run repeatedly, once for each test, they can be attached
+to the current namespace like this,
+
+#+begin_src clojure
+  (use-fixtures :each fixture1 fixture2 ...)
+#+end_src
+
+You can also have a fixture that only runs once,
+around /all/ the tests in the namespace.
+
+#+begin_src clojure
+  (use-fixtures :once fixture1 fixture2 ...)
+#+end_src
+
+To run the tests you defined from REPL you can use,
+
+#+begin_src clojure
+  (run-tests)
+#+end_src
+
+With out a namespace run-tests will run the tests defined in the
+namespace you are in, you can pass it namespaces to run tests defined in
+other namespaces as well.
+
+#+begin_src clojure
+  (run-tests 'your.namespace 'some.other.namespace)
+#+end_src
+
+If you want to run all tests in all namespaces,
+
+#+begin_src clojure
+  (run-all-tests)
+#+end_src
+
+Or use leiningen,
+
+#+begin_example
+  lein test
+#+end_example

@@ -1,0 +1,83 @@
+#+title: Accessing Accelerometer/Gyroscope/Compass/GPS data from ClojureScript
+#+tags: clojurescript clojure
+
+A quick snippet to get accelerometer/gyroscope/compass/GPS data from a
+mobile device (only tested it on iPad) using ClojureScript.
+
+#+begin_src clojure :tangle ipad.cljs
+  (ns ipad
+    (:require [goog.dom :as dom]))
+  
+  (defn get-element [id]
+    (dom/getElement (name id)))
+  
+  (defn set-text [e s]
+    (let [e (if (keyword? e) (get-element e) e)]
+      (doto e (dom/setTextContent s))))
+  
+  (defn get-prop [e & ps]
+    (reduce (fn [h v] (aget h (name v))) e ps))
+  
+  (defn motion-listener [e]
+    (set-text :acc-x (get-prop e :accelerationIncludingGravity :x))
+    (set-text :acc-y (get-prop e :accelerationIncludingGravity :y))
+    (set-text :acc-z (get-prop e :accelerationIncludingGravity :z))
+  
+    (set-text :rot-alpha (get-prop e :rotationRate :alpha))
+    (set-text :rot-beta  (get-prop e :rotationRate :beta))
+    (set-text :rot-gamma (get-prop e :rotationRate :gamma)))
+  
+  (defn orientation-listener [e]
+    (set-text :compass (get-prop e :webkitCompassHeading)))
+  
+  (defn gps-listener [e]
+    (set-text :gps-lat (get-prop e :coords :latitude))
+    (set-text :gps-lon (get-prop e :coords :longitude))
+    (set-text :gps-acc (get-prop e :coords :accuracy)))
+  
+  (defn ^:export init []
+    (.addEventListener js/window "devicemotion" motion-listener false)
+    (.addEventListener js/window "deviceorientation" orientation-listener false)
+    (.watchPosition (get-prop js/navigator :geolocation) gps-listener))
+#+end_src
+
+Compile using,
+
+#+begin_src sh :results silent
+  ../../kiler/clojurescript/bin/cljsc ipad.cljs '{:optimizations :advanced}' > ipad.js
+#+end_src
+
+HTML file for viewing the results,
+
+#+begin_src html :tangle ipad.html
+  <html>
+    <head>
+    </head>
+    <body>
+      <script type="text/javascript" src="/ipad.js"></script>
+  
+      <h1>iPad IMU Test</h1>
+  
+      <ul>
+        <li>acc-x: <span id=acc-x></span>g</li>
+        <li>acc-y: <span id=acc-y></span>g</li>
+        <li>acc-z: <span id=acc-z></span>g</li>
+  
+        <li>rot-alpha: <span id=rot-alpha></span>degree</li>
+        <li>rot-beta:  <span id=rot-beta></span>degree</li>
+        <li>rot-gamma: <span id=rot-gamma></span>degree</li>
+  
+        <li>compass: <span id=compass></span>degree</li>
+  
+        <li>gps-lat: <span id=gps-lat></span></li>
+        <li>gps-lon: <span id=gps-lon></span></li>
+        <li>gps-acc: <span id=gps-acc></span></li>
+      </ul>
+  
+      <script>
+        ipad.init();
+      </script>
+  
+    </body>
+  </html>
+#+end_src

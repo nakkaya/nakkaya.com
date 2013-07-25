@@ -1,0 +1,106 @@
+#+title: Low and High Pass Filter Implementation in Clojure
+#+tags: clojure
+
+Following is a port of the Apple's low and high pass filter
+implementation which can be found in AccelerometerFilter[[http://www.google.com/codesearch/p?hl=en#vKT0bxqM9lQ/trunk/Classes/AccelerometerFilter.h&q=AccelerometerFilter.h][.h]] / [[http://www.google.com/codesearch/p?hl=en#vKT0bxqM9lQ/trunk/Classes/AccelerometerFilter.m][.m]] that
+in turn is based on the pseudocode algorithms from Wikipedia. By
+definition a low pass filter will allow low-frequency signals to pass
+but will reduce the amplitude of high frequency signals, a high pass
+filter will do the opposite and will allow high-frequency signals to
+pass and reduce the amplitude of low frequency signals.
+
+To give you an idea, following graph represents accelerometer data
+captured from my iPhone along the X axis,
+
+#+begin_src clojure
+  (use '[incanter core io charts])
+  
+  (let [data (read-dataset "capture.txt" :header true)
+        time (sel data :cols :Timestamp)
+        acc (sel data :cols :AccelX)]
+    (view (line-chart time acc) :width 1400 :height 200))
+#+end_src
+
+#+BEGIN_HTML
+  <img src="/images/post/x-acc-raw.png" />
+  <p/>
+#+END_HTML
+
+Running the data set through the low pass filter, removes the jittering
+and gives us smoother values,
+
+#+begin_src clojure
+  (let [filter (low-pass-filter 60 1 true [0])
+        data (read-dataset "capture.txt" :header true)
+        time (sel data :cols :Timestamp)
+        acc (map #(first (low-pass-filter filter [%]))
+                 (sel data :cols :AccelX))]
+    (view (line-chart time acc) :width 1400 :height 200))
+#+end_src
+
+#+BEGIN_HTML
+  <img src="/images/post/x-acc-low-pass.png" />
+  <p/>
+#+END_HTML
+
+#+begin_src clojure
+  (ns filter.core)
+  
+  (def k-min-step 0.02)
+  (def k-noise-attenuation 3.0)
+  
+  (defn- norm [vs]
+    (Math/sqrt (apply + (map #(Math/pow % 2) vs))))
+  
+  (defn- clamp [x min max]
+    (cond
+     (> x max) max
+     (< x min) min
+     :default x))
+  
+  (defn low-pass-filter
+    ([rate cut-off-freq adaptive? vals]
+       (let [dt (/ 1 rate)
+             rc (/ 1 cut-off-freq)
+             filter-constant (/ dt (+ dt rc))]
+         (ref {:filter-constant filter-constant
+               :vals vals
+               :adaptive adaptive?})))
+    ([filter input]
+       (let [{:keys [filter-constant vals adaptive?]} @filter
+             alpha (if adaptive?
+                     (let [d (clamp (/ (Math/abs (- (norm vals)
+                                                    (norm input)))
+                                       (- k-min-step 1.0))
+                                    0.0 1.0)]
+                       (+ (/ (* (- 1.0 d) filter-constant)
+                             k-noise-attenuation)
+                          (* d filter-constant)))
+                     filter-constant)
+             vals (map #(+ (* %1 alpha) (* %2 (- 1.0 alpha))) input vals)]
+         (:vals (dosync (alter filter assoc :vals vals))))))
+  
+  (defn high-pass-filter
+    ([rate cut-off-freq adaptive? vals]
+       (let [dt (/ 1 rate)
+             rc (/ 1 cut-off-freq)
+             filter-constant (/ rc (+ dt rc))]
+         (ref {:filter-constant filter-constant
+               :vals vals
+               :raw-vals vals
+               :adaptive adaptive?})))
+    ([filter input]
+       (let [{:keys [filter-constant vals raw-vals adaptive?]} @filter
+             alpha (if adaptive?
+                     (let [d (clamp (/ (Math/abs (- (norm vals)
+                                                    (norm input)))
+                                       (- k-min-step 1.0))
+                                    0.0 1.0)]
+                       (+ (/ (* d filter-constant)
+                             k-noise-attenuation)
+                          (* (- 1.0 d) filter-constant)))
+                     filter-constant)
+             vals (map #(* alpha (- (+ %2 %1) %3)) input vals raw-vals)]
+         (:vals (dosync (alter filter assoc :vals vals :raw-vals input))))))
+  
+#+end_src

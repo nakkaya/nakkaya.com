@@ -1,0 +1,170 @@
+#+title: Time-lapse photography with Clojure
+#+tags: clojure gphoto jna
+
+Over the weekend I was experimenting with [[http://www.gphoto.org/][gPhoto]], which is a photo
+tools suite, /libgphoto2/ library allows other frontends to be written
+for it, the idea here was to see if I can control a camera from
+Clojure because a drone without a camera is useless.
+
+
+#+BEGIN_HTML
+  <p>
+    <video src="/video/gphoto-time-lapse.mp4" width="80%" controls>
+      Looks like HTML5 Video tag did not work you can download
+      the video <a href="/video/gphoto-time-lapse.mp4">here</a>.
+    </video>
+  </p>
+#+END_HTML
+
+This time instead of calling /libgphoto2/ functions directly, I used a
+custom library to interact with /libgphoto2/ that way I only
+return/pass stuff that I am interested in, unlike my previous example
+on [[http://nakkaya.com/2009/11/16/java-native-access-from-clojure/][JNA]] which required a lot of byte counting to extract the
+information I needed.
+
+For the /ptp\_lib/, I basically took [[http://www.google.com/codesearch/p?hl=en#_cGRBGQmfbU/trunk/libgphoto2/examples/sample-capture.c&q=gphoto2%20sample%20capture&d=3][examples]] from gPhoto and chopped
+them into small functions to control various aspects of the camera,
+
+ - ptp\_init
+ - extend\_lens
+ - retract\_lens
+ - preview
+ - ptp\_exit
+
+#+begin_src c
+  #include <stdlib.h>
+  #include <gphoto2/gphoto2.h>
+  
+  typedef struct{
+    Camera *camera;
+    GPContext *context;
+  } ptp_handle;
+  
+  void* ptp_init(){
+    ptp_handle* ptr = (ptp_handle*) malloc(sizeof(ptp_handle));
+  
+    ptr->context = gp_context_new();
+    gp_camera_new(&ptr->camera);
+  
+    int retval = gp_camera_init(ptr->camera, ptr->context);
+    if (retval != GP_OK)
+      return NULL;
+  
+    return (void*) ptr;
+  }
+  
+  CameraWidget* get_widget(CameraWidget* root, char* path[], int count){
+    CameraWidget *config = root;
+    CameraWidget *child;
+  
+    int i=0;
+    for(i = 0 ; i < count; i++){
+      gp_widget_get_child_by_name(config, path[i], &child);
+      config = child;
+    }
+  
+    return config;
+  }
+  
+  void toggle_capture(Camera *camera, GPContext *context, int state){
+    CameraWidget *root;
+    gp_camera_get_config(camera, &root, context);
+    char* path[3]={"main","settings","capture"};
+    CameraWidget *capture = get_widget(root,path,3);
+  
+    gp_widget_set_value(capture, &state);
+    gp_camera_set_config(camera, root, context);
+  }
+  
+  int extend_lens(ptp_handle* handle){
+    toggle_capture(handle->camera,handle->context,1);
+    return 1;
+  }
+  
+  int retract_lens(ptp_handle* handle){
+    toggle_capture(handle->camera,handle->context,0);
+    return 1;
+  }
+  
+  int preview(ptp_handle* handle, char *fn){
+    int fd, retval;
+    CameraFile *file;
+  
+    retval = gp_file_new(&file);
+    if (retval != GP_OK)
+      return 0;
+  
+    retval = gp_camera_capture_preview(handle->camera, file, handle->context);
+    if (retval != GP_OK)
+      return 0;
+  
+    retval = gp_file_save(file, fn);
+    if (retval != GP_OK)
+      return 0;
+  
+    gp_file_unref(file);
+    return 1;
+  }
+  
+  int ptp_exit(ptp_handle* handle){
+    gp_camera_exit(handle->camera, handle->context);
+    return 1;
+  }
+#+end_src
+
+You can compile it using,
+
+#+begin_src sh
+  gcc -I/opt/local/include/gphoto2 -c ptp_lib.c
+  gcc -L/opt/local/lib -dynamiclib -lgphoto2 ptp_lib.o -o libptp_lib.dylib
+#+end_src
+
+On the Clojure side,
+
+#+begin_src clojure
+  (ns ptp.core
+    (:use clojure.java.io)
+    (:import (com.sun.jna Function Pointer)))
+  
+  (System/setProperty "jna.library.path" "./")
+  
+  (defn ptp [func ret & args]
+    (let [f (Function/getFunction "ptp_lib" (name func))]
+      (.invoke f ret (to-array args))))
+  
+  (let [camera (delay (ptp :ptp_init Pointer))
+        index (atom 1)
+        running (atom true)]
+    
+    (defn start []
+      (let [out-dir (file "prevs")]
+        (if (not (.exists out-dir))
+          (.mkdir out-dir))
+        (ptp :extend_lens Integer @camera)
+        (.start (Thread. (fn []
+                           (while @running
+                             (let [f (str "prevs/preview-" @index ".jpg")]
+                               (ptp :preview Integer @camera f))
+                             (swap! index inc)
+                             (Thread/sleep 15000)))))))
+    
+    (defn stop []
+      (swap! running not)
+      (ptp :retract_lens Integer @camera)
+      (ptp :ptp_exit Integer @camera)))
+#+end_src
+
+We initialize the camera, extend the lens and take one photo every 15
+seconds. When done ffmpeg can turn the batch of photos in to a movie,
+
+#+begin_src sh
+  ffmpeg -f image2 -r 25 -i prevs/preview-%d.jpg \ 
+  -vcodec libx264 -vpre hq -crf 22 video.mp4
+#+end_src
+
+In order to play with the example, you need to compile /ptp\_lib.c/ using
+the instructions on the top of the file and place it in your working
+directory.
+
+You also need to check if your camera is [[http://www.gphoto.org/doc/remote/][supported]] and if you are on Mac OS
+X you need to kill the PTP daemon before running the code.

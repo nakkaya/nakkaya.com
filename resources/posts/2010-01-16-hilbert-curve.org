@@ -1,0 +1,45 @@
+#+title: Hilbert Curve
+#+tags: clojure fractal graphics
+
+
+The other day, I came across [[http://www.isi.edu/ant/address/index.html][this]], a visualization of the Internet
+address space. Where they ping all the IP addresses in the IP v4 space
+and plot a table depending on the response from the server, they draw
+the graph using a fractal called a [[http://en.wikipedia.org/wiki/Hilbert_curve][Hilbert Curve]], following uses my
+[[http://nakkaya.com/2010/01/09/a-simple-turtle-graphics-implementation-in-clojure/][turtle graphics]] implementation to draw the curve.
+
+#+begin_html
+  <img src="/images/post/hilbert.png" alt="hilbert curve">
+#+end_html
+
+#+begin_src clojure
+  (ns hilbert
+    (:use turtle))
+  
+  (def size 10)
+  (def width 330)
+  (def height 330)
+  
+  (defn hilbert [turtle level angle]
+    (if (> level 0)
+      (doto turtle 
+        (right angle)
+        (hilbert (dec level) (- angle))
+        (forward size)
+        (left angle)
+        (hilbert (dec level) angle)
+        (forward size)
+        (hilbert (dec level) angle)
+        (left angle)
+        (forward size)
+        (hilbert (dec level) (- angle))
+        (right angle))))
+  
+  (let [turtle (turtle width height)]
+    (doto turtle
+      (pen-up)
+      (go (- 10 (/ width 2)) (- 10 (/ height 2)))
+      (pen-down)
+      (hilbert 5 90)
+      (show)))
+#+end_src

@@ -1,0 +1,57 @@
+#+title: Connecting a Photoresistor to an Arduino
+#+tags: arduino
+
+A photoresistor is a resistor whose resistance decreases with increasing
+incident light intensity, using a photoresistor we can make arduino
+sense the intensity of light around it.
+
+#+begin_html
+  <p><img src="/images/post/photoresistor.png" alt="arduino photoresistor" /></p>
+#+end_html
+
+Using the [[http://www.arduino.cc/playground/Learning/PhotoResistor][playground]] article as reference, resistor (100K) and
+photoresistor are connected in series. +5V goes to resistor, ground
+goes to photoresistor, the junction where the resistor and
+photoresistor meets goes to analog 0. Digital 13 is used for the LED.
+
+In my room photoresistor reads around 80, when I put my thumb on it
+making it dark, it reads around 500. I wanted the LED to light up when
+its dark.
+
+#+begin_src c++
+  int lightPin = 0;  //define a pin for Photo resistor
+  int threshold = 250;
+  
+  void setup(){
+      Serial.begin(9600);  //Begin serial communcation
+      pinMode(13, OUTPUT);
+  
+  }
+  
+  void loop(){
+      Serial.println(analogRead(lightPin)); 
+      
+      if(analogRead(lightPin) > threshold ){    
+          digitalWrite(13, HIGH);
+          Serial.println("high"); 
+      }else{
+          digitalWrite(13, LOW);
+          Serial.println("low"); 
+      }
+      
+      delay(100);
+  }
+#+end_src
+
+So I picked a number in between and used it as threshold, if the reading
+is above the threshold it turns the LED on when its below threshold it
+turns the LED off.
+
+#+BEGIN_HTML
+  <p>
+    <video src="/video/arduino-photoresistor.mp4" width="80%" controls>
+      Looks like HTML5 Video tag did not work you can download
+      the video <a href="/video/arduino-photoresistor.mp4">here</a>.
+    </video>
+  </p>
+#+END_HTML

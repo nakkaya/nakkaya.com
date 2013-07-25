@@ -1,0 +1,25 @@
+#+title: easyDNS Dynamic DNS Client
+#+tags: easy-dns dynamic dns
+#+OPTIONS: toc:nil
+
+A dynamic DNS client for easyDNS.
+ 
+*** Installation
+ 
+    Simply download the following jar file,
+    
+    - [[http://dropbox.nakkaya.com/builds/easy-dns.jar][easy-dns.jar]]
+
+ 
+*** Usage
+
+    #+BEGIN_SRC sh
+      java -jar easy-dns.jar --host host.domain.com --user username --token token
+    #+END_SRC 
+
+ 
+*** Download
+ 
+ - [[http://github.com/nakkaya/easy-dns/tree/master][Source Code]] (Released Under GPL via GitHub)
+ 
+Any feature requests are also welcome see [[http://nakkaya.com/contact.html][contact]].

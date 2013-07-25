@@ -1,0 +1,293 @@
+#+title: ClojureScript & Canvas - A Simple Breakout Implementation
+#+tags: clojurescript clojure
+#+TAGS: noexport(e)
+#+EXPORT_EXCLUDE_TAGS: noexport
+
+Title pretty much says it all, a simple breakout clone using
+ClojureScript and canvas. Click here for the [[http://dl.dropbox.com/u/11332353/demo/breakout/breakout.html][demo]].
+
+#+name: game-state
+#+begin_src clojure
+  (def paddle-height 15)
+  (def paddle-width 150)
+  
+  (def brick-height 15)
+  (def brick-width 100)
+  
+  (def ball-radius 10)
+  
+  (defn init-round [[_ width height]] 
+    {:ball [(/ width 2) (/ height 2) 4 8]
+  
+     :bricks (for [x (range 0 width brick-width)
+                   y (range 0 (/ height 3) brick-height)]
+               [[x y]
+                [(+ x brick-width) y]
+                [(+ x brick-width) (+ y brick-height)]
+                [x (+ y brick-height)]])
+  
+     :paddle [(- (/ width 2) (/ paddle-width 2))
+              (- height paddle-height)]})
+#+end_src
+
+Game state is kept in a map containing the location of the ball,
+location of each corner for each brick and the location of the paddle.
+
+#+name: graphics
+#+begin_src clojure
+  (defn surface []
+    (let [surface (dom/getElement "surface")]
+      [(.getContext surface "2d")
+       (. surface -width)
+       (. surface -height)]))
+  
+  (defn fill-rect [[surface] [x y width height] [r g b]]
+    (set! (. surface -fillStyle) (str "rgb(" r "," g "," b ")"))
+    (.fillRect surface x y width height))
+  
+  (defn stroke-rect [[surface] [x y width height] line-width [r g b]]
+    (set! (. surface -strokeStyle) (str "rgb(" r "," g "," b ")"))
+    (set! (. surface -lineWidth) line-width)
+    (.strokeRect surface x y width height))
+  
+  (defn fill-circle [[surface] coords [r g b]]
+    (let [[x y d] coords]
+      (set! (. surface -fillStyle) (str "rgb(" r "," g "," b ")"))
+      (. surface (beginPath))
+      (.arc surface x y d 0 (* 2 Math/PI) true)
+      (. surface (closePath))
+      (. surface (fill))))
+#+end_src
+
+I've started with Google Closure's CanvasGraphics, but unless I
+missed something obvious it was dog slow, takes around 3 seconds to
+paint a bunch of boxes, so I ended up wrapping Canvas methods.
+
+#+name: paint-canvas
+#+begin_src clojure
+  (defn update-canvas [state surface]
+    (let [{:keys [ball paddle bricks]} state
+          [paddle-x paddle-y] paddle
+          [ball-x ball-y] ball
+          [_ width height] surface]
+  
+      (fill-rect surface [0 0 width height] [255 255 255])
+      (stroke-rect surface [0 0 width height] 2 [0 0 0])
+      (doseq [[[x y]] bricks]
+        (fill-rect surface [x y brick-width brick-height] [0 0 0])
+        (stroke-rect surface [x y brick-width brick-height] 2 [169 169 169]))
+      (fill-rect surface [paddle-x paddle-y paddle-width paddle-height] [0 0 0])
+      (fill-circle surface [ball-x ball-y ball-radius] [0 0 0])))
+#+end_src
+
+Once graphics routines are defined, we are ready to paint the current
+state of the game on to the canvas.
+
+#+name: collision-detection
+#+begin_src clojure
+  (let [clamp (fn [x min max]
+                (cond
+                 (> x max) max
+                 (< x min) min
+                 :default x))
+        srq #(* % %)]
+    
+    (defn rectangle-circle-collision [rect [c r]]
+      (let [[circle-x circle-y] c
+            xs (map first rect)
+            ys (map second rect)
+            min-x (apply min xs)
+            max-x (apply max xs)
+            min-y (apply min ys)
+            max-y (apply max ys)
+            closest-x (clamp circle-x min-x max-x)
+            closest-y (clamp circle-y min-y max-y)
+            dist-x (- circle-x closest-x)
+            dist-y (- circle-y closest-y)]
+        (< (+ (srq dist-x) (srq dist-y)) (srq r)))))
+#+end_src
+
+#+name: ball-collision
+#+begin_src clojure
+  (defn ball-collision? [state pts]
+    (let [[x y] (:ball state)]
+      (rectangle-circle-collision pts [[x y] ball-radius])))
+#+end_src
+
+Next we need a way to detect collision, to check for a collision
+between a circle and a rectangle. We begin by finding a point on the
+rectangle that is closest to the circle and calculate the distance
+between the circle's center and this closest point, then we check if
+the distance is less than the circle's radius which means an
+intersection occurs. (Even though the name of the function is
+/rectangle-circle-collision/ if you pass it two points representing a
+line instead of four representing rectangle it would also act as
+/line-circle-collision/.)
+
+#+name: brick-collision
+#+begin_src clojure
+  (defn handle-brick-collision [state]
+    (let [{:keys [ball bricks]} state
+          [ball-x ball-y dx dy] ball]
+      (if (some true? (map #(ball-collision? state %) bricks))
+        (assoc state
+          :ball [ball-x ball-y dx (- dy)]
+          :bricks (filter #(not (ball-collision? state %)) bricks))
+        state)))
+#+end_src
+
+Checking for brick collision is done by mapping /ball-collision?/ to
+each brick to see if there is collision, when there is collision we
+reverse the direction of the ball and remove the brick/s that the ball
+has collided, otherwise state is returned untouched.
+
+#+name: paddle-collision
+#+begin_src clojure
+  (defn handle-paddle-collision [state]
+    (let [{:keys [ball paddle]} state
+          [ball-x ball-y dx dy] ball
+          [paddle-x paddle-y] paddle]
+      
+      (if (ball-collision? state [[paddle-x paddle-y]
+                                  [(+ paddle-x paddle-width) paddle-y]])
+        (assoc state :ball [ball-x ball-y dx (- dy)])
+        state)))
+#+end_src
+
+Same goes for paddle collision the only difference being that we check
+for a line collision (surface of the paddle) instead of a rectangle
+collision.
+
+#+name: tick-ball
+#+begin_src clojure
+  (defn tick-ball [state [_ width height]]
+    (let [[x y dx dy] (:ball state)
+          dx (if (or (ball-collision? state [[0 0] [0 height]])
+                     (ball-collision? state [[width 0] [width height]]))
+               (- dx) dx)
+  
+          dy (if (ball-collision? state [[0 0] [width 0]])
+               (- dy) dy)]
+      (assoc state :ball [(+ x dx) (+ y dy) dx dy])))
+#+end_src
+
+Finally we need a way to move the ball, everytime /tick-ball/ is
+called it will check for a collision with the sides and the top of the
+canvas bouncing the ball if it collides then move the ball.
+
+#+name: game
+#+begin_src clojure
+  (defn game [timer state surface]
+    (let [[_ width height] surface]
+      (swap! state (fn [curr]
+                     (update-canvas curr surface)
+                     (-> curr
+                         (tick-ball surface)
+                         (handle-brick-collision)
+                         (handle-paddle-collision))))
+  
+      (when (or (ball-collision? @state [[0 height] [width height]])
+                (empty? (:bricks @state)))
+        (. timer (stop))
+        (update-canvas (init-round surface) surface))))
+#+end_src
+
+A single round of breakout is simply taking the initial state and
+running the above transformations until the ball hits the bottom
+wall.
+
+#+name: init
+#+begin_src clojure
+  (defn mouse-move [state [_ width height] event]
+    (let [x (.-clientX event)
+          [_ y] (:paddle @state)]
+      (when (and (>= (- x (/ paddle-width 2)) 0)
+                 (<= (+ x (/ paddle-width 2)) width))
+        (swap! state assoc :paddle [(- x (/ paddle-width 2)) y]))))
+  
+  (defn click [timer state surface event]
+    (let [[_ width height] surface]
+      (swap! state merge (init-round surface))
+      (when (not (.-enabled timer))
+        (. timer (start)))))
+  
+  (defn ^:export init []
+    (let [surface (surface)
+          timer (goog.Timer. (/ 1000 60))
+          state (atom {})]
+      (update-canvas (init-round surface) surface)
+      (events/listen timer goog.Timer/TICK #(game timer state surface))
+      (events/listen js/window event-type/CLICK #(click timer state surface %))
+      (events/listen js/window event-type/MOUSEMOVE #(mouse-move state surface %))))
+#+end_src
+
+The only thing thats left to do is to give user the ability to control
+the game for that we rely on two events /click/ and /mousemove/,
+/mouse-move/ simply sets the paddles x coordinate to where the mouse
+is on the canvas, /click/ event resets the game state and starts
+the timer if it is not already running.
+
+Appendix in the [[https://raw.github.com/nakkaya/nakkaya.com/master/resources/posts/2012-01-31-clojurescript-canvas-a-simple-breakout-implementation.org][raw]] file contains instructions on how to extract the
+source.
+
+* Appendix                                                         :noexport:
+
+  You can either open this file with emacs and run,
+
+  #+begin_example
+    M-x org-babel-tangle
+  #+end_example
+
+  It will build the necessary directory structure and export the files
+  into their proper place, or copy/paste snippets in the following order.
+
+  #+begin_src clojure :mkdirp yes :tangle source/breakout.cljs :noweb yes
+    (ns breakout
+      (:require [goog.dom :as dom]
+                [goog.Timer :as timer]
+                [goog.events :as events]
+                [goog.events.EventType :as event-type]))
+    
+    <<graphics>>
+    
+    <<collision-detection>>
+    
+    <<game-state>>
+    
+    <<paint-canvas>>
+    
+    <<ball-collision>>
+    
+    <<brick-collision>>
+    
+    <<paddle-collision>>
+    
+    <<tick-ball>>
+    
+    <<game>>
+    
+    <<init>>
+  #+end_src
+
+  #+begin_src html :mkdirp yes :tangle source/breakout.html
+    <html>
+      <head>
+      </head>
+      <body>
+        <script type="text/javascript" src="breakout.js"></script>
+    
+        <canvas id="surface" width="500" height="500">
+          Your browser does not support HTML5 Canvas.
+        </canvas>
+    
+        <script>
+          breakout.init();
+        </script>
+      </body>
+    </html>    
+    
+  #+end_src
+
+  #+begin_src sh
+    cljsc breakout.cljs '{:optimizations :advanced}' > breakout.js
+  #+end_src

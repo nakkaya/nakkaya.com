@@ -1,0 +1,90 @@
+#+title: Running Compojure as a Service
+#+tags: compojure clojure bash
+
+My usual setup for running Compojure web apps is to run Jetty from ant
+and run ant in a screen session so it doesn't get killed when I log
+off. This got harder to manage as I move more applications to Compojure,
+I ended up with six consoles running. If you are not careful or update
+apps six in the morning, you end up killing the wrong app.
+
+I got tired of this and hacked the following bash script, with it I can
+start/stop Compojure apps much like a service. No need to keep screen
+running. 
+
+You need to set the following variables,
+
+ - NOHUP - Location of the nohup binary.
+ - JAVA - Location of the java binary.
+ - JARFOLDER - Folder containing Compojure jars.
+ - ROUTES - Entry point for your application.
+
+Thats all the setup that is needed.
+
+#+BEGIN_SRC sh
+  #!/bin/bash
+  
+  DESC="Compojure"
+  NAME="nakkaya.com"
+  
+  NOHUP="nohup"
+  JAVA="java"
+  JARFOLDER="extLibs/"
+  PID_FILE="comp.pid"
+  ROUTES="app/routes.clj"
+  
+  ## build jar list
+  JARS="-cp "
+  
+  for i in `find $JARFOLDER -name *.jar`
+  do
+      JARS=${JARS}:${i}
+  done
+  
+  d_start(){
+      if [ -e $PID_FILE ] 
+      then
+          PID=$(cat $PID_FILE)
+          if ps -p $PID > /dev/null
+          then 
+              echo "$NAME already running.."
+              exit 0
+          fi
+      fi
+  
+      $NOHUP $JAVA $JARS clojure.main $ROUTES &
+      COMPOJURE_PID=$!
+      echo $COMPOJURE_PID > $PID_FILE
+  }
+  
+  d_stop(){
+      if [ -e $PID_FILE ] 
+      then
+          COMPOJURE_PID=$(cat $PID_FILE)
+          kill $COMPOJURE_PID
+          rm $PID_FILE
+      else
+          echo "$NAME is not running.."
+      fi
+  }
+  
+  case "$1" in
+      start)
+          echo "Starting $DESC: $NAME"
+          d_start
+          ;;
+      stop)
+          echo "Stopping $DESC: $NAME"
+          d_stop
+          ;;
+      ,*)
+          echo "Usage: compctl {start|stop}"
+          exit 1
+          ;;
+  esac
+  
+  exit 0
+#+END_SRC
+
+What we do is run Java using "nohup", this way process won't get killed
+when we log off. "nohup" redirects the output to nohup.out, PID of the
+Java process is saved to a file called "comp.pid".

@@ -1,0 +1,146 @@
+#+title: Cloning Pong Part 2
+#+tags: clojure arduino pong
+
+This write up is part two of cloning pong, we will modify the pong
+game we created in [[http://nakkaya.com/2009/12/19/cloning-pong-part-1/][part one]], to be able to control it with knobs, like
+the original using [[http://www.arduino.cc/][Arduino]].
+
+#+BEGIN_HTML
+  <p>
+    <video src="/video/clojure-arduino-pong.mp4" width="80%" controls>
+      Looks like HTML5 Video tag did not work you can download
+      the video <a href="/video/clojure-arduino-pong.mp4">here</a>.
+    </video>
+  </p>
+#+END_HTML
+
+To get Java communicate via Serial Port there are two options,
+[[http://java.sun.com/products/javacomm/][JavaComm]] API and [[http://users.frii.com/jarvi/rxtx/][rxtx]] API. Arduino uses rxtx so I went with
+that. Navigate to you Arduino installation folder, for Mac OS X
+navigate into the Arduino.app,
+
+#+begin_example
+  open /Applications/Arduino.app/Contents/Resources/Java/
+#+end_example
+
+From the folder copy,
+
+ - RXTXcomm.jar
+ - librxtxSerial.jnilib
+
+to somewhere on your classpath. Do not compile rxtx yourself, when I
+compiled it manually and put it on my classpath, Arduino IDE could not
+connect to the board, use the one supplied with your IDE, Mac OS X users
+make sure you are using 32 bit Java 1.5.0 otherwise you will get class
+not found exceptions.
+
+Open Arduino IDE and make a note of your serial port name, on my machine
+its,
+
+#+begin_src clojure
+  (def arduino-port "/dev/tty.usbserial-A6008nhh")
+#+end_src
+
+In order to open the serial port for I/O we need to get a port
+identifier from the API,
+
+#+begin_src clojure
+  (defn port-identifier []
+    (let [ports (CommPortIdentifier/getPortIdentifiers)]
+      (loop [port (.nextElement ports)
+             name (.getName port)]
+        (if (= name arduino-port)
+          port (recur (.nextElement ports) (.getName port))))))
+#+end_src
+
+Using the identifier we can open the port for I/O, make sure baud rates
+match between Clojure and Arduino,
+
+#+begin_src clojure
+  (defn open-port []
+    (doto (.open (port-identifier) "pong" 10000) 
+      (.setSerialPortParams 
+       9600 SerialPort/DATABITS_8 SerialPort/STOPBITS_1 SerialPort/PARITY_NONE)))
+#+end_src
+
+Now everything is set to read from the port,
+
+#+begin_src clojure
+  (defn poll-port [p]
+    (with-open [in (BufferedReader. (InputStreamReader. (.getInputStream p)))]
+      (.readLine in)))
+#+end_src
+
+Arduino will map knob reading between 0 and board size and will send
+coordinate pairs every 50 milliseconds, when poll-port is called, it
+will return,
+
+#+begin_example
+  "100:200"
+#+end_example
+
+meaning player one is at y 100 and player two is at y 200. We modify
+move-player function to check serial for input, parse the coordinates
+returned and set the player positions accordingly,
+
+#+begin_src clojure
+  (defn move-player [coords player]
+    (try
+      (let [p1-y (BigInteger. (first (re-split #":" coords)))
+            p1-x (:x (:1 @player))
+            p1-src (:src (:1 @player))
+            p2-y (BigInteger. (second (re-split #":" coords)))
+            p2-x (:x (:2 @player))
+            p2-src (:src (:2 @player))]
+        (dosync (alter player merge 
+                       {:1 {:x p1-x :y p1-y :src p1-src } 
+                        :2 {:x p2-x :y p2-y :src p2-src}})) )
+      (catch Exception e)))
+#+end_src
+
+Because we don't listen for key inputs anymore, we need to modify
+actionPerformed call and move players before every repaint,
+
+#+begin_src clojure
+  (actionPerformed 
+   [e] 
+   (move-player (poll-port serial) player)
+   (move-ball ball)
+   (wall-collision ball player)
+   (player-collision ball player)
+   (.repaint this))
+#+end_src
+
+Thats all the modification needed in our pong game. Code for the Arduino
+is even simpler,
+
+#+begin_src c++
+  const int boardheight = 400;
+  const int p1Potpin = 0;
+  const int p2Potpin = 1;
+  
+  void setup(){
+    Serial.begin(9600);
+  }
+  
+  void loop(){
+  
+    int p1 = analogRead(p1Potpin);
+    int p2 = analogRead(p2Potpin);
+  
+    Serial.print(map(p1,0,1024,0,400));
+    Serial.print(":");
+    Serial.println(map(p2,0,1024,0,400));
+  
+    delay(50);
+  }
+#+end_src
+
+We just read read the potentiometers every 50 milliseconds, map the
+reading between 0 and board height and write it to serial. Hardware
+setup looks like the following, fritzing project is also available check
+below for a list of files.
+
+#+begin_html
+  <p><img src="/images/post/arduino-pong-schema.png" alt="clojure arduino pong" /></p>
+#+end_html

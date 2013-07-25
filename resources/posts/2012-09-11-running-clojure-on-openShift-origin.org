@@ -1,0 +1,177 @@
+#+title: Running Clojure on OpenShift Origin
+#+tags: clojure
+#+OPTIONS: toc:nil
+
+Over the weekend I've been playing with OpenShift Origin which is a
+collection of open source components that are used in the OpenShift
+Platform as a Service. Since they have a live CD I thought, I'll
+install it in VM assign a IP and start playing with it however all the
+docs on OpenShift's website assumes you will be running Origin on your
+LAN (at least thats the impression I got) so they omit couple of
+crucial points, such as changing the password for the *admin* account
+thats created during the installation or adding new users. If you are
+only interested in deploying Clojure to open OpenShift skip to
+[[Deploying a Clojure Application]].
+
+*** Deploying OpenShift
+
+Mount/Insert ISO, boot the system open a terminal and start
+installation,
+
+#+BEGIN_SRC sh
+  su
+  liveinst
+#+END_SRC
+
+Once installed login via SSH and disable graphical boot,
+
+#+BEGIN_SRC sh
+  rm /etc/systemd/system/default.target
+  ln -s /lib/systemd/system/multi-user.target /etc/systemd/system/default.target
+#+END_SRC
+
+Disable Ruby updates,
+
+#+BEGIN_SRC sh
+  sudo sed -i -e '/gpgkey=/aexclude=ruby ruby-devel ruby-irb ruby-libs ruby-rdoc' \
+      /etc/yum.repos.d/fedora-updates.repo
+#+END_SRC
+
+Disable OpenShift live setup,
+
+#+BEGIN_SRC sh
+  chkconfig --del livesys
+  chkconfig --del livesys-late
+  chkconfig --del livesys-late-openshift
+#+END_SRC
+
+Turn on OpenShift services,
+
+#+BEGIN_SRC sj
+  chkconfig httpd on
+  service httpd start
+  chkconfig stickshift-broker on
+  service stickshift-broker start
+#+END_SRC
+
+Make sure hosts hostname is *broker.example.com* otherwise it won't
+work.
+
+Here comes the annoying part that took me couple of hours to figure
+out, changing the *admin* password. You need to grab the salt from,
+
+#+BEGIN_EXAMPLE
+  /var/www/stickshift/broker/config/environments/plugin-config/swingshift-mongo-plugin.rb
+#+END_EXAMPLE
+
+And calculate a hash just like *mongo_auth_service.rb* calculates for
+your password using the following ruby snippet,
+
+#+BEGIN_SRC ruby
+  require 'digest/md5'
+  
+  digest = Digest::MD5.hexdigest(Digest::MD5.hexdigest("super_secret_pass") + "salt")
+  puts digest
+#+END_SRC
+
+then run the following command replacing the /hash/ with the hash
+generated.
+
+#+BEGIN_SRC sh
+  mongo stickshift_broker_dev --eval 'db.auth_user.update({"_id":"admin"}, {"_id":"admin","user":"admin","password":"hash"}, true)'
+#+END_SRC
+
+Once that is done you can add new users by using,
+
+#+BEGIN_SRC sh
+  ss-register-user
+#+END_SRC
+
+*** Deploying a Clojure Application
+
+Create a Clojure webapp with the following snippets,
+
+#+BEGIN_SRC clojure
+  (defproject hello "0.1.0-SNAPSHOT"
+    :plugins [[lein-ring "0.7.5"]]
+    :dependencies [[org.clojure/clojure "1.3.0"]
+                   [noir "1.2.2"]]
+    :ring {:handler hello.core/handler})
+#+END_SRC
+
+#+BEGIN_SRC clojure
+  (ns hello.core
+    (:use noir.core hiccup.core)
+    (:require [noir.server :as server]))
+  
+  (defpage "/" []
+    "Hey There!")
+  
+  (def handler (server/gen-handler {:mode :dev
+                                    :ns 'hello.core}))
+#+END_SRC
+
+Generate a war,
+
+#+BEGIN_SRC sh
+  lein ring uberwar
+#+END_SRC
+
+Create *~/.openshift/express.conf* with the following content,
+
+#+BEGIN_SRC conf
+  default_rhlogin=admin
+  libra_server=openshift-server-ip
+#+END_SRC
+
+Create a domain for the application,
+
+#+BEGIN_SRC sh
+  rhc domain create -n cloud
+#+END_SRC
+
+Create a jbossas-7 application (you can call your application whatever you want),
+
+#+BEGIN_SRC sh
+  rhc app create -a hello -t jbossas-7
+#+END_SRC
+
+Wait for it to timeout (DNS won't resolve
+/hello-cloud.example.com/). Add,
+
+#+BEGIN_SRC conf
+  openshift-server-ip     hello-cloud.example.com
+#+END_SRC
+
+to */etc/hosts* and copy your ssh key.
+
+#+BEGIN_SRC sh
+  rhc sshkey add -k ~/.ssh/id_rsa.pub -i nakkaya
+#+END_SRC
+
+Now you can clone the repo using the given URL. Remove files left over from the
+sample application,
+
+#+BEGIN_SRC sh
+  git rm -rf pom.xml src/
+#+END_SRC
+
+Publish your application as *ROOT.war* into deployments folder making
+it take up the base URL (/).
+
+#+BEGIN_SRC sh
+  cp hello-0.1.0-SNAPSHOT-standalone.war /hello/deployments/ROOT.war
+#+END_SRC
+
+Add an alias so other people can see the content,
+
+#+BEGIN_SRC sh
+  rhc app add-alias -a hello --alias "domain.com"
+#+END_SRC
+
+If you restart the host for any reason OpenShift won't start the
+application you need to do it manually,
+
+#+BEGIN_SRC sh
+  rhc app start -a hello
+#+END_SRC

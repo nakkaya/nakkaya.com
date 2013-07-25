@@ -1,0 +1,73 @@
+#+title: Command Line Progress Bar
+#+tags: clojure c++ java
+
+I frequently need a progress bar for applications, in order to visualize
+what is going on in the application. Following is a simple progress bar
+implemented in three different languages, C++, Clojure and Java.
+
+#+begin_example
+  [================>                                 ]   33%
+#+end_example
+
+They all look the same, just call the appropriate function with the
+percentage to show.
+
+C++,
+
+#+begin_src c++
+  void printProgBar( int percent ){
+    std::string bar;
+  
+    for(int i = 0; i < 50; i++){
+      if( i < (percent/2)){
+        bar.replace(i,1,"=");
+      }else if( i == (percent/2)){
+        bar.replace(i,1,">");
+      }else{
+        bar.replace(i,1," ");
+      }
+    }
+  
+    std::cout<< "\r" "[" << bar << "] ";
+    std::cout.width( 3 );
+    std::cout<< percent << "%     " << std::flush;
+  }
+#+end_src
+
+Clojure,
+
+Tom Hicks in the comments provided a more elegant version than mine, by
+computing the sequences of characters that we need directly.
+
+#+begin_src clojure
+  (defn print-progress-bar [percent]
+    (let [bar (StringBuilder. "[")] 
+      (doseq [i (range 50)]
+        (cond (< i (int (/ percent 2))) (.append bar "=")
+              (= i (int (/ percent 2))) (.append bar ">")
+              :else (.append bar " ")))
+      (.append bar (str "] " percent "%     "))
+      (print "\r" (.toString bar))
+      (flush)))
+#+end_src
+
+Java,
+
+#+begin_src java
+  public static void printProgBar(int percent){
+      StringBuilder bar = new StringBuilder("[");
+  
+      for(int i = 0; i < 50; i++){
+          if( i < (percent/2)){
+              bar.append("=");
+          }else if( i == (percent/2)){
+              bar.append(">");
+          }else{
+              bar.append(" ");
+          }
+      }
+          
+      bar.append("]   " + percent + "%     ");
+      System.out.print("\r" + bar.toString());
+  }
+#+end_src

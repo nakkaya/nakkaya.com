@@ -1,0 +1,73 @@
+#+title: Mocha: ARPWatch / Log Watcher for Mac OS X and Linux
+#+tags: mocha arp
+#+description: Mocha: ARPWatch / Log Watcher for Mac OS X and Linux
+
+Mocha is a tool that monitors your network activity and keeps a record
+of Ip / Mac address pairings and firewall logs. It will give a warning
+when it notices any suspicious activity, like any changes in Mac
+address or any connection attempt to the firewall.
+
+
+*** Installation & Usage
+
+For Mac OS X
+
+Download the dmg image move it to your applications folder and you are
+set. For firewall log watch you need to enable firewall logging under
+
+
+#+begin_example
+       System Preferences -> Security -> Firewall 
+              -> Advanced -> Enable Firewall Logging
+#+end_example
+
+For Linux
+
+Download the jar file. Either double click it or issue "java -jar
+mocha.jar" In order for Firewall log watch to work you need to enable
+firewall logging and log packages with "IPTABLES: " prefix. Using a
+rule similar to the following...
+
+#+begin_example
+       /sbin/iptables -A INPUT -j LOG --log-prefix "IPTABLES: " \\
+             -m limit --limit \$LOGLIMIT --limit-burst \$LOGLIMITBURST
+#+end_example
+
+Gentoo users can compile Mocha from source using,
+
+#+begin_example
+    # sudo layman -a betagarden
+    # sudo emerge -av net-misc/mocha
+#+end_example
+
+*** Requirements
+
+Mocha is written in java, so as long as you have JVM and arp command it
+will work on all operating systems. Tailing system logs is only
+supported on OS X and Linux, it has been tested on Mac OS X 10.5
+running Java 1.5 and Ubuntu running Java 1.6.
+
+
+*** Building from source
+
+
+Included in the source package is an ant script, in order to build it
+from source use target app in OS X which will build and create an
+application bundle, and target linux on linux which will just build it
+in order to create a jar file use target jar after target linux.
+
+#+begin_example
+    # ant linux 
+    # ant jar
+    # cd build && java -jar mocha.jar
+#+end_example
+
+*** Download
+ - Application - [[http://dropbox.nakkaya.com/builds/Mocha-1.1.1.dmg][Mac OS X]]/[[http://dropbox.nakkaya.com/builds/Mocha-1.1.1.jar][Linux]]
+ - [[http://github.com/nakkaya/mocha/tree/master][Source Code]] (Released under GPL via GitHub)
+
+Application logo by [[http://www.visualpharm.com][VisualPharm]]
+
+For bug reports/fixes/help, see [[http://nakkaya.com/contact.html][contact]].
+
+Any feature requests are also welcome see [[http://nakkaya.com/contact.html][contact]].

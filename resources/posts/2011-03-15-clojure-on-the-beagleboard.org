@@ -1,0 +1,52 @@
+#+title: Clojure on The Beagleboard
+#+tags: clojure beagleboard
+
+After three months of waiting finally my beagleboard arrived
+(thank you TI for being really really slow), usually my distribution
+of choice is [[http://elinux.org/BeagleBoardDebian][Debian]] but for some reason Debian's net install kept
+failing so I decided to just grab the [[http://elinux.org/BeagleBoardUbuntu#Demo_Image][Ubuntu image]] and start playing
+with it.
+
+There was nothing special about getting Clojure to run on the
+beagleboard, /apt-get/ to install OpenJDK and /lein/ to handle Clojure
+installation. Below is a simple benchmark to give you an idea about
+its performance. Keep in mind that even though the xM has a 1 GHz CPU,
+Ubuntu kernel does not have the digital voltage scaling patches so the
+board was running at 500 MHz.
+
+#+begin_src clojure
+  (ns benchmark.core)
+  
+  (defn factorial [x]
+    (reduce * (range 1 (inc x))))
+  
+  (defn fib [n] 
+    (if (<= n 1) 
+      1
+      (+ (fib (- n 1)) (fib (- n 2)))))
+  
+  (defn sort-seq []
+    (sort (repeat 100000 (rand-int 2000000))))
+  
+  (defn time-it [fn]
+    (let [values  (for [i (range 200)] (with-out-str (time (fn))))
+          doubles (map #(Double. (nth (.split % " ") 2)) values)]
+      (/ (apply + doubles) (count doubles))))
+  
+  (defn -main []
+    (println "(factorial 5000) \t Avg: " (time-it #(factorial 5000)))
+    (println "(fib 20) \t Avg: " (time-it #(fib 20)))
+    (println "(sort-seq) \t Avg: " (time-it #(sort-seq))))
+  
+#+end_src
+
+#+begin_example
+  ubuntu@omap:~/benchmark$ java -version
+  java version "1.6.0_18"
+  OpenJDK Runtime Environment (IcedTea6 1.8.5) (6b18-1.8.5-0ubuntu1)
+  OpenJDK Zero VM (build 14.0-b16, mixed mode)
+  ubuntu@omap:~/benchmark$ lein run
+  (factorial 5000)         Avg:  972.1499634100002
+  (fib 20)         Avg:  258.30398559000014
+  (sort-seq)       Avg:  4483.578033390005
+#+end_example

@@ -1,0 +1,38 @@
+#+title: Simple Bash Installer
+#+tags: bash installer
+
+Following is a simple bash script to build a installer for any *nix
+system.
+
+#+BEGIN_SRC sh
+  #!/bin/bash
+  
+  SKIP=`awk '/^__DATA_BEGIN__/ { print NR +1; exit 0; }'  \$0`
+  tail -n +\$SKIP \$0 | tar x
+  exit 0;
+  
+  __DATA_BEGIN__
+#+END_SRC
+
+Save the script as "intaller.sh". 
+
+Put everything you need to install in a folder and tar the folder,
+
+#+BEGIN_EXAMPLE
+  tar -cvvf foo.tar foo/
+#+END_EXAMPLE
+
+Concatenate everything into a file,
+
+#+BEGIN_EXAMPLE
+  cat installer.sh foo.tar > setup
+#+END_EXAMPLE
+
+Make it executable,
+
+#+BEGIN_EXAMPLE
+  chmod 755 setup
+#+END_EXAMPLE
+
+Now when you run setup it will extract the folder in to current
+directory.

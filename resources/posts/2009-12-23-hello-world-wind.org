@@ -1,0 +1,141 @@
+#+title: Hello World Wind
+#+tags: clojure world-wind
+
+World Wind is a [[http://en.wikipedia.org/wiki/Virtual_globe][virtual globe]], developed by [[http://www.nasa.gov/][NASA]], it gives us the
+ability to add [[http://earth.google.com/][Google Earth]] like functionality to our applications.
+
+In my previous post [[http://nakkaya.com/2009/12/17/mashups-using-clojure/][Mashups Using Clojure]], I produced a HTML file and
+used Google Maps to visualize the data, with world wind we can
+integrate the map directly into the application.
+
+#+begin_html
+  <p><img src="/images/post/world.png" alt="world wind" /></p>
+#+end_html
+
+I am going to be using the same parsing routines that I used for the
+[[http://nakkaya.com/2009/12/17/mashups-using-clojure/][Mashups Using Clojure]] post so I am going to skip explaining those and
+jump directly to World Wind stuff.
+
+#+begin_src clojure
+  (ns world
+    (:use clojure.contrib.str-utils)
+    (:use clojure.contrib.duck-streams)
+    (:use clojure.contrib.prxml)
+    (:import  (java.net URL)
+              (java.io BufferedReader InputStreamReader)
+              (java.awt Dimension)
+              (gov.nasa.worldwind Configuration WorldWind)
+              (gov.nasa.worldwind.avlist AVKey)
+              (gov.nasa.worldwind.awt WorldWindowGLCanvas)
+              (gov.nasa.worldwind.geom LatLon Position)
+              (gov.nasa.worldwind.view.orbit BasicOrbitView)
+              (gov.nasa.worldwind.layers IconLayer)
+              (gov.nasa.worldwind.render UserFacingIcon)
+              (gov.nasa.worldwind.event SelectEvent)))
+  
+  (defstruct earth-quake 
+    :date :time :latitude :longitude :depth :md :ml :ms :location)
+  
+  (defn fetch-url[address]
+    (let  [url (URL. address)] 
+      (with-open [stream (.openStream url)]
+        (let  [buf (BufferedReader. 
+                    (InputStreamReader. stream "windows-1254" ))]
+          (apply str (interleave (line-seq buf) (repeat \newline )))))))
+  
+  (defn parse [data]
+     (map
+      #(apply struct earth-quake (re-split #"\s+" % 9))
+      (re-split #"\n+" data)))
+  
+  (defn eartquakes []
+    (let  [page (fetch-url "http://www.koeri.boun.edu.tr/scripts/lst9.asp")
+           data (re-find #"(?s)------------    -----------\n(.*?)</pre>" page)]
+      (parse (data 1))))
+#+end_src
+
+First you need to get the latest [[http://builds.worldwind.arc.nasa.gov/download.asp][SDK]], unzip it and copy the jar and
+library files in to your Java extensions folder, if you put them
+somewhere else on your classpath don't forget to set your library path
+to point to the native libraries.
+
+#+begin_src clojure
+  (defn world []
+    (Configuration/setValue AVKey/INITIAL_LATITUDE 39.3113)
+    (Configuration/setValue AVKey/INITIAL_LONGITUDE 32.8038)
+    (Configuration/setValue AVKey/INITIAL_ALTITUDE 1000000)
+    (doto (WorldWindowGLCanvas.)
+      (.setModel (WorldWind/createConfigurationComponent 
+                  AVKey/MODEL_CLASS_NAME))))
+#+end_src
+
+The component that holds the world is called WorldWindowGLCanvas, you
+don't need to set any initial values but you need to set the model.
+
+#+begin_src clojure
+  (defn goto-pos [world lat long elev]
+    (let [position (Position. (LatLon/fromDegrees lat long) (* elev 10000))
+          view (cast BasicOrbitView (.getView world))]
+      (.goTo view position (* elev 10000))))
+#+end_src
+
+If later on you want to change the orientation of the map, fly to a
+different location, you can call goTo method of the view but beware, if
+you try to use it before the map is shown in a frame it won't work,
+configure initial values instead.
+
+#+begin_src clojure
+  (defn icon [quake]
+    (doto (UserFacingIcon. 
+           "icon.png" (Position.
+                       (LatLon/fromDegrees (Double. (:latitude quake))
+                                           (Double. (:longitude quake))) 0.0))
+      (.setToolTipText (apply str (interleave quake (repeat " "))))))
+#+end_src
+
+In order to mark positions on the map, world wind provides
+UserFacingIcon class, it takes an image for the icon and the coordinates
+to place the icon.
+
+After creating the icons you need to put them on a IconLayer,
+
+#+begin_src clojure
+  (defn icon-layer [icons]
+    (let [layer (IconLayer.)] 
+      (doseq [icon icons] 
+        (.addIcon layer icon)) layer))
+#+end_src
+
+By default icons don't work like markers in Google Earth, you can't
+click on them, to capture events that are happening on the map, we need
+to install a SelectListener and check if the event occurred on a
+UserFacingIcon, if so we toggle it's tooltip.
+
+#+begin_src clojure
+  (defn select-listener []
+    (proxy [gov.nasa.worldwind.event.SelectListener] [] 
+      (selected 
+       [e]
+       (let [object (.getTopObject e)] 
+         (if (= (.getEventAction e) SelectEvent/LEFT_CLICK)
+           (if (instance? UserFacingIcon object)
+             (.setShowToolTip object (not (.isShowToolTip object)))))))))
+#+end_src
+
+Thats all it takes to create our mashup, we need to create the world,
+create a icon for each earthquake, place them on a layer and add it to
+the world,
+
+#+begin_src clojure
+  (defn frame []
+    (let [world (world)
+          layers (.getLayers (.getModel world))
+          earth-quakes (map #(icon %) (eartquakes))]
+          (.add layers (icon-layer earth-quakes))
+          (.addSelectListener world (select-listener))
+          (doto (javax.swing.JFrame.)
+            (.add world)
+            (.setSize (Dimension. 400 400))
+            (.setAlwaysOnTop true)
+            (.setVisible true))))
+#+end_src

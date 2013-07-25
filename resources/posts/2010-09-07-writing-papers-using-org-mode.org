@@ -1,0 +1,119 @@
+#+title: Writing Papers Using org-mode
+#+tags: org-mode emacs
+
+
+With [[http://en.wikipedia.org/wiki/LaTeX][LaTeX]], it seems like I am spending more time researching LaTeX
+itself then the topic I am working on, so for sometime now I dropped
+LaTeX in favor of [[http://orgmode.org/][Org-mode]]. I am posting this as a personal cheat
+sheet, it is much more easier to search this site then to dig through
+old papers to figure out how I did stuff.
+
+Org-mode allows you to control certain things during export using
+[[http://www.gnu.org/software/emacs/manual/html_node/org/Export-options.html][export options]], following sets the default font to /Arial/,
+
+#+begin_example
+  ,#+LATEX_HEADER: \renewcommand{\rmdefault}{phv} % Arial
+#+end_example
+
+and following gets rid of the red boxes drawn around the links.
+
+#+begin_example
+  ,#+LATEX_HEADER: \usepackage{hyperref}
+  ,#+LATEX_HEADER: \hypersetup{
+  ,#+LATEX_HEADER:     colorlinks,%
+  ,#+LATEX_HEADER:     citecolor=black,%
+  ,#+LATEX_HEADER:     filecolor=black,%
+  ,#+LATEX_HEADER:     linkcolor=blue,%
+  ,#+LATEX_HEADER:     urlcolor=black
+  ,#+LATEX_HEADER: }
+#+end_example
+
+For those who write in non English, [[http://en.wikibooks.org/wiki/LaTeX/Internationalization][babel]] package will translate,
+automatically generated text strings to the language you specify.
+
+#+begin_example
+  ,#+LATEX_HEADER: \usepackage[turkish]{babel}
+#+end_example
+
+For specifying date, author, and title of the paper you are writing,
+
+#+begin_example
+  ,#+TITLE: Writing Papers Using org-mode
+  ,#+AUTHOR: Nurullah Akkaya
+  ,#+EMAIL: nurullah@nakkaya.com
+#+end_example
+
+You can't have papers without figures, images,
+
+#+begin_example
+  ,#+CAPTION: Arduino Duemilanove
+  ,#+ATTR_LaTeX: scale=0.75
+  [[./img/arduino-duemilanove.jpeg]]
+#+end_example
+
+or pre-formatted text,
+
+#+begin_example
+  ,#+BEGIN_EXAMPLE
+   Some example from a text file.
+  ,#+END_EXAMPLE
+#+end_example
+
+for embedding source,
+
+#+begin_example
+  ,#+BEGIN_SRC lisp
+  (let [i (atom 0)]
+    (defn generate-unique-id
+      "Returns a distinct numeric ID for each call."
+      []
+      (swap! i inc)))
+  ,#+END_SRC
+#+end_example
+
+If you want to listing to look like the fontified Emacs buffer you need
+to add these to your /.emacs/,
+
+#+begin_src lisp
+  (setq org-latex-listings t)
+  (add-to-list 'org-latex-packages-alist '("" "listings"))
+  (add-to-list 'org-latex-packages-alist '("" "color"))
+#+end_src
+
+For adding citations to paper using reftex add the following snippet
+to your /.emacs/,
+
+#+begin_src emacs-lisp
+  (setq-default TeX-master t)
+  (setq reftex-default-bibliography
+        (quote
+         ("/path/to/default.bib")))
+  
+  (defun na-org-mode-reftex-setup ()
+    (interactive)
+    (load-library "reftex")
+    (and (buffer-file-name)
+         (file-exists-p (buffer-file-name))
+         (reftex-parse-all)))
+  
+  (add-hook 'org-mode-hook 'na-org-mode-reftex-setup)
+#+end_src
+
+and add,
+
+#+begin_src latex
+  \bibliographystyle{plain}
+  \bibliography{refs}{}
+#+end_src
+
+to the end of the org file. It will look for /refs.bib/ for bibtex
+references in the same folder as the org-file. Anytime you want to
+insert a reference use, 
+
+#+begin_example
+  reftex-citation
+#+end_example
+
+When generating the file, export to latex then manually call
+/pdflatex/ then call /bibtex org-file.aux/ and finally call /pdflatex/
+once more.

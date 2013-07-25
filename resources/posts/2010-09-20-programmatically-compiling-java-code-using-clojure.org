@@ -1,0 +1,66 @@
+#+title: Programmatically Compiling Java Code Using Clojure
+#+tags: clojure java
+
+Everytime I am using some cryptic Java code as reference I get the
+feeling that my life would be so much easier if I could just copy/paste
+parts of it into REPL and see what that variable called /a/ is doing, so
+I spend some time playing with [[http://download.oracle.com/javase/6/docs/api/javax/tools/package-summary.html][Java Compiler API]]
+hoping it would save me some time later. Below snippet allows you to
+compile and execute Java code from a string,
+
+#+begin_src clojure
+  (defn javac [src & interface]
+    (let [name (gensym)
+          kind javax.tools.JavaFileObject$Kind/SOURCE
+          extension (.extension kind)
+          uri (java.net.URI.  (str "string:///dummy/" name extension))
+          class-path ["-classpath" (System/getProperty "java.class.path")]
+          src (proxy [javax.tools.SimpleJavaFileObject] [uri kind]
+                (getCharContent 
+                  [_] 
+                  (if (= :interface interface)
+                    (str "package dummy;" "public interface " name " {" src "}")
+                    (str "package dummy;" "public class " name " {" src "}"))))
+          file-filter (proxy [java.io.FilenameFilter] []
+                        (accept
+                          [dir, fname]
+                          (not (nil? (re-matches
+                                      (re-pattern (str name ".*\\.class"))
+                                      fname)))))
+          dummy-dir (java.io.File. "./dummy")]
+      (-> (javax.tools.ToolProvider/getSystemJavaCompiler)
+          (.getTask nil nil nil class-path nil [src]) 
+          .call)
+      (if (not (.exists dummy-dir)) 
+        (.mkdir dummy-dir))
+      (doseq [fc (.listFiles (java.io.File. "./") file-filter)] 
+        (.renameTo fc (java.io.File. dummy-dir (str fc))))
+      name))
+#+end_src
+
+This scheme isn't perfect, compiled class will be written to the current
+working directory instead of the structure dictated by its package so it
+needs to be moved manually and once a class is loaded/used recompiling
+it won't reflect your changes so above method uses /gensym/ to create a
+unique class each time you compile under the package /dummy/,
+
+#+begin_example
+  (javac
+    (str
+     "  public static void main(String args[]) {"
+     "    System.out.println(\"This is in another java file\");"
+     "  }"))
+  
+  user=> (dummy.G__7/main (into-array String [""]))
+  user=> This is in another java file
+  nil
+  
+  (javac
+    (str
+     "  public int two() {"
+     "    return 1+1;"
+     "  }"))
+  
+  user=> (.two (dummy.G__12.))
+  user=> 2
+#+end_example

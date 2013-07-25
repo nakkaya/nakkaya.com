@@ -1,0 +1,131 @@
+#+title: Fun with Clojure, OpenCV and Face Detection
+#+tags: clojure opencv
+
+I have been meaning to play with [[http://opencv.willowgarage.com/wiki/][OpenCV]] for a while now, the other
+night, I had some time to kill so I decided to play with it. OpenCV is
+a computer vision library originally developed by Intel.  It focuses
+mainly on real-time image processing. I assumed by now there are a lot
+of Java libraries for OpenCV but as it turns out there is only one,
+and it is a [[http://processing.org/][Processing]] library. It works with Java out of the box but
+for Clojure it takes a little more effort.
+
+Grab the [[http://ubaa.net/shared/processing/opencv/][OpenCV library]], they provide both OpenCV library and Java
+bindings. Install OpenCV and copy Java bindings to your extensions
+folder. OpenCV library has two constructors,
+
+#+begin_example
+  OpenCV() 
+            Create a new OpenCV instance.
+  OpenCV(processing.core.PApplet parent) 
+            Create a new OpenCV instance.
+#+end_example
+
+First constructor is for Java and second one is for Processing, if you
+try to initialize it from Clojure, it will fail trying to locate PApplet
+class which is distributed with Processing or Arduino IDEs. Install
+either one of them, grab core.jar that comes with it and copy that to
+your extensions folder also.
+
+#+begin_quote
+ [[http://alexott.blogspot.com/][Alex]] in the comments mentioned, [[http://github.com/liebke/incanter/][incanter]] package contains Processing
+ library, you can just grab it from them instead of installing Arduino
+ or Processing. It is located in the deps.zip file.
+#+end_quote
+
+First we need to configure OpenCV object,
+
+#+begin_src clojure
+  (ns face-detect
+    (:import (javax.swing JFrame JLabel Timer)
+             (java.awt.event ActionListener KeyAdapter)
+             (java.awt Canvas Image Color)
+             (java.awt.image MemoryImageSource)
+             (hypermedia.video OpenCV)))
+  
+  (def frame-rate (int 1000/30))
+  (def width 640)
+  (def height 480)
+  
+  (defn vision []
+    (doto (OpenCV.)
+      (.capture width height)
+      (.cascade OpenCV/CASCADE_FRONTALFACE_ALT)))
+#+end_src
+
+We will be capturing from the default webcam and using the FRONTALFACE
+description file. You can supply your own for detecting other stuff
+besides faces.
+
+#+begin_src clojure
+  (defn capture-image [vis]
+    (.read vis)
+    (let [mis (MemoryImageSource. (.width vis) (.height vis)
+                                  (.pixels vis) 0 (.width vis))]
+      (.createImage (Canvas.) mis)))
+#+end_src
+
+Before processing we need to grab a new frame from the camera, we also
+build a Image from the data we read to be painted on a component.
+
+#+begin_src clojure
+  (defn detect-face [vis]
+    (.detect vis 1.2 2 OpenCV/HAAR_DO_CANNY_PRUNING 20 20))
+#+end_src
+
+Now we are ready to detect object(s) in the current image depending on
+the current cascade description. detect will return an array of
+rectangles where faces are detected.
+
+#+begin_src clojure
+  (defn capture-action [vis panel image faces]
+    (proxy [ActionListener] []
+      (actionPerformed
+       [e]
+       (dosync (ref-set image (capture-image vis))
+               (ref-set faces (detect-face vis)))
+       (.repaint panel))))
+  
+  (defn panel [image faces]
+    (proxy [JLabel] [] 
+      (paint
+       [g]
+       (.drawImage g @image 0 0 nil)
+       (.setColor g Color/red)
+       (doseq [square @faces]
+         (.drawRect g
+                    (.x square) (.y square)
+                    (.width square) (.height square))))))
+#+end_src
+
+With every tick of the timer, we will grab a new frame from the camera,
+detect faces in the image then repaint the panel to reflect changes.
+
+#+begin_src clojure
+  (defn key-listener [vis timer]
+    (proxy [KeyAdapter] [] 
+      (keyReleased 
+       [e]
+       (.stop timer)
+       (.dispose vis))))
+#+end_src
+
+You need to properly dispose of OpenCV object or bad things will happen,
+you are warned. Just listen for a key event, when the event occurs stop
+the timer and dispose the OpenCV object.
+
+#+begin_src clojure
+  (defn main []
+    (let [vis   (vision)
+          image (ref (capture-image vis))
+          faces (ref (detect-face vis))
+          panel (panel image faces)
+          timer (Timer. frame-rate (capture-action vis panel image faces))]
+      (.start timer)
+      (doto (JFrame.)
+        (.add panel)
+        (.addKeyListener (key-listener vis timer))
+        (.setSize width height)
+        (.show))))
+#+end_src
+
+When components assembled and timer started, it'll start detecting faces.

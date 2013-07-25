@@ -1,0 +1,137 @@
+#+title: Razor 9DOF IMU/Clojure
+#+tags: clojure
+
+Something I put together to visualize the data coming from a [[http://www.sparkfun.com/products/9623][Razor
+9DOF IMU]], in case I need it later.
+
+#+BEGIN_HTML
+  <img src="/images/post/razor-imu-gui.png" />
+#+END_HTML
+
+#+begin_src clojure
+  (ns razor.core
+    (:import (java.awt Color Dimension Font BasicStroke)
+             (java.awt.event WindowListener)
+             (javax.swing JFrame JPanel)
+             (java.text DecimalFormat)
+             (org.jfree.chart ChartPanel JFreeChart)
+             (org.jfree.chart.plot  CompassPlot)
+             (org.jfree.data.general DefaultValueDataset)
+             (org.jfree.chart.plot.dial DialPlot StandardDialFrame
+                                        StandardDialScale DialPointer$Pointer
+                                        DialValueIndicator DialBackground DialCap)
+             (java.io BufferedReader InputStreamReader)
+             (gnu.io SerialPort CommPortIdentifier
+                     SerialPortEventListener SerialPortEvent)))
+  
+  (defn razor [dev]
+    (let [state (atom [0 0 0])
+          id (first
+              (filter #(= dev (.getName %))
+                      (enumeration-seq (CommPortIdentifier/getPortIdentifiers))))
+          port (doto (.open id "clojure" 1)
+                 (.setSerialPortParams 57600
+                                       SerialPort/DATABITS_8
+                                       SerialPort/STOPBITS_1
+                                       SerialPort/PARITY_NONE))
+          stream (.getInputStream port)
+          reader (BufferedReader. (InputStreamReader. stream))
+          parser (fn [_ line]
+                   (map read-string (.split (.replaceAll line "!ANG:" "") ",")))
+          listener (proxy [SerialPortEventListener] [] 
+                     (serialEvent 
+                       [event]
+                       (if (= (.getEventType event) SerialPortEvent/DATA_AVAILABLE)
+                         (while (pos? (.available stream))
+                           (swap! state parser (.readLine reader))))))]
+      (.addEventListener port listener)
+      (.notifyOnDataAvailable port true)
+      [port state]))
+  
+  (defn dial [name dataset min max]
+    (let [dial-frame (doto (StandardDialFrame.)
+                       (.setBackgroundPaint Color/LIGHT_GRAY)
+                       (.setStroke (BasicStroke. 2)))
+          
+          scale (doto (StandardDialScale. min max 300 300 30 4)
+                  (.setMajorTickPaint Color/WHITE)
+                  (.setMinorTickPaint Color/WHITE)
+                  (.setTickLabelPaint Color/WHITE)
+                  (.setTickLabelFont (Font. nil Font/BOLD 15))
+                  (.setTickLabelFormatter (DecimalFormat. "# °"))
+                  (.setTickRadius 0.9)
+                  (.setTickLabelOffset 0.2))
+          
+          pointer (doto (DialPointer$Pointer. 0)
+                    (.setFillPaint Color/GRAY)
+                    (.setOutlinePaint (Color. 0 true)))
+          
+          indicator (doto (DialValueIndicator. 0)
+                      (.setFont (Font. nil Font/BOLD 14))
+                      (.setNumberFormat (DecimalFormat. "#.# °"))
+                      (.setRadius 0.85)
+                      (.setPaint Color/WHITE)
+                      (.setOutlinePaint (Color. 0 true))
+                      (.setBackgroundPaint (Color. 0 true)))
+          
+          plot (doto (DialPlot. dataset)
+                 (.setBackground (DialBackground. Color/DARK_GRAY))
+                 (.setDialFrame dial-frame)
+                 (.setCap (DialCap.))
+                 (.addScale 0 scale)
+                 (.mapDatasetToScale 0 0)
+                 (.addPointer pointer)
+                 (.addLayer indicator))]
+      (doto (ChartPanel.
+             (doto (JFreeChart. name JFreeChart/DEFAULT_TITLE_FONT plot false)
+               (.setBackgroundPaint (Color. 0x999999))))
+        (.setPreferredSize (Dimension. 300 300)))))
+  
+  (defn compass [name dataset]
+    (let [plot (CompassPlot. dataset)]
+      (doto plot
+        (.setSeriesNeedle 0 5)
+        (.setSeriesPaint 0 Color/GRAY)
+        (.setSeriesOutlinePaint 0 Color/GRAY)
+        (.setRosePaint Color/DARK_GRAY)
+        (.setRoseCenterPaint Color/DARK_GRAY)
+        (.setRoseHighlightPaint Color/WHITE))
+      (doto (ChartPanel.
+             (doto (JFreeChart. name JFreeChart/DEFAULT_TITLE_FONT plot false)
+               (.setBackgroundPaint (Color. 0x999999))))
+        (.setPreferredSize (Dimension. 300 300)))))
+  
+  (defn frame [dev]
+    (let [[port state] (razor dev)
+          pitch (DefaultValueDataset. 0.0)
+          yaw (DefaultValueDataset. 0.0)
+          roll (DefaultValueDataset. 0.0)]
+      (add-watch state "update-dials"
+                 (fn [k r o n]
+                   (let [[rl ph yw] n]
+                     (.setValue roll (int rl))
+                     (.setValue pitch (int ph))
+                     (.setValue yaw yw))))
+      (doto (JFrame.)
+        (.add (doto (JPanel.)
+                (.setBackground (Color. 0x999999))
+                (.add (compass "Yaw" yaw))
+                (.add (dial "Roll" roll -180 180))
+                (.add (dial "Pitch" pitch -90 90))))
+        (.addWindowListener (proxy [WindowListener] []
+                              (windowActivated [e])
+                              (windowClosing [e]
+                                (.close port))
+                              (windowDeactivated [e])
+                              (windowDeiconified [e])
+                              (windowIconified [e])
+                              (windowOpened [e])
+                              (windowClosed [e])))
+        (.setTitle "Razor IMU")
+        (.pack)
+        (.setVisible true))))
+#+end_src
+
+#+begin_src clojure
+  (frame "/dev/tty.usbserial-A600e1hM")
+#+end_src

@@ -1,0 +1,63 @@
+#+title: Zipping XML with Clojure
+#+tags: clojure xml
+
+I've written about [[http://nakkaya.com/2009/10/10/processing-xml-with-clojure/][parsing XML with Clojure]] before, the problem is, as
+I wanted more from the document, loops started to get uglier. I
+thought it was time to try the [[http://richhickey.github.com/clojure-contrib/zip-filter-api.html][zip-filter]] API, it provides [[http://en.wikipedia.org/wiki/XPath][XPath]] style
+navigation in Clojure. Not much documentation about it exists but as
+usual [[http://github.com/richhickey/clojure-contrib/blob/81b9e71effbaf6aa2945cd684802d87c762cdcdd/src/clojure/contrib/zip_filter/xml.clj#L57][source code]] was very helpful.
+
+We begin by including the required libraries,
+
+#+begin_src clojure
+  (ns zp
+    (:require [clojure.zip :as zip]
+              [clojure.xml :as xml])
+    (:use clojure.contrib.zip-filter.xml))
+#+end_src
+
+And a utility function to convert a XML string into a zip structure,
+
+#+begin_src clojure
+  (defn zip-str [s]
+    (zip/xml-zip (xml/parse (java.io.ByteArrayInputStream. (.getBytes s)))))
+#+end_src
+
+I was playing with the XML example snippet from Wikipedia, which it
+claims has all the XML concepts in it.
+
+#+begin_src clojure
+  (def paintings (zip-str "<?xml version='1.0' encoding='UTF-8'?>
+      <painting>
+        <img src='madonna.jpg' alt='Foligno Madonna, by Raphael'/>
+        <caption>This is Raphael's 'Foligno' Madonna, painted in
+        <date>1511</date>-<date>1512</date>.</caption>
+      </painting>"))
+#+end_src
+
+
+xml-> call provides a way to navigate through the elements and
+attributes in an XML document. If we want to access the caption tag we
+can use,
+
+#+begin_src clojure
+  (xml-> paintings :caption text)
+#+end_src
+
+Or to get the dates it was painted in,
+
+#+begin_src clojure
+  (xml-> paintings :caption :date text)
+#+end_src
+
+For accessing attributes, there is the attr function which returns the
+matching XML attribute,
+
+#+begin_src clojure
+  (xml-> paintings :img (attr :src))
+#+end_src
+
+These calls return a sequence, you can either call first on them or use
+the xml1-> function, which calls it for you. zip-filter can do more than
+these simple examples, these are what I needed at the moment for more
+examples, have a look at the bottom of the [[http://github.com/richhickey/clojure-contrib/blob/81b9e71effbaf6aa2945cd684802d87c762cdcdd/src/clojure/contrib/zip_filter/xml.clj#L57][source code]].

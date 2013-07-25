@@ -1,0 +1,331 @@
+#+title: Fractals in Clojure - Distributed Buddhabrot Fractal Using ClojureScript
+#+tags: clojure clojurescript fractal
+
+This one got started because I wanted a large Buddhabrot image on my
+wall. A large good looking image takes a long time to render, now that
+we have ClojureScript I thought easiest way to distribute the
+calculation among machines in the house would be to compile to
+JavaScript since I've already [[http://nakkaya.com/2009/10/04/fractals-in-clojure-buddhabrot-fractal/][implemented]] it in Clojure.
+
+The plan was to compile old code using ClojureScript compiler, fire up
+a noir instance to collect the data from clients and goto bed, by the
+time I wake up I thought I would get my giant image. In the end old
+code did compile to JavaScript I only did minor cosmetic changes and
+noir did collected the data from clients but clients were way too slow
+to make any difference.
+
+#+begin_html
+  <p> <img src="/images/post/clj-fractal-buddhabrot.png" /> </p>
+#+end_html
+
+#+begin_src clojure :exports none :mkdirp yes :tangle source/project.clj :eval never :exports none
+  (defproject buddhabrot "1.0.0-SNAPSHOT"
+    :dependencies [[org.clojure/clojure "1.2.0"]
+                   [noir "1.2.2-SNAPSHOT"]]
+    :main buddhabrot.core)
+#+end_src
+
+#+begin_src clojure :noweb yes :mkdirp yes :tangle source/src/buddhabrot/core.clj :exports none
+  (ns buddhabrot.core
+    (:use [noir.core]
+          [hiccup.core])
+    (:require [noir.server :as server])
+    (:import (java.awt Graphics Color)
+             (java.awt.image BufferedImage)))
+  
+  <<configuration>>
+  <<fractal>>
+  <<storage>>
+  <<communication-routes>>
+  <<aux-routes>>
+  <<draw-fractal>>
+#+end_src
+
+#+begin_src clojure :mkdirp yes :noweb yes :tangle source/resources/calculate.cljs :eval never :exports none
+  (ns calculate
+    (:require [cljs.reader :as reader]
+              [goog.net.XhrIo :as io]
+              [goog.Uri :as uri]))
+
+  <<configuration>>
+  <<fractal>>
+  <<calculate>>
+#+end_src
+
+This is a literate program, the code in this document is the
+executable source, in order to extract it, open this [[https://github.com/nakkaya/nakkaya.com/tree/master/resources/posts/2011-12-15-fractals-in-clojure-distributed-buddhabrot-fractal-using-clojurescript.org][raw file]] with
+emacs and run,
+
+#+begin_example
+ M-x org-babel-tangle
+#+end_example
+
+It will build the necessary directory structure and export the files
+into their proper place.
+
+Configuration,
+
+ - Plane we want to draw. (left right top bottom)
+ - Multiply the plane with this number to calculate image size.
+ - Max iterations.
+ - Batch size.
+ - Where to save the data file in case we want to take a break.
+
+#+srcname: configuration
+#+begin_src clojure
+  (defn config-big []
+    [[-2.102613 1.200613 -1.237710 1.239710] 600 1000 5000 "fractal.data"])
+  
+  (defn config-small []
+    [[-2.102613 1.200613 -1.237710 1.239710] 100 50 1000 "fractal.data"])
+  
+  (def config config-small)
+#+end_src
+
+I am going to skip the math behind the fractal for that you can read
+my earlier [[http://nakkaya.com/2009/10/04/fractals-in-clojure-buddhabrot-fractal/][implementation]], in a nutshell each clients returns a list
+of points. For each point we get, we increment a counter in the
+buffer. In the end we color the fractal based on the number of
+iterations that passed through that pixel.
+
+#+srcname: fractal
+#+begin_src clojure :exports none
+  (defn add
+    "Complex addition"
+    [c1 c2]
+    (map + c1 c2))
+  
+  (defn multiply
+    "Complex Multipication"
+    [[real-a imag-a] [real-b imag-b]]
+    [(- (* real-a real-b)
+        (* imag-a imag-b))
+     
+     (+ (* real-a imag-b)
+        (* imag-a real-b))])
+  
+  (defn abs
+    "Complex Absulute Value"
+    [[real imag]]
+    (Math/sqrt 
+     (+ (* real real)
+        (* imag imag))))
+  
+  (defn map-range [x in-min in-max out-min out-max]
+    (+ (/ (* (- x in-min) (- out-max out-min)) (- in-max in-min)) out-min))
+  
+  (let [[[left right top bottom] size] (config)]
+    
+    (defn point-to-coordinate [[real imag]]
+      [(Math/floor (map-range real left right  0 (* size (- right left))))
+       (Math/floor (map-range imag top bottom  0 (* size (- bottom top))))])
+    
+    (defn valid-point? [[m n]]
+      (and (<= left m right)
+           (<= top n bottom))))
+  
+  (defn calc-path
+    [x y max-iterations]
+    (let  [c [x y]]
+      (loop [z c 
+             path []
+             iterations 0]
+        (if (> iterations max-iterations)
+          []
+          (if (> (abs z) 2.0)
+            (conj path z)
+            (recur (add c (multiply z z)) (conj path z) (inc iterations)))))))
+  
+  (let [[[left right top bottom] _ max-iterations batch-size] (config)]
+    (defn calc-batch []
+      (reduce (fn [batch i]
+                (let  [p (+ (rand (- right left)) left)
+                       q (+ (rand (- bottom top)) top)
+                       path (calc-path p q max-iterations)]
+                  (reduce (fn [h v]
+                            (if (valid-point? v)
+                              (conj h (point-to-coordinate v))
+                              h))
+                          batch path)))
+              [] (range batch-size))))
+#+end_src
+
+Least problematic way to store iteration count turned out to be a
+2D array. I started with a map of coordinate to count but kept
+getting out of memory errors using the default settings. Increasing
+the memory did not exactly solved the problem cause then
+serializing that giant map became the problem so I've settled on a
+integer array. All interactions with the buffer is handled by an
+agent.
+
+#+srcname: storage
+#+begin_src clojure
+  (let [[[left right top bottom] size _ _ data-file] (config)
+        fractal (agent (make-array Integer/TYPE
+                                   (Math/ceil (* size (- bottom top)))
+                                   (Math/ceil (* size (- right left)))))]
+    
+    (defn inc-pixels [coords]
+      (send fractal (fn [state coords]
+                      (doseq [[x y] coords]
+                        (try
+                          (aset state y x (inc (aget state y x)))
+                          (catch Exception e (println e x y))))
+                      state)
+            coords))
+  
+    (defn spit-fractal []
+      (send fractal
+            (fn [state]
+              (doto (java.io.ObjectOutputStream.
+                     (java.io.FileOutputStream. data-file))
+                (.writeObject state)
+                (.flush)
+                (.close))
+              state)))
+  
+    (defn slurp-fractal []
+      (when (.exists (java.io.File. data-file))
+        (let [in (java.io.ObjectInputStream. (java.io.FileInputStream. data-file))
+              obj (cast (Class/forName "[[J") (.readObject in))]
+          (.close in)
+          (send fractal (fn [_ o] o) obj))))
+  
+    (defn pixels []
+      (for [x (range (* size (- right left)))
+            y (range (* size (- bottom top)))] [x y (aget @fractal y x)])))
+#+end_src
+
+Each request to */calculate* will fire a [[http://en.wikipedia.org/wiki/Web_Workers][Web Worker]], each web
+worker will calculate a vector of valid points once a certain number
+of points is reached (defined in the configuration) it will make a post
+request to */receive* sending its batch.
+
+#+srcname: calculate
+#+begin_src clojure :eval never
+  (defn log [str]
+    (js* "console.log(~{str})"))
+  
+  (defn send-payload [data]
+    (let [payload (uri/QueryData.)]
+      (.add payload "payload" (pr-str data))
+      (io/send "/receive" (fn [e]
+                            (let [xhr (.target e)
+                                  response (. xhr (getResponseText))]
+                              (log response)))
+               "POST" (. payload (toString)))))
+  
+  (defn ^:export init []
+    (while true
+      (js/postMessage "Calculating Batch")
+      (let [batch (calc-batch)]
+        (js/postMessage "Sending Batch")
+        (send-payload batch))))
+  
+  (init)
+#+end_src
+
+#+srcname: communication-routes
+#+begin_src clojure
+  (defpage "/calculate" []
+    (html
+     [:html
+      [:head]
+      [:body
+       [:span {:id "status"}]
+       [:script {:type "text/javascript"}
+        "var worker = new Worker('calculate.js');
+              worker.onmessage = function (event) {
+               document.getElementById(\"status\").textContent = event.data;
+              };"]]]))
+  
+  (defpage [:post "/receive"] {:as data}
+    (inc-pixels (read-string (:payload data)))
+    "OK")
+#+end_src
+
+#+srcname: aux-routes
+#+begin_src clojure :exports none
+  (defpage "/" []
+    (html
+     [:html
+      [:head]
+      [:body
+       [:h1 "Buddhabrot"]
+       [:ul
+        [:li [:a {:href "/status"} "Status"]]
+        [:li [:a {:href "/calculate"} "Calculate"]]]
+       [:br]
+       [:ul
+        [:li [:a {:href "/slurp"} "Slurp Fractal"]]
+        [:li [:a {:href "/spit"} "Spit Fractal"]]]]]))
+  
+  (defpage "/status" []
+    (html
+     [:html
+      [:head]
+      [:body [:h1 (str (apply + (map last (pixels))) " Points")]]]))
+  
+  (defpage "/spit" []
+    (spit-fractal)
+    "OK")
+  
+  (defpage "/slurp" []
+    (slurp-fractal)
+    "OK")
+  
+  (defn server []
+    (server/start 8080))
+#+end_src
+
+Image is created by iterating over each pixel and color it using
+/sqrt/ scaling, 
+\(val = 255 * \frac{\sqrt{iterations}}{\sqrt{max-iterations}}\).
+This leads to images that are not washed out in the high end of the
+/iteration/ and also not too pixelated in the low end.
+
+#+srcname: draw-fractal
+#+begin_src clojure
+  (defn color [iteration max-iterations]
+    (Color. (int (* 255 (/ (Math/sqrt iteration)
+                           (Math/sqrt max-iterations)))) 0 0))
+  
+  (let [[[left right top bottom] size _ _ data-file] (config)
+        width (* size (- right left))
+        height (* size (- bottom top))]
+  
+    (defn create-image []
+      (let [image  (BufferedImage. width height BufferedImage/TYPE_INT_RGB)
+            graphics (.createGraphics image)
+            biggest  (apply max (map last (pixels)))]
+  
+        (doseq [[x y count] (pixels)]
+          (.setColor graphics (color count biggest))
+          (.drawLine graphics x y x y))
+        
+        (javax.imageio.ImageIO/write image "png"
+                                     (java.io.File. (str data-file ".png"))))))
+#+end_src
+
+In order to create your own fractal after tangling this file compile
+ClojureScript part,
+
+#+begin_example
+  cljsc source/resources/calculate.cljs '{:optimizations :advanced}' > \ 
+        source/resources/public/calculate.js
+#+end_example
+
+Start a repl,
+
+#+begin_example
+  lein repl
+#+end_example
+
+then start the noir instance,
+
+#+begin_example
+  (server)
+#+end_example
+
+finally navigate to http://127.0.0.1:8080 from a bunch of machines. The
+more you wait the better the picture gets.

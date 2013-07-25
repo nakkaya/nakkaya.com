@@ -1,0 +1,271 @@
+#+title: Yet Another Disposable E-Mail Web Application in Clojure
+#+OPTIONS: toc:nil author:nil
+#+tags: clojure compojure smtp
+#+TAGS: noexport(e)
+#+EXPORT_EXCLUDE_TAGS: noexport
+
+This post walks you through the process of creating a [[http://en.wikipedia.org/wiki/Disposable_email_address][disposable
+e-mail]] web application in Clojure. I've moved my site to a new
+provider in Germany which gave me a box with 32 GB of memory, while
+thinking what to do with all that memory I thought why not a
+disposable email service, I can keep everything in memory since
+accounts will be active for a short amount of time and be done in an
+afternoon this was before I actually made a google search and found
+out that there a lot of them in production. I scrapped the idea,
+following is the meat of the code if anyone is interested.
+
+#+begin_html
+  <p><img src="/images/post/temp-mailbox.png" alt="Fractal Fern Explained" /></p>
+#+end_html
+
+#+name: inboxes
+#+begin_src clojure
+  (def inboxes (ref {}))
+
+  (defn rand-addr []
+    (apply str (shuffle 
+                (concat (take 2 (repeatedly #(rand-int 10)))
+                        (take 2 (repeatedly #(char (+ 97 (rand-int 26)))))
+                        (take 2 (repeatedly #(char (+ 65 (rand-int 26)))))))))
+
+  (defn new-inbox []
+    (let [addr (str (rand-addr) "@nakkaya.com")]
+      (dosync (alter inboxes assoc addr {:created (System/currentTimeMillis)
+                                         :messages []}))
+      addr))
+#+end_src
+
+All mailboxes are kept in a reference, we create a new mailbox by
+taking 6 random alphanumeric characters shuffling them and adding them
+to list of mailboxes along with its creation time.
+
+#+name: inboxes
+#+begin_src clojure
+  (defn inbox-expired? [addr]
+    (let [created ((@inboxes addr) :created)
+          now (System/currentTimeMillis)]
+      (if (> (- now created)  (* 15 60 1000))
+        true
+        false)))
+
+  (defn delete-inbox [mailbox]
+    (dosync (alter inboxes dissoc mailbox)))
+  
+  (defn watch-inboxes []
+    (future
+      (while true
+        (doseq [mailbox (keys @inboxes)]
+          (when (inbox-expired? mailbox)
+            (delete-inbox mailbox)))
+        (Thread/sleep 100))))
+#+end_src
+
+Periodically using a future, we go over the list of active mailboxes
+check if any of them expired. A mailbox expires 15 minutes after its
+creation.
+
+#+name: smtp
+#+begin_src clojure
+  (defn inbox-active? [addr]
+    (contains? @inboxes addr))
+
+  (defn process-message [from to message]
+    (let [message-list ((@inboxes to) :messages)]
+      (dosync (alter inboxes assoc-in
+                     [to :messages]
+                     (conj message-list {:from from
+                                         :to to
+                                         :time (System/currentTimeMillis)
+                                         :subject (.getSubject message)
+                                         :content (.getContent message)})))))
+
+  (defn message-listener []
+    (proxy [SimpleMessageListener] []
+      (accept [from to]
+        (inbox-active? to))
+      
+      (deliver [from to data]
+        (process-message from to
+                         (javax.mail.internet.MimeMessage.
+                          (javax.mail.Session/getDefaultInstance
+                           (java.util.Properties.)) data)))))
+  
+  (def smtp-server (org.subethamail.smtp.server.SMTPServer.
+                    (org.subethamail.smtp.helper.SimpleMessageListenerAdapter.
+                     (message-listener))))
+#+end_src
+
+For receiving mail we rely on SubEtha SMTP which is a Java library
+that allows your application to receive SMTP
+mail. SimpleMessageListener will call accept when a mail arrives if
+the mail destined to an active inbox it will return true which causes
+deliver to be called giving us a InputStream to the message, we then
+convert it to a MimeMessage extract the parts we are interested in and
+add it to the list of messages for the mailbox.
+
+#+name: routes
+#+begin_src clojure
+  (defroutes app-routes
+    (GET "/" {session :session}
+         (if (and (contains? session :mailbox)
+                  (inbox-active? (:mailbox session)))
+           (template (show-inbox (:mailbox session)))
+           (assoc (redirect "/") :session {:mailbox (new-inbox)})))
+  
+    (GET "/view/:mailbox/:idx" [mailbox idx]
+         (template (view-message mailbox idx)))
+  
+    (POST "/reply" [from to subject reply]
+          (reply-message from to subject reply)
+          (redirect "/"))
+    
+    (route/not-found "<h1>Page not found</h1>"))
+  
+  (def app (-> app-routes
+               wrap-params
+               (wrap-session {:cookie-name "mail-session"
+                              :store (cookie-store)})))
+#+end_src
+
+When the user navigates to the top domain, we check if the user's
+session has a mailbox associated with it or the associated mailbox is
+still active. If it is we show the content of the mailbox else we create a
+new mailbox set the users cookie and redirect the user back to top domain.
+
+#+name: views
+#+begin_src clojure
+  (defn template [content]
+    (html [:html {:lang "en"}
+           [:head
+            [:link
+             {:href "http://twitter.github.com/bootstrap/assets/css/bootstrap.css"
+              :rel "stylesheet"}]]
+           [:body
+            [:div {:class "container"}
+             content]]]))
+  
+  (defn show-inbox [mailbox]
+    (html [:br]
+          [:table {:class "table table-striped table-bordered table-condensed"}
+           [:thead
+            [:tr
+             [:th {:span "3"} (str "Inbox for " mailbox)]]
+            [:tr
+             [:th "Subject"]
+             [:th "From"]
+             [:th "Time"]]]
+           
+           (map-indexed (fn [idx {from :from time :time subject :subject}]
+                          [:tr
+                           [:td [:a {:href (str "/view/" mailbox "/" idx)}
+                                 subject]]
+                           [:td from]
+                           [:td (let [time (java.util.Date. time)]
+                                  (str (.getHours time) ":" (.getMinutes time)))]])
+                        (:messages (@inboxes mailbox)))]))
+  
+  (defn view-message [mailbox idx]
+    (if-let [mailbox (:messages (@inboxes mailbox))]
+      (try
+        (let [message (mailbox (read-string idx))]
+          (html
+           [:h3 [:a {:href "/"} "Back to Inbox"]]
+           [:h3 "From: " (:from message)]
+           [:h3 "Subject: " (:subject message)]
+           [:p (:content message)]
+  
+           [:form {:action "/reply" :method "post" :class "xxx"}
+            [:textarea {:name "reply" :rows "10" :cols "100"}]
+            [:br]
+            [:input {:type "hidden" :name "subject" :value (:subject message)}]
+            [:input {:type "hidden" :name "from" :value (:from message)}]
+            [:input {:type "hidden" :name "to" :value (:to message)}]
+            [:input {:type "submit" :value "Reply" :class "btn"}]]))
+        (catch Exception e
+          "<h1>Message does not exist!<h1>"))
+      "<h1>Mailbox does not exist!<h1>"))
+  
+  (defn reply-message [from to subject reply]
+    (send-message {:from to
+                   :to from
+                   :subject subject
+                   :body reply}))
+#+end_src
+
+Above snippet generates the HTML for viewing the list of messages in a
+users mailbox, view the message and reply to it.
+
+#+name: main
+#+begin_src clojure
+  (defn -main [& args]
+    (watch-inboxes)
+    (.setPort smtp-server 2525)
+    (.start smtp-server)
+    (run-jetty #'app {:join? false :port 8080}))
+#+end_src
+
+Finally, start it all up. In order to export sources from this
+document get the original from my github repository and run
+/org-babel-tangle/ or manually copy/paste snippets in the correct
+order.
+
+* Files                                                            :noexport:
+** project.clj
+
+   #+begin_src clojure :exports none :mkdirp yes :noweb yes :tangle source/project.clj :eval never
+     (defproject mail "1.0.0-SNAPSHOT"
+       :description "FIXME: write description"
+       :dependencies [[org.clojure/clojure "1.3.0"]
+                      [compojure "1.1.1"]
+                      [ring "1.1.1"]
+                      [hiccup "1.0.0"]
+                      [org.clojars.kjw/slf4j "1.5.5"]
+                      [org.clojars.kjw/slf4j-simple "1.5.5"]
+                      [org.clojars.nakkaya/subethasmtp "3.1.7"]
+                      [org.clojars.doo/postal "1.8-SNAPSHOT"]]
+       :main mail.core)
+   #+end_src
+
+** src/core.clj
+
+   #+begin_src clojure :exports none :mkdirp yes :noweb yes :tangle source/src/mail/core.clj :eval never
+     (ns mail.core
+       (:use compojure.core
+             ring.util.response
+             ring.middleware.params
+             ring.middleware.session
+             ring.middleware.session.cookie
+             ring.adapter.jetty
+             hiccup.core
+             postal.core)
+       (:require [compojure.route :as route])
+       (:import (org.subethamail.smtp.helper SimpleMessageListener)))
+     
+     <<inboxes>>
+     <<smtp>>
+     <<views>>
+     <<routes>>
+     <<main>>
+   #+end_src
+
+** mail.sh
+
+   #+BEGIN_SRC sh :exports none :mkdirp yes :noweb yes :tangle source/mail.sh :eval never
+     ( echo open 127.0.0.1 2525
+         sleep 8
+         echo helo MAIL-SERVER-NAME
+         echo mail from: from@test.com
+         sleep 2
+         echo rcpt to: 71rzOF@nakkaya.com
+         sleep 2
+         echo data
+         sleep 2
+         echo subject:  YOUR-SUBJECT-HERE
+         echo
+         echo
+         echo this is a test mail
+         sleep 5
+         echo .
+         sleep 5
+         echo quit ) | telnet
+   #+END_SRC

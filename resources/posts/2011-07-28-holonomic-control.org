@@ -1,0 +1,128 @@
+#+title: Holonomic Control
+#+tags: clojure arduino robotics
+
+Following snippets shows how to control a robot with omnidirectional
+wheels. Holonomic wheels are wheels with 2 degrees of freedom. They are
+also known as omni-directional drive wheels, omni-wheels or omniwheels
+which ever floats your boat.
+
+Omniwheels allows movement in any direction, at any angle, without
+rotating beforehand. For an omniwheel robot to translate at a certain
+angle, each motor needs to go at a certain speed in relation to the
+other motors. Speed doesn't matter, just the ratios and to rotate at
+some particular speed, we must add or subtract equally from the motor
+speed of each motor.
+
+These ratios can be calculated using the following formula assuming /n
+\ge 3/,
+
+  \begin{equation} 
+    \begin{bmatrix} v_1&amp;v_2&amp;v_3&amp;v_4 \end{bmatrix}^T = 
+    \begin{bmatrix}
+      -sin\theta_1&amp;cos\theta_1&amp;1\\
+      -sin\theta_2&amp;cos\theta_2&amp;1\\
+      .. &amp; .. &amp; .. \\
+      -sin\theta_n&amp;cos\theta_n&amp;1\\
+    \end{bmatrix}
+    \times
+    \begin{bmatrix} v_x&amp;v_y&amp;R_W \end{bmatrix}^T
+  \end{equation}
+
+The idea is really simple, in a nutshell each motor pushes the robot
+in two directions /X/ and /Y/ (their /sin/ and /cos/
+components). Basically we are looking for the combination of motor
+speeds v_1, v_2, v_3, v_4, that when combined gives us v_x, v_y.
+
+All the angles of the motor axis are measured relative to the /x/
+direction in the coordinate system of the robot. Each rotating the
+robot in counter counterclockwise direction.
+
+#+begin_src clojure
+  (def *wheel-angles* [60 135 225 300])
+#+end_src
+
+The intended direction of travel of the robot is calculated by the
+control system in terms of V_x, V_y and R_w.
+
+#+begin_src clojure
+  (defn velocity-coupling-matrix [& n]
+    (reduce (fn[h v]
+              (conj h [(- (Math/sin (Math/toRadians v)))
+                       (Math/cos (Math/toRadians v)) 1])) [] n))
+  
+  (defn motor-ratios [vcm x y r]
+    (flatten (matrix-seq (matrix-multiply (matrix vcm) (matrix [[x][y][r]])))))
+#+end_src
+
+Multiplying velocity coupling matrix with our intended direction of
+travel results in a sequence of motor speed ratios.
+
+At this point you have couple of options for movement,
+
+#+begin_src clojure    
+  (let [vcm (apply velocity-coupling-matrix *wheel-angles*)
+        base-rps 300]
+    (defn motor-speeds [{x :x y :y} r]
+      (map #(* base-rps %) (motor-ratios vcm x y r))))
+#+end_src
+
+Calculate a normalized vector to your target and multiply that with a
+base motor speed.
+
+#+begin_src clojure
+  (def *max-velocity* 5)
+  (def *slowing-dist* (* 5 *robot-width*))
+  
+  (defn arrive [self target velocity]
+    (let [to-target (- target self)
+          dist (magnitude to-target)
+          ramped-speed (* *max-velocity* (/ dist *slowing-dist*))
+          clipped-speed (min ramped-speed *max-velocity*)
+          desired-velocity (* to-target (/ clipped-speed dist))]
+      (- desired-velocity velocity)))
+#+end_src
+
+Or calculate proper velocity that will get you to your target. Above
+is the arrive behavior from [[http://www.red3d.com/cwr/steer/][Steering Behaviors For Autonomous
+Characters]], you can then convert that velocity to motor speeds using the
+following formula, assuming your velocity is in \(\frac{meter}{sec}\) you can
+convert it to \(\frac{radian}{sec}\) using,
+
+\begin{equation}
+  W = \frac{2 \times v}{d}
+\end{equation}
+
+where,
+
+   - w -> angular speed (\(\frac{radian}{sec}\))
+   - v -> linear speed (\(\frac{meter}{sec}\))
+   - d -> diameter (meter)
+
+#+begin_src clojure
+  (def *wheel-diameter* 0.054)
+    
+  (let [vcm (apply velocity-coupling-matrix *wheel-angles*)
+        angular-velocity #(/ (* 2 %) *wheel-diameter*)]
+    (defn motor-speeds [{x :x y :y} r]
+      (motor-ratios vcm
+                    (angular-velocity x)
+                    (angular-velocity y)
+                    (angular-velocity r))))
+#+end_src
+
+One thing that will bite you if you are not careful is that as the
+robot's orientation changes, orientation of the robot's /x/ axis also
+changes, so the controller needs to account for that.
+
+Matrix operations (from commons-math),
+
+#+begin_src clojure 
+  (defn matrix [seq]
+    (Array2DRowRealMatrix. (into-array (map double-array seq))))
+  
+  (defn matrix-multiply [a b]
+    (.multiply a b))
+  
+  (defn matrix-seq [m]
+    (map seq (.getData m)))
+#+end_src

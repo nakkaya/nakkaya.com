@@ -1,0 +1,99 @@
+#+title: Public Key Cryptography in Clojure
+#+tags: clojure cryptography
+
+Generate Keys using OpenSSL,
+
+#+begin_src sh :results silent
+  openssl genrsa -out rsa.pem 1024
+  openssl rsa -in rsa.pem -pubout > key.pub
+#+end_src
+
+Encrypt something so we can play with it,
+
+#+begin_src sh :results silent
+  echo 'Too Many Secrets' | \
+  openssl rsautl -encrypt -inkey key.pub -pubin > message.encrypted
+#+end_src
+
+Key management,
+
+#+begin_src clojure
+  (java.security.Security/addProvider
+   (org.bouncycastle.jce.provider.BouncyCastleProvider.))
+  
+  (defn generate-keys []
+    (let [generator (doto (java.security.KeyPairGenerator/getInstance "RSA" "BC")
+                      (.initialize 1024))]
+      (.generateKeyPair generator)))
+  
+  (defn read-keys [f]
+    (-> f
+        java.io.FileReader.
+        org.bouncycastle.openssl.PEMReader.
+        .readObject))
+  
+  (defn write-keys [f keys]
+    (let [writer (org.bouncycastle.openssl.PEMWriter. (java.io.FileWriter. f))]
+      (.writeObject writer keys)
+      (.flush writer)))
+#+end_src
+
+Encryption / Decryption,
+
+#+begin_src clojure
+  (defn encrypt [bytes public-key]
+    (let [cipher (doto (javax.crypto.Cipher/getInstance "RSA/ECB/PKCS1Padding" "BC")
+                   (.init javax.crypto.Cipher/ENCRYPT_MODE public-key))]
+      (.doFinal cipher bytes)))
+  
+  
+  (defn decrypt [bytes private-key]
+    (let [cipher (doto (javax.crypto.Cipher/getInstance "RSA/ECB/PKCS1Padding" "BC")
+                   (.init javax.crypto.Cipher/DECRYPT_MODE private-key))]
+      (.doFinal cipher bytes)))
+#+end_src
+
+Signing,
+
+#+begin_src clojure
+  (defn sign [data private-key]
+    (let [sig (doto (java.security.Signature/getInstance "SHA1withRSA" "BC")
+                (.initSign private-key (java.security.SecureRandom.))
+                (.update data))]
+      (.sign sig)))
+  
+  (defn verify [signuture data public-key]
+    (let [sig (doto (java.security.Signature/getInstance "SHA1withRSA" "BC")
+                (.initVerify public-key)
+                (.update data))]
+      (.verify sig signuture)))
+#+end_src
+
+Usage,
+
+#+begin_src clojure
+  (comment
+    (defn read-to-byte [f]
+      (let [file (java.io.RandomAccessFile. f "r")
+            content (make-array Byte/TYPE (.length file))]
+        (.read file content)
+        content))
+    
+    (def keys (generate-keys))
+    
+    (def encrypted (encrypt (.getBytes "Too Many Secrets") (.getPublic keys)))
+    (String. (decrypt encrypted (.getPrivate keys)))
+  
+  
+    (def signuture (sign (.getBytes "Too Many Secrets") (.getPrivate keys)))
+    (verify signuture (.getBytes "Too Many Secrets") (.getPublic keys))
+  
+  
+    (def keys (read-keys (java.io.File. "/Users/nakkaya/Dropbox/kiler/rsa.pem")))
+    
+    (String. (decrypt
+              (read-to-byte
+               (java.io.File. "/Users/nakkaya/Dropbox/kiler/message.encrypted"))
+              (.getPrivate keys)))
+    )
+#+end_src

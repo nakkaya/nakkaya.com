@@ -1,0 +1,47 @@
+#+title: Using Clojure with org-babel and nREPL
+#+tags: clojure org-babel nrepl
+
+When I first made the switch to nREPL, I just modified the code from
+my from [[http://nakkaya.com/2010/12/12/using-clojure-with-org-babel-and-inferior-lisp/][Using Clojure with org-babel and inferior-lisp]] post, replacing
+/lisp-eval-string/ with /nrepl-interactive-eval/, did a quick test
+and assumed it was all working fine.
+
+Couple of days ago I had to go back and fix a literate program, that's
+when I figured out there are couple of problems with using nREPL with
+org-babel. nREPL does not respect /:main/ from /project.clj/ so
+unless the first thing you evaluate in the org file is a /ns/
+declaration it will evaluate all blocks in /user/ namespace, to fix
+this we have to create a buffer local variable called
+/nrepl-buffer-ns/ that points to the main namespace.
+
+#+BEGIN_EXAMPLE
+  # -*- mode: org; nrepl-buffer-ns: "project.core"; -*-
+#+END_EXAMPLE
+
+When you try to edit the source block using C-c ' (org-edit-src-code),
+new buffer org-mode creates does not inherit the namespace so any
+expression evaluated there again goes to /user/ namespace to fix this
+below snippet adds a hook that will grab the value of /nrepl-buffer-ns/
+from the base org file and set it in the edit buffer.
+
+#+BEGIN_SRC emacs-lisp
+  (require 'ob)
+  
+  (add-to-list 'org-babel-tangle-lang-exts '("clojure" . "clj"))
+  
+  (defvar org-babel-default-header-args:clojure 
+    '((:results . "silent")))
+  
+  (defun org-babel-execute:clojure (body params)
+    "Execute a block of Clojure code with Babel."
+    (nrepl-interactive-eval body))
+  
+  (add-hook 'org-src-mode-hook
+            '(lambda ()
+               (set (make-local-variable 'nrepl-buffer-ns) 
+                    (with-current-buffer 
+                        (overlay-buffer org-edit-src-overlay)
+                      nrepl-buffer-ns))))
+  
+  (provide 'ob-clojure)
+#+END_SRC

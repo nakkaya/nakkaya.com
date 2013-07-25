@@ -1,0 +1,100 @@
+#+title: GPS Traces Using World Wind
+#+tags: clojure world-wind
+
+I have a lot of [[http://en.wikipedia.org/wiki/GPS_eXchange_Format][GPX]] files lying around from various biking trips. I
+don't have much use for them other than loading them in to Google
+Earth and brag about being there and done that, so I thought I would
+parse the file myself and paint the route on the World Wind.
+
+#+begin_html
+  <p><img src="/images/post/gpx.png" alt="gpx world wind" /></p>
+#+end_html
+
+GPX files are XML files, containing the coordinates you have been to, if
+you draw a line through these points you can rebuild the route you have
+taken.
+
+#+begin_src clojure
+  (ns gpx
+    (:require [clojure.zip :as zip]
+              [clojure.xml :as xml])
+    (:use clojure.contrib.zip-filter.xml)
+    (:import (java.util ArrayList)
+             (java.awt Dimension)
+             (gov.nasa.worldwind.layers RenderableLayer)
+             (gov.nasa.worldwind.geom LatLon Position)
+             (gov.nasa.worldwind.render Polyline SurfacePolyline)
+             (gov.nasa.worldwind.avlist AVKey)
+             (gov.nasa.worldwind.awt WorldWindowGLCanvas)
+             (gov.nasa.worldwind Configuration WorldWind)))
+  
+  (defn points [f]
+    (let [data (zip/xml-zip (xml/parse f))
+          trkpt (xml-> data :trk :trkseg :trkpt)]
+      (map #(vector (attr % :lat) 
+                    (attr % :lon) 
+                    (first (xml-> % :ele text))) trkpt)))
+#+end_src
+
+#+begin_example
+  gpx=> (take 2 (points "data.gpx"))
+  (["41.011934" "29.196977" "154.909546"] 
+   ["41.010155" "29.195925" "150.583618"])
+#+end_example
+
+This will return a sequence of vectors, each containing three items,
+latitude, longitude and elevation of the point. To draw a path on to
+the map World Wind provides two classes SurfacePolyline and
+Polyline. SurfacePolyline will draw a flat line on to the surface
+between coordinates where as Polyline draws a GL line between
+positions, which includes elevation data.
+
+#+begin_src clojure
+  (defn world []
+    (Configuration/setValue AVKey/INITIAL_LATITUDE 39.3113)
+    (Configuration/setValue AVKey/INITIAL_LONGITUDE 32.8038)
+    (Configuration/setValue AVKey/INITIAL_ALTITUDE 1000000)
+    (doto (WorldWindowGLCanvas.)
+      (.setModel (WorldWind/createConfigurationComponent 
+                  AVKey/MODEL_CLASS_NAME))))
+  
+  (defn surface-polyline [points]
+    (let [list (ArrayList.)]
+      (doseq [p points] 
+        (.add list (LatLon/fromDegrees (Double. (p 0)) (Double. (p 1)))))
+      (doto (RenderableLayer.)
+        (.addRenderable (SurfacePolyline. list)))))
+#+end_src
+
+To create a SurfacePolyline, we need to create a list of LatLon objects
+and pass that to the SurfacePolyline constructor at this point you can
+also set a color for the line then we create a RenderableLayer and add
+our SurfacePolyline to it, this final layer is what will be added to the
+World Wind canvas.
+
+#+begin_src clojure
+  (defn polyline [points]
+    (let [list (ArrayList.)]
+      (doseq [p points] 
+        (.add  list (Position. 
+                     (LatLon/fromDegrees (Double. (p 0)) (Double. (p 1)))
+                     (Double. (p 2)))))
+      (doto (RenderableLayer.) 
+        (.addRenderable (Polyline. list)))))
+  
+  (defn frame []
+    (let [world (world)
+          layers (.getLayers (.getModel world))]
+      (.add layers (surface-polyline (points "data.gpx")))
+      ;;(.add layers (polyline (points "data.gpx")))
+      (doto (javax.swing.JFrame.)
+        (.add world)
+        (.setSize (Dimension. 300 300))
+        (.setAlwaysOnTop true)
+        (.setVisible true))))
+#+end_src
+
+Process of creating a Polyline is the same, the only difference is
+instead of building a list of LatLon objects, we build a list of
+Position objects which includes the elevation data, again we get a layer
+that is ready to be added to the world.

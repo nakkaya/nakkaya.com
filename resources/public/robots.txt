@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /archives/
+Disallow: /latest-posts/
+Disallow: /archives.html

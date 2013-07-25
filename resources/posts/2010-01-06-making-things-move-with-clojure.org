@@ -1,0 +1,90 @@
+#+title: Making Things Move with Clojure
+#+tags: clodiuno clojure arduino
+
+I have added analog write support to [[http://github.com/nakkaya/clodiuno][clodiuno]], which can be used to
+send a [[http://en.wikipedia.org/wiki/Pulse-width_modulation][PWM]] value or control a [[http://en.wikipedia.org/wiki/Servomechanism][servo]]. Servos are the easiest way to
+play with motor control. Even though they don't turn 360 degrees, they
+can be used to create mechanisms such as levers and cams. Firmata
+library supports servos on pins 2 through 13, following code
+demonstrates how to control a servo using values read from an analog
+input in this case a [[http://en.wikipedia.org/wiki/Potentiometer][potentiometer]].
+
+#+begin_html
+  <p><img src="/images/post/pot-servo-circuit.png" alt="clodiuno servo setup" /></p>
+#+end_html
+
+Code is made up of two functions, one of which I stole directly from the
+Arduino libraries,
+
+#+begin_src clojure
+  (ns servo
+    (:use :reload-all clodiuno.core)
+    (:use :reload-all clodiuno.firmata))
+  
+  ;;WMath.cpp
+  (defn map-range [x in-min in-max out-min out-max]
+    (+ (/ (* (- x in-min) (- out-max out-min)) (- in-max in-min)) out-min))
+#+end_src
+
+This is a Clojure version of the Arduino's map function, it will map
+the number in the in range into out range. Analog read returns a number
+between 0 and 1023 but the servo expects values between 0 and 179, this
+will turn the potentiometer reading into an angle for the servo.
+
+#+begin_src clojure
+  ;;analog 0
+  (def pot-pin 0)
+  ;;digital 2
+  (def servo-pin 2)
+  
+  (defn servo []
+    (let [board (arduino :firmata "/dev/tty.usbserial-A6008nhh")]
+      ;;allow board to boot
+      (Thread/sleep 5000)
+      ;;start reading potentiometer
+      (enable-pin board :analog pot-pin)
+      ;;attach servo
+      (pin-mode board servo-pin SERVO)
+      ;;
+      (while 
+       true
+       (let [pot (analog-read board pot-pin)
+             angle (int (map-range pot 0 1023 0 179))]
+         (analog-write board servo-pin angle)))
+      ;;
+      (close board)))
+#+end_src
+
+
+First we need to tell Firmata to start reporting readings for the
+potentiometer,
+
+#+begin_example
+  (enable-pin board :analog pot-pin)
+#+end_example
+
+Then we set servo pin to SERVO this will make Firmata to attach a servo on
+that pin,
+
+#+begin_example
+  (pin-mode board servo-pin SERVO)
+#+end_example
+
+Now we are ready to read input, map it into an angle, then write it to servo,
+
+#+begin_example
+  (while 
+   true
+   (let [pot (analog-read board pot-pin)
+         angle (int (map-range pot 0 1023 0 179))]
+     (analog-write board servo-pin angle)))
+#+end_example
+
+#+BEGIN_HTML
+  <p>
+    <video src="/video/arduino-servo-clojure.mp4" width="80%" controls>
+      Looks like HTML5 Video tag did not work you can download
+      the video <a href="/video/arduino-servo-clojure.mp4">here</a>.
+    </video>
+  </p>
+#+END_HTML

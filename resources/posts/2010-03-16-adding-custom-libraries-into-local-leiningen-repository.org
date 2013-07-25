@@ -1,0 +1,52 @@
+#+title: Adding Custom Libraries Into Local Leiningen Repository
+#+tags: leiningen clojure maven
+
+Sometimes, your project depends on a library which is not in
+[[clojars][http://clojars.org/]], or maybe it is propriety library which
+you can't upload to clojars. In this case, you can put it to your
+local repository your self to solve the dependency.
+
+#+BEGIN_SRC sh
+  mvn install:install-file \
+      -Dfile=mysql-connector-java-5.1.10-bin.jar \
+      -DgroupId=self \
+      -DartifactId=mysql-connector \
+      -Dversion=5.1.10 \
+      -Dpackaging=jar \
+      -DgeneratePom=true
+#+END_SRC
+
+This will add the mysql adapter into your local Maven2 repository under
+groupId self and artifactId mysql-connector, you can then edit your
+project.clj, adding this dependency as,
+
+#+BEGIN_EXAMPLE
+  [self/mysql-connector "5.1.10"]
+#+END_EXAMPLE
+
+Alternatively you can keep your jars with your project, create folder
+to hold the jars,
+
+#+BEGIN_SRC sh
+  mkdir local_mvn_repo
+#+END_SRC 
+
+add the jars to this repository,
+
+#+BEGIN_SRC sh
+  mvn install:install-file \
+      -Dfile=mysql-connector-java-5.1.10-bin.jar \
+      -DgroupId=self \
+      -DartifactId=mysql-connector \
+      -Dversion=5.1.10 \
+      -Dpackaging=jar \
+      -DgeneratePom=true \
+      -DcreateChecksum=true\
+      -DlocalRepositoryPath=local_mvn_repo
+#+END_SRC
+
+and add this local maven repository to your project.clj
+
+#+BEGIN_SRC clojure
+  :repositories {"local" ~(str (.toURI (java.io.File. "local_mvn_repo")))}
+#+END_SRC

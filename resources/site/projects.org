@@ -1,0 +1,23 @@
+#+title: Projects
+#+description: Nurullah Akkaya's Projects
+#+OPTIONS: toc:nil
+
+*** Applications
+
+ - [[http://nakkaya.com/inbox-feed.html][inbox-feed]] - A tool for retrieving content from RSS/ATOM feeds and
+   mailing it.
+ - [[http://nakkaya.com/static.html][static]] - Static is a simple static site generator written in
+   Clojure.
+ - [[http://nakkaya.com/easy-dns.html][easy-dns]] - Dynamic DNS client for easyDNS.
+ - [[http://nakkaya.com/makeWay.html][makeWay]]
+ - [[http://nakkaya.com/mocha.html][Mocha]] - Mocha: ARPWatch / Log Watcher for Mac OS X and Linux 
+ - [[http://nakkaya.com/2011/06/29/ferret-an-experimental-clojure-compiler/][ferret]] - An Experimental Clojure Compiler
+
+*** Libraries
+
+ - [[http://nakkaya.com/alter-ego.html][alter-ego]] - A reactive AI library based on the concept of behavior trees.
+ - [[http://nakkaya.com/clodiuno.html][Clodiuno]] - Clojure API for Arduino.
+ - [[http://nakkaya.com/net-eval.html][net-eval]] - Simple distributed computing.
+ - [[http://nakkaya.com/2010/01/09/a-simple-turtle-graphics-implementation-in-clojure/][turtle-graphics]]  - Turtle Graphics Implementation for Clojure.
+ - [[http://github.com/nakkaya/vector-2d][vector-2d]] - Collection of 2D Vector Operations.
+ - [[http://nakkaya.com/vision.html][Vision]] - OpenCV wrapper for Clojure.

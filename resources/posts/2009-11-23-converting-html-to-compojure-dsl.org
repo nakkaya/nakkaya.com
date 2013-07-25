@@ -1,0 +1,76 @@
+#+title: Converting HTML to Hiccup DSL
+#+tags: clojure compojure hiccup
+
+Hiccup DSL for creating HTML/XML is great unless you have a lot of
+HTML code already written. At first my plan was to parse it, write it
+to a file and manually format it, then I stumbled on [[http://groups.google.com/group/compojure/browse_thread/thread/9909b205f08c151d#][this]] post from
+compojure mailing list, it is a small utility function written by
+Robin Brandt. It converts the given HTML file to Hiccup DSL.
+
+#+BEGIN_SRC clojure
+  (ns hiccup-converter
+    (:use [clojure.data.xml :only (parse)])
+    (:import (java.io File)))
+  
+  (defn format-attrs
+    [m]
+    (when m
+      (format "%s" m)))
+  
+  (defn empty-when-null
+    [x]
+    (if (nil? x)
+      ""
+      x))
+  
+  (declare format-full-node)
+  
+  (defn format-node
+    [node]
+    (cond
+     (string? node) (format "\"%s\"" (.trim node))
+     (nil? node) nil
+     :else (format-full-node node)))
+  
+  (defn format-full-node
+    [node]
+    (format "[%s %s %s]\n"
+            (:tag node)
+            (empty-when-null (format-attrs (:attrs node)))
+            (clojure.string/join " " (map format-node (:content node)))))
+  
+  (defn transform-str
+    [str]
+    (->> str
+         java.io.StringReader.
+         parse
+         format-node
+         read-string
+         pprint
+         print))
+  
+  (defn transform-file [f-name]
+    (transform-str (slurp f-name)))
+#+END_SRC
+
+#+BEGIN_SRC clojure
+  (transform-str "<html>
+                   <head>
+                     <title>Tutorial: HelloWorld</title>
+                   </head>
+                   <body>
+                     <h1>HelloWorld Tutorial</h1>
+                   </body>
+                 </html>")
+#+END_SRC
+
+#+BEGIN_SRC clojure
+  [:html {}
+   [:head {} [:title {} "Tutorial: HelloWorld"]]
+   [:body {} [:h1 {} "HelloWorld Tutorial"]]]
+#+END_SRC
+
+It will complain if you have badly written HTML, in my case it only
+complained about a bunch of br statements, a simple search and
+replaced fixed it. If you can't get it to accept your HTML try running
+it through [[http://jtidy.sourceforge.net/][JTidy]], that should fix it.

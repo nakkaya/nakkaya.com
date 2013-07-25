@@ -1,0 +1,71 @@
+#+title: Managing Native Dependencies with Leiningen
+#+tags: clojure leiningen
+
+This post will cover the steps required to package, deploy and use
+native dependencies with [[http://github.com/technomancy/leiningen][leiningen]].
+
+First we need to package native libs according to the spec, native
+libs (.so,.jnilib,.dll) will go into the native/ folder. Folder
+structure I used to package RxTx libs for Mac OS X is,
+
+#+BEGIN_EXAMPLE
+  /native/
+  /native/macosx/x86/librxtxSerial.jnilib
+  /native/macosx/x86_64/librxtxSerial.jnilib
+#+END_EXAMPLE
+
+The naming convention is important.
+
+#+BEGIN_QUOTE
+: Platforms:
+: ---------------------
+: Mac OS X -> macosx
+: Windows  -> windows
+: Linux    -> linux
+: SunOS"   -> solaris
+: 
+: Architectures
+: --------------------
+: amd64    -> x86_64
+: x86_64   -> x86_64
+: x86      -> x86
+: i386     -> x86
+: arm      -> arm
+: sparc    -> sparc
+#+END_QUOTE
+
+Next step is to Jar them up,
+
+#+BEGIN_EXAMPLE
+  jar -cMf rxtx-macosx-native-deps-2.1.7.jar native
+#+END_EXAMPLE
+
+Before we push to clojars we need to create a POM file for it,
+
+#+begin_src xml
+  <?xml version="1.0" encoding="UTF-8"?>
+  <project>
+    <modelVersion>2.1.7</modelVersion>
+    <groupId>org.clojars.nakkaya</groupId>
+    <artifactId>rxtx-macosx-native-deps</artifactId>
+    <version>2.1.7</version>
+    <name>RxTx</name>
+  </project>
+#+end_src
+
+Then push to clojars with,
+
+#+BEGIN_EXAMPLE
+  scp pom.xml rxtx-macosx-native-deps-2.1.7.jar clojars@clojars.org:
+#+END_EXAMPLE
+
+Now native dependencies are ready for deployment, assuming we want to
+create new project which depends on RxTx, we create a new leiningen
+project adding RxTx jars as dependencies,
+
+#+begin_src clojure
+  (defproject ardu-test "0.0.1-SNAPSHOT"
+    :dependencies [[org.clojure/clojure "1.3.0"]
+                   [org.clojars.nakkaya/rxtx "2.1.7"]
+                   [org.clojars.nakkaya/rxtx-macosx-native-deps "2.1.7"]])
+#+end_src

@@ -1,0 +1,105 @@
+#+title: Create/Manage VirtualBox VMs from the Command Line
+#+tags: linux debian virtualbox
+
+Note to self, here’s a quick recipe for creating a Virtual Machine
+using the VirtualBox command line,
+
+Create the VM,
+
+#+BEGIN_SRC sh
+  VBoxManage createvm --name "io" --register
+  VBoxManage modifyvm "io" --memory 512 --acpi on --boot1 dvd
+  VBoxManage modifyvm "io" --nic1 bridged --bridgeadapter1 eth0
+  VBoxManage modifyvm "io" --macaddress1 XXXXXXXXXXXX
+  VBoxManage modifyvm "io" --ostype Debian
+#+END_SRC
+
+Attach storage, add an IDE controller with a CD/DVD drive attached, and
+the install ISO inserted into the drive,
+
+#+BEGIN_SRC sh
+  VBoxManage createhd --filename ./io.vdi --size 10000
+  VBoxManage storagectl "io" --name "IDE Controller" --add ide
+  
+  VBoxManage storageattach "io" --storagectl "IDE Controller"  \
+      --port 0 --device 0 --type hdd --medium ./io.vdi
+  
+  VBoxManage storageattach "io" --storagectl "IDE Controller" \
+      --port 1 --device 0 --type dvddrive --medium debian-6.0.2.1-i386-CD-1.iso
+#+END_SRC
+
+Starting the VM for installation,
+
+#+BEGIN_SRC sh
+  VBoxHeadless --startvm "io" &
+#+END_SRC
+
+This starts the VM and a remote desktop server. Redirect RDP port if
+necessary,
+
+#+BEGIN_SRC sh
+  ssh -L 3389:127.0.0.1:3389 <host>
+#+END_SRC
+
+Shutting down the VM,
+
+#+BEGIN_SRC sh
+  VBoxManage controlvm "io" poweroff
+#+END_SRC
+
+Remove install Media,
+
+#+BEGIN_SRC sh
+  VBoxManage modifyvm "io" --dvd none
+#+END_SRC
+
+Alternatively install OS using the GUI, configure it then export is as
+an appliance upload to the server then import it using,
+
+#+BEGIN_SRC sh
+  VBoxManage export "io" --output ioClone.ovf
+  VBoxManage import ioClone.ovf
+#+END_SRC
+
+Starting the VM,
+
+#+BEGIN_SRC sh
+  VBoxHeadless --startvm "io" --vrde off &
+#+END_SRC
+
+This starts the VM without remote desktop support.
+
+Delete the VM,
+
+#+BEGIN_SRC sh
+  VBoxManage unregistervm io --delete
+#+END_SRC
+
+Mount Guest Additions
+
+#+BEGIN_SRC sh
+  VBoxManage storageattach "io" --storagectl "IDE Controller" \
+      --port 1 --device 0 --type hdd --medium /usr/share/virtualbox/VBoxGuestAdditions.iso
+#+END_SRC
+
+Install Guest Additions,
+
+#+BEGIN_EXAMPLE
+  mkdir /mnt/dvd
+  mount -t iso9660 -o ro /dev/dvd /mnt/dvd
+  cd /mnt/dvd
+  ./VBoxLinuxAdditions.run
+#+END_EXAMPLE
+
+Adding/removing shared folders,
+
+#+BEGIN_SRC sh
+  vboxmanage sharedfolder add "io" --name share-name --hostpath /path/to/folder/ --automount
+  vboxmanage sharedfolder remove "io" --name share-name
+#+END_SRC
+
+To mount it on the guest,
+
+#+BEGIN_SRC sh
+  sudo mount -t vboxsf -o uid=$UID share-name /path/to/folder/share/
+#+END_SRC

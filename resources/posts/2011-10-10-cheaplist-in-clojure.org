@@ -1,0 +1,179 @@
+#+title: Cheaplist in Clojure
+#+tags: clojure path-finding
+
+Following is the implementation of the cheap list data structure from
+[[http://www.aiwisdom.com/bookshelf_aiwisdom.html][AI Game Programming Wisdom]] (Lighting-Fast A*), a cheap-list
+works just like a priority map takes a vector of /key/ /val
+(priority)/ pairs and produces a sequence with entries sorted by
+/value (priority)/, the twist is that it will only keep first /n/
+entries sorted.
+
+The idea behind the structure is that when implementing A-Star you
+either keep the open set in a sorted heap structure that gives you
+fast removal but slow insertion or in a unsorted list which gives you
+fast insertion but slow removal, in the case of A* you want to have
+both, fast insertion and fast removal, at every iteration you pop one
+node but there is potential to insert eight nodes, so you want pop the
+cheapest node without searching for it, you also want to insert into
+the list without worrying about the nodes position in the list.
+
+A cheap-list achieves this by keeping 5 nodes that are cheapest (lowest
+priority) on the list sorted (book uses 15 but in my case 5 works best,
+any number higher/lower than 5 actually slows it down. YMMV), when we
+pop from the list all we do is remove the first item on the cheap
+list, if it is empty we refill it from the rest of the unsorted nodes
+using lazy quicksort at a cost of O(N + k log N).  This way, we don't
+do any node searching until at least 5 revolutions later.
+
+Whenever we add a node to the list, we first do a check to see if the
+node is cheap enough to be in the cheap list by checking the node on
+the end of the cheap list. If it costs more than the cheap list end
+node, the new node is added to the bulk map. Otherwise, we also do a
+sorted insert into the cheap list that is 5 nodes deep.
+
+#+begin_src clojure
+  (def que-size 5)
+  
+  (defn qsort-aux [[pivot & tail] pred]
+    (when pivot
+      (let [pred? (partial pred pivot)]
+        (lazy-cat (qsort-aux (filter pred? tail) pred)
+                  [pivot]
+                  (qsort-aux (remove pred? tail) pred)))))
+  
+  (defn qsort [xs f] (qsort-aux (seq xs) f))
+  
+  (deftype CheapList [pred cheap bulk]
+    Object
+    (toString [this] (str (seq this)))
+  
+    clojure.lang.IPersistentVector
+    (cons [this curr]
+      (let [[item-curr pri-curr] curr
+            eol (last cheap)
+            [item-eol pri-eol] eol]
+        
+        (cond
+         ;;empty list
+         (nil? eol)
+         (CheapList. pred (conj cheap curr) (assoc bulk item-curr pri-curr))
+  
+         ;;list contains item
+         (bulk item-curr)
+         (.cons
+          (CheapList. pred
+                      (filter (fn [[k]]
+                                (not= k item-curr)) cheap)
+                      (dissoc bulk item-curr))
+          curr)
+  
+         ;;cheaper then the curr most expensive
+         (pred eol curr)
+         (if (>= (count cheap) que-size)
+           (CheapList. pred
+                       (qsort (conj (drop-last cheap) curr) pred)
+                       (assoc bulk item-eol pri-eol))
+           (CheapList. pred
+                       (qsort (conj cheap curr) pred)
+                       (assoc bulk item-curr pri-curr)))
+  
+         ;;new item
+         :default (CheapList. pred cheap (assoc bulk item-curr pri-curr)))))
+  
+    clojure.lang.ISeq
+    (first [this]
+      (first cheap))
+    
+    (more [this]
+      (if (= (count cheap) 1)
+        (let [bulk (dissoc bulk (-> cheap first first))]
+          (CheapList. pred
+                      (take que-size (qsort bulk pred))
+                      bulk))
+        (CheapList. pred (rest cheap) (dissoc bulk (-> cheap first first)))))
+  
+    (seq [this]
+      (when (not (empty? bulk))
+        (lazy-seq (cons (first this) (rest this)))))
+    
+    (equiv [this o]
+      (and (= CheapList (type o))
+           (= (seq this) (seq o))))
+  
+    (count [this] 
+      (count bulk))
+  
+    (empty [this]
+      (empty? bulk))
+  
+    clojure.lang.ILookup
+    (valAt [this key]
+      (bulk key))
+    
+    (valAt [this key not-found]
+      (or (.valAt this key) not-found))
+  
+    clojure.lang.IFn
+    (invoke [this key]
+      (get this key))
+    
+    (invoke [this key not-found]
+      (get this key not-found)))
+  
+  (defn cheap-list
+    [pred & keyvals]
+    (reduce conj (CheapList. pred [] {}) keyvals))
+#+end_src
+
+Usage, 
+
+#+begin_src clojure
+  (def p (cheap-list (fn [[_ a] [_ b]]
+                       (> a b))
+                     [:a 2] [:b 1] [:c 3] [:d 5] [:e 4] [:f 3]))
+#+end_src
+
+#+begin_example
+  core=> p
+  ([:b 1] [:a 2] [:f 3] [:c 3] [:e 4] [:d 5])
+#+end_example
+
+We can use conj to assign a value (priority) to a new item,
+
+#+begin_src clojure
+  (conj p [:e -5])
+#+end_src
+
+#+begin_example
+  ([:e -5] [:b 1] [:a 2] [:f 3] [:c 3] [:d 5])
+#+end_example
+
+or to assign a new value (priority) to an existing item,
+
+#+begin_src clojure
+  (conj p [:c 4])
+#+end_src
+
+#+begin_example
+  ([:b 1] [:a 2] [:f 3] [:c 4] [:e 4] [:d 5])
+#+end_example
+
+To look up the value (priority) of a given item,
+
+#+begin_src clojure
+  (p :c)
+  (get p :c)
+  (get p :not-an-item -6)
+#+end_src
+
+Cheap lists are countable,
+
+#+begin_src clojure
+  (count p)
+#+end_src
+
+and can also be tested for emptiness,
+
+#+begin_src clojure
+  (empty? p)
+#+end_src

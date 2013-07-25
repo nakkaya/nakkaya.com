@@ -1,0 +1,115 @@
+#+title: Controlling LEDs with an Arduino
+#+tags: arduino
+
+This post will cover the process of controlling multiple LED's using an
+Arduino. With this hack we'll make the Arduino, send a distress signal
+using a LED, a second LED is used to indicate the end of SOS cycle.
+
+#+begin_html
+  <img src="/images/post/arduino-led-circuit.jpeg" /> <p />
+#+end_html
+
+Both LED's are connected the same way except to different pins (Digital
+10 and 9). +5V is connected to the resistor which is connected to the +
+(long leg) of the LED, - (short leg) of the LED is connected to the
+ground.
+
+Any resistor that is bigger than 330 ohms can be used, but keep in mind
+that the smaller the resistance the bigger the glow.
+
+First some definitions,
+
+#+begin_src java
+  int redLEDPin = 10;
+  int yellowLEDPin = 9;
+#+end_src
+
+I choose to use pin 10 for the red LED, pin 9 for yellow LED.
+
+#+begin_src java
+  int shortPulse = 250;
+  int longPulse = 125;
+  int letterDelay = 1000;
+#+end_src
+
+Morse code uses a short element and a long element to represent letters
+and numbers. We will use 250 ms for long element 125 ms for short
+element, after each letter we'll have 1 second delay.
+
+#+begin_src java
+  //letters 0 for short pulse 1 for long
+  int letterS[] = {0, 0, 0};
+  int letterO[] = {1, 1, 1};
+  
+  void setup(){
+    pinMode(redLEDPin, OUTPUT);
+    pinMode(yellowLEDPin, OUTPUT);
+  }
+#+end_src
+
+blinkLetter takes an array as it's argument, it will iterate over the
+array blink the red LED accordingly.
+
+#+begin_src java
+  void redLed(int time){
+      digitalWrite(redLEDPin, HIGH);
+      delay(time);
+      digitalWrite(redLEDPin, LOW);
+      delay(time);
+  }
+#+end_src
+
+redLed function takes a time variable as its input it will keep the LED
+on for the given time.
+
+#+begin_src java
+  void yellowLed(){
+      digitalWrite(yellowLEDPin, HIGH);
+      delay(2000);
+      digitalWrite(yellowLEDPin, LOW);
+  }
+#+end_src
+
+To represent the letters, I used an array, 1 to represent a long
+element, 0 to represent a short element.
+
+#+begin_src java
+  void blinkLetter(int* letter){
+    for(int i=0; i<3; i++){
+      int val = letter[i];
+  
+      if(val == 0)
+        redLed(shortPulse);
+      else
+        redLed(longPulse);
+    }
+    delay(letterDelay);
+  }
+#+end_src
+
+yellowLed uses a fixed time to signal us that the SOS cycle is complete,
+we are starting over.
+
+#+begin_src java
+  void loop() { 
+    blinkLetter(letterS);
+    blinkLetter(letterO);
+    blinkLetter(letterS);
+  
+    yellowLed();
+  }
+#+end_src
+
+Main loop just cycles through the letters and blink the yellow LED to
+signal us that the cycle is complete.  When the circuit is hooked-up
+and code uploaded, it should look like this.
+
+#+BEGIN_HTML
+  <p>
+    <video src="/video/arduino-led.mp4" width="80%" controls>
+      Looks like HTML5 Video tag did not work you can download
+      the video <a href="/video/arduino-led.mp4">here</a>.
+    </video>
+  </p>
+#+END_HTML
+

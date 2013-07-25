@@ -1,0 +1,103 @@
+#+title: Streaming OpenCV Video over the Network Using M-JPEG
+#+tags: clojure opencv vision 
+
+OpenCV has no support for streaming videos, so everyone has its own
+recipe for doing it, you can design your own server/client combo or
+use a third party library such as /libvlc/ or /ffmpeg/. Both options
+seemed like an overkill because I only wanted to see what the system
+sees for debugging purposes so I ended up settling on a simpler system
+and put together a crude [[http://en.wikipedia.org/wiki/Motion_JPEG][Motion-JPEG]] streamer.
+
+M-JPEG over HTTP is really simple to implement, you basically inform
+the client using a special mime-type content type
+/multipart/x-mixed-replace;boundary= informs/, that you will be sending
+a series of JPEGs separated by the boundary. As long as the client
+keeps the connection open we keep sending images.
+
+#+begin_example
+HTTP/1.0 200 OK
+Server: mjpeg-streamer
+Content-Type: multipart/x-mixed-replace;boundary=informs
+--informs
+
+--informs
+Content-Type: image/jpeg
+Content-Length: 67856
+
+<binary JPEG image data>
+--informs
+Content-Type: image/jpeg
+Content-Length: 52856
+
+<binary JPEG Image data>
+--informs 
+...
+#+end_example
+
+#+begin_src clojure
+  (ns mjpeg
+    (:import (javax.imageio ImageIO IIOImage)
+             (java.io ByteArrayOutputStream)
+             (javax.imageio.plugins.jpeg JPEGImageWriteParam)))
+  
+  (defn- send-ok-response [out]
+    (.write out (.getBytes
+                 (str "HTTP/1.0 200 OK\r\n"
+                      "Server: mjpeg-streamer\r\n"
+                      "Content-Type: multipart/x-mixed-replace;boundary=informs\r\n"
+                      "--informs\r\n"))))
+  
+  (defn- send-separator [out]
+    (.write out (.getBytes (str "\r\n"
+                                "--informs\r\n"))))
+  
+  (defn- image-to-array [f compression]
+    (let [image-writer (.next (ImageIO/getImageWritersByFormatName "jpg"))
+          jpeg-params (doto (.getDefaultWriteParam image-writer)
+                        (.setCompressionMode JPEGImageWriteParam/MODE_EXPLICIT)
+                        (.setCompressionQuality compression))
+          byte-stream (ByteArrayOutputStream.)]
+      (.setOutput image-writer (ImageIO/createImageOutputStream byte-stream))
+      (.write image-writer nil (IIOImage. (f) nil nil) jpeg-params)
+      (.dispose image-writer)
+      (.toByteArray byte-stream)))
+  
+  (defn- send-image [f compression out]
+    (let [bytes (image-to-array f compression)
+          size (count bytes)]
+      (.write out (.getBytes (str "Content-Type: image/jpeg\r\n"
+                                  "Content-Length: " size "\r\n\r\n")))
+      (.write out bytes)))
+  
+  (defn mjpeg-streamer [f compression in out]
+    (send-ok-response out)
+    (while true
+      (send-separator out)
+      (send-image f compression out)))
+      
+  
+#+end_src
+
+/mjpeg-streamer/ takes a function f which should return a new
+BufferedImage every time it is called, a float compression value, 1.0
+meaning highest quality 0.0 meaning lowest quality and input/output
+streams from the socket, it will start pumping images through the
+stream until the client closes the connection.
+
+#+begin_src clojure
+  (use 'vision.core)
+  (use 'clojure.contrib.server-socket)
+  
+  (def *camera* (capture-from-cam 0))
+  (create-server 8080
+                 (fn [in out]
+                   (mjpeg-streamer
+                    #(deref (:buffered-image (query-frame *camera*))) 1.0 in out)))  
+#+end_src
+
+The advantage of using this scheme is that basically all major
+browsers and smart phones will be able to view the feed (I've used
+this with Chrome, Safari and Safari on the iPhone), on the other hand
+the disadvantages are it will use more bandwidth and not all clients
+will be viewing the feed at the same rate, Safari was getting the feed
+at around 20 FPS where as Chrome can't pass 10 FPS.

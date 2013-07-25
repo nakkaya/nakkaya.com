@@ -1,0 +1,277 @@
+#+title: Path Finding Using A-Star in Clojure
+#+tags: clojure path-finding
+
+For a recent project, I had to implement A* (A-Star) in Clojure, since
+it's a very popular path finding algorithm used in gaming I thought it
+might be interesting to other clojurians too. 
+
+AStar uses best-first search to find the the least-cost path from a
+given initial node to one goal node (out of one or more possible
+goals). Functions,
+
+ - *g(x)* - cost of getting to that node from starting node.
+ - *h(x)* - cost of getting to the goal node from current node.
+ - *f(x)* - *g(x)+h(x)*
+
+are used to determine the order in which search visits nodes. Beginning
+with the start node, we keep track of two lists, open and closed, open
+list contains the list of nodes to traverse sorted by their *f(x)* cost,
+closed list contains the list of nodes that we have processed. At each
+step, algorithm removes the first node on the open list, calculate
+*f(x)*, *g(x)* and *h(x)* values for its neighbors and add the ones that
+are not on the closed list to the open list. This is done until goal
+node has been found or no nodes are left on the open list.
+
+In a nutshell we will,
+
+ - Add the starting node to the open list.
+ - Loop
+   - Remove the node with the lowest *f(x)* from the open list.
+   - Add it to closed list.
+   - Calculate 8 adjacent squares.
+   - Filter neighbors that are not on the closed list and walkable.
+   - For each square
+     - If it is not on the open list, calculate F, G and H costs,  make
+       the current square parent of this square and add it open list.
+     - If it is on the open list, check to see if this path to that
+       square is better using the G cost, a lower G indicates a better
+       path if so change its parent to this square and recalculate F G and H
+       costs.
+ - Until
+   - Target node is added to the closed list indicating a path
+     has been found.
+   - No more nodes left in the open list indicating there is no path
+     between nodes.
+
+#+begin_src clojure
+  (def maze1 [[0 0 0 0 0 0 0]
+              [0 0 0 1 0 0 0]
+              [0 0 0 1 0 0 0]
+              [0 0 0 1 0 0 0]
+              [0 0 0 0 0 0 0]])
+#+end_src
+
+Surface is represented using a 2D vector of 0s and 1s, 0 denoting
+walkable nodes and 1 denoting non walkable nodes.
+
+#+begin_src clojure
+  (defn manhattan-distance [[x1 y1] [x2 y2]]
+    (+ (Math/abs ^Integer (- x2 x1)) (Math/abs ^Integer (- y2 y1))))
+  
+  (defn cost [curr start end]
+    (let [g (manhattan-distance start curr)
+          h (manhattan-distance curr end)
+          f (+ g h)] 
+      [f g h]))
+#+end_src
+
+Quality of the path found will depend on the distance function used to
+calculate F, G, and H costs, for this implementation I choose to use
+[[http://en.wikipedia.org/wiki/Taxicab_geometry][Manhattan distance]] since it is cheaper to calculate then [[http://en.wikipedia.org/wiki/Euclidean_distance][Euclidean
+distance]] but keep in mind that different distance metrics will produce
+different paths so depending on your condition expensive metrics can
+produce more natural looking paths.
+
+#+begin_src clojure
+  (defn edges [map width height closed [x y]]
+    (for [tx (range (- x 1) (+ x 2)) 
+          ty (range (- y 1) (+ y 2))
+          :when (and (>= tx 0)
+                     (>= ty 0)
+                     (<= tx width)
+                     (<= ty height)
+                     (not= [x y] [tx ty])
+                     (not= (nth (nth map ty) tx) 1)
+                     (not (contains? closed [tx ty])))]
+      [tx ty]))
+#+end_src
+
+For each node we take from the open list, we need to build a list of
+nodes around it. We filter them by checking if the node contains a 1
+in its place on the map which means we can't go over it or it is
+already in the closed list which means we have already looked at it.
+
+#+begin_src clojure
+  (defn path [end parent closed]
+    (reverse
+     (loop [path [end parent]
+            node (closed parent)]
+       (if (nil? node)
+         path
+         (recur (conj path node) (closed node))))))
+#+end_src
+
+When we hit our target node, we need to work backwards starting from
+target node, go from each node to its parent until we reach the starting
+node. That is our path.
+
+#+begin_src clojure
+  (use '[clojure.data.priority-map])
+  
+  (defn search 
+    ([map start end]
+       (let [[sx sy] start
+             [ex ey] end
+             open (priority-map-by
+                   (fn [x y]
+                     (if (= x y)
+                       0
+                       (let [[f1 _ h1] x
+                             [f2 _ h2] y]
+                         (if (= f1 f2)
+                           (if (< h1 h2) -1 1)
+                           (if (< f1 f2) -1 1)))))
+                   start (cost start start end))
+             closed {}
+             width (-> map first count dec)
+             height (-> map count dec)]
+         (when (and (not= (nth (nth map sy) sx) 1)
+                    (not= (nth (nth map ey) ex) 1))
+           (search map width height open closed start end))))
+    
+    ([map width height open closed start end]
+       (if-let [[coord [_ _ _ parent]] (peek open)]
+         (if-not (= coord end)
+           (let [closed (assoc closed coord parent)
+                 edges (edges map width height closed coord)
+                 open (reduce
+                       (fn [open edge]
+                         (if (not (contains? open edge))
+                           (assoc open edge (conj (cost edge start end) coord))
+                           (let [[_ pg] (open edge)
+                                 [nf ng nh] (cost edge start end)]
+                             (if (< ng pg)
+                               (assoc open edge (conj [nf ng nh] coord))
+                               open))))
+                       (pop open) edges)]
+             (recur map width height open closed start end))
+           (path end parent closed)))))
+#+end_src
+
+Search function is where it all happens and it pretty much summarizes
+all of the above steps. Open list is a priority map that will keep its
+items sorted by /f/ when there is a tie it is broken using the /h/
+value, closed is a map of nodes to parents.
+
+We keep calling search until no elements are left on the open list or
+first node on the open list is our goal node. Unless we are done we
+remove the first item on the open list, put it to closed list and
+process nodes around it.
+
+After we get the list of adjacent nodes, they need to be added to the open
+list for further exploration, for nodes that are not on the open list,
+we calculate their costs and append them to the open vector, for nodes
+that are already on the open list, we check which one, the one on the
+open list or the one we just calculated has a lower G cost if the new
+one has a lower G cost we replace the one on the list with the new
+one.
+
+#+begin_src clojure
+  (defn draw-map [area start end]
+    (let [path (into #{} (time (search area start end)))
+          area (map-indexed
+                (fn [idx-row row]
+                  (map-indexed
+                   (fn [idx-col col]
+                     (cond (contains? path [idx-col idx-row]) \X
+                           (= 1 col) \#
+                           :default \space))
+                   row))
+                area)]
+      
+      (doseq [line area]
+        (println line))))
+#+end_src
+
+#+begin_src clojure
+  (def maze1 [[0 0 0 0 0 0 0]
+              [0 0 0 1 0 0 0]
+              [0 0 0 1 0 0 0]
+              [0 0 0 1 0 0 0]
+              [0 0 0 0 0 0 0]])
+  
+  (draw-map maze1 [1 2] [5 2])
+#+end_src
+
+#+begin_example
+  astar.core=> "Elapsed time: 10.938 msecs"
+  (      X      )
+  (    X # X    )
+  (  X   #   X  )
+  (      #      )
+  (             )
+#+end_example
+
+
+#+begin_src clojure
+  (def maze2 [[0 0 0 0 0 0 0]
+              [0 0 1 1 1 0 0]
+              [0 0 0 1 0 0 0]
+              [0 0 0 1 0 0 0]
+              [0 0 0 1 0 0 0]])
+  
+  (draw-map maze2 [1 3] [5 2])
+#+end_src
+
+#+begin_example
+astar.core=> "Elapsed time: 10.162 msecs"
+(    X X X    )
+(  X # # # X  )
+(    X #   X  )
+(  X   #      )
+(      #      )
+#+end_example
+
+#+begin_src clojure
+  (def maze3 [[0 1 0 0 0 1 0]
+              [0 1 0 1 0 1 0]
+              [0 1 0 1 0 1 0]
+              [0 1 0 1 0 1 0]
+              [0 0 0 1 0 0 0]])
+  
+  (draw-map maze3 [0 0] [6 0])
+#+end_src
+
+#+begin_example
+astar.core=> "Elapsed time: 8.98 msecs"
+(X #   X   # X)
+(X # X # X # X)
+(X # X # X # X)
+(X # X # X # X)
+(  X   #   X  )
+#+end_example
+
+#+begin_src clojure
+  (def maze4 [[0 0 0 0 0 0 0 0]
+              [1 1 1 1 1 1 1 0]
+              [0 0 0 1 0 0 0 0]
+              [0 0 0 1 0 0 0 0]
+              [0 0 0 1 0 0 0 0]
+              [0 0 0 1 1 1 0 1]
+              [0 0 0 0 0 1 0 1]
+              [0 0 0 0 0 1 0 1]
+              [0 0 0 0 0 0 0 1]
+              [1 1 1 1 0 1 1 1]
+              [0 0 0 1 0 0 0 0]
+              [0 0 0 1 0 0 0 0]
+              [0 0 0 0 0 0 0 0]])
+  
+  (draw-map maze4 [0 0] [0 12])
+#+end_src
+
+#+begin_example
+astar.core=> "Elapsed time: 20.136 msecs"
+(X X X X X X X  )
+(# # # # # # # X)
+(      #     X  )
+(      #   X    )
+(      #   X    )
+(      # # # X #)
+(          # X #)
+(          # X #)
+(          X   #)
+(# # # # X # # #)
+(      # X      )
+(      # X      )
+(X X X X        )
+#+end_example

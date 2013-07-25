@@ -1,0 +1,87 @@
+#+title: Starcraft BWAPI Clojure
+#+tags: clojure starcraft
+
+Following has been sitting on my desktop for a while, I started
+playing with it but after that never had time to continue. It cost me
+couple of hours to figure stuff out so I didn't want to throw it
+away.
+
+It won't do anything other than keep pumping /scvs/ and command them
+to collect minerals.
+
+#+begin_src clojure
+  (ns star-craft.core
+    (:refer-clojure :exclude [+ - * =])
+    (:use (clojure.contrib.generic [arithmetic :only [+ - *]]
+                                   [comparison :only [=]]))
+    (:use [vector-2d.core])
+    (:import (eisbot.proxy JNIBWAPI BWAPIEventListener)
+             (eisbot.proxy.types UnitType UnitType$UnitTypes)
+             (eisbot.proxy.model Unit)))
+  
+  (declare bw-api)
+  
+  (defn minerals []
+    (-> bw-api .getSelf .getMinerals))
+  
+  (defn mineral-seq []
+    (filter #(= (.getTypeID %)
+                (.ordinal UnitType$UnitTypes/Resource_Mineral_Field))
+            (.. bw-api getNeutralUnits)))
+  
+  (defn create-scv []
+    (.train bw-api (.getID
+                    (first
+                     (filter
+                      #(= (.getTypeID %)
+                          (.ordinal UnitType$UnitTypes/Terran_Command_Center))
+                      (.. bw-api getMyUnits))))
+            (.ordinal UnitType$UnitTypes/Terran_SCV)))
+  
+  (defn scv-seq []
+    (filter #(= (.getTypeID %) (.ordinal UnitType$UnitTypes/Terran_SCV))
+            (.. bw-api getMyUnits)))
+  
+  (defn distance [a b]
+    (dist (vector-2d (.getX a) (.getY a)) (vector-2d (.getX b) (.getY b))))
+  
+  (defn idle? [u]
+    (.isIdle u))
+  
+  (defn training? [u]
+    (.isTraining u))
+  
+  (defn send-unit [unit target]
+    (.rightClick bw-api (.getID unit) (.getID target)))
+  
+  (defn keep-scvs-busy []
+    (let [idle-scvs (filter idle? (scv-seq))]
+      (doseq [scv idle-scvs]
+        (let [closest-mineral (first (sort-by #(distance scv %) (mineral-seq)))]
+          (send-unit scv closest-mineral)))))
+  
+  (defn need-scv? []
+    (and (< (count (scv-seq)) 20)
+         (>= (minerals) 50)))
+  
+  (defn build-scv []
+    (create-scv))
+  
+  (defn take-turn []
+    (keep-scvs-busy)
+    (when (need-scv?)
+      (build-scv)))
+  
+  (defn event-listener []
+    (proxy [BWAPIEventListener] []
+      (connected [] (.loadTypeData bw-api))
+      (gameStarted [] (println "[+] Game Started"))
+      (gameUpdate [] (try (take-turn)
+                          (catch Exception e
+                            (println "[+] Error Game Update: " e))))))
+  
+  (def bw-api (JNIBWAPI. (event-listener)))
+  
+  (defn -main []
+    (future (.start bw-api)))
+#+end_src

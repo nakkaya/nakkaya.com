@@ -1,0 +1,55 @@
+#+title: Adding Inferior Lisp Support for clojure-mode
+#+tags: clojure emacs
+
+It has been a while since I updated clojure-mode, after the update
+inferior-lisp stopped working. At first I thought I messed up
+something because I updated clojure, clojure-contrib, clojure-mode all
+at the same time (bad move!). After making sure clojure and
+clojure-contrib works I looked at the clojure-mode's source code and
+found this [[http://github.com/technomancy/clojure-mode/commit/2b5fc4a567793da64adec3332719e20d2b64ac0c][commit]] which removes the subprocess support (inferior-lisp)
+for clojure-mode and advises to use slime and swank-clojure. Slime is
+nice but I wanted my inferior-lisp support back.
+
+If you don't have any setup for inferior-lisp support use the following
+snippet,
+
+#+begin_src emacs-lisp
+  (setq inferior-lisp-program "/path/to/lein repl")
+#+end_src
+
+or if you prefer a dumb repl,
+
+#+begin_src emacs-lisp
+  (setq inferior-lisp-program "/path/to/lein trampoline run -m clojure.main/main")
+#+end_src
+
+This will let inferior-lisp to run clojure REPL, to be able to send
+code from your clojure buffer to inferior-lisp buffer use the
+following key bindings.
+
+#+begin_src emacs-lisp
+  (add-hook 'clojure-mode-hook
+            '(lambda ()
+               (define-key clojure-mode-map 
+                 "\C-c\C-e" '(lambda ()
+                               (interactive)
+                               (let ((curr (point)))
+                                 (end-of-defun)
+                                 (lisp-eval-last-sexp)
+                                 (goto-char curr))))
+               (define-key clojure-mode-map 
+                 "\C-x\C-e" 'lisp-eval-last-sexp)
+               (define-key clojure-mode-map 
+                 "\C-c\C-r" 'lisp-eval-region)
+               (define-key clojure-mode-map 
+                 "\C-c\C-c" '(lambda ()
+                               (interactive)
+                               (lisp-eval-string (buffer-string))))
+               (define-key clojure-mode-map 
+                 "\C-c\C-z" 'run-lisp)))
+#+end_src
+
+From the commit it seems that the only thing that got removed is  bunch
+of key bindings, snippet above pretty much reverses the commit and adds
+a new function to send the buffer you are working on to REPL and gives
+you a functional inferior-lisp REPL.

@@ -1,0 +1,51 @@
+#+title: Debian VNC server setup
+#+tags: linux debian ssh
+
+Note to self, grab the required packages,
+
+#+begin_src sh
+  apt-get install xfce4
+  apt-get install tightvncserver
+#+end_src
+
+Initialize for the first time and set the password,
+
+#+begin_src sh
+  tightvncserver :1
+#+end_src
+
+then kill the process,
+
+#+begin_src sh
+  tightvncserver -kill :1
+#+end_src
+
+Edit,
+
+#+begin_example
+  ~/.vnc/xstartup
+#+end_example
+
+and add,
+
+#+begin_example
+  xfce4-session &
+#+end_example
+
+To connect, setup the tunnel,
+
+#+begin_src sh
+  ssh -L 5901:localhost:5901 user@yourserver.net -p 8722
+#+end_src
+
+and start VNC,
+
+#+begin_src sh
+  tightvncserver -geometry 800x600 :1
+#+end_src
+
+Use a VNC client (like Chicken of the VNC) to connect to your SSH tunnel,
+
+ - connect to localhost (or 127.0.0.1)
+ - display 1, because of port 5901 (display 0 would be port 5900)
+ - enter your VNC password

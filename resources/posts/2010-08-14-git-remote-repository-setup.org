@@ -1,0 +1,44 @@
+#+title: Git Remote Repository Setup
+#+tags: git
+
+Note to self, make sure everyone can [[http://nakkaya.com/2009/05/20/passwordless-logins-with-ssh/][login without a password]]. Setup
+the remote repository,
+
+#+begin_src sh
+  ssh git@server.com
+  mkdir my_project.git
+  cd my_project.git
+  git init --bare
+#+end_src
+
+If you are planning to serve via HTTP,
+
+#+begin_src sh
+  git-update-server-info
+#+end_src
+
+On local machine for a new project,
+
+#+begin_src sh
+  cd my_project
+  git init
+  git add *
+  git commit -m "Initial Commit"
+  git remote add origin ssh://git@myserver.com:22/~/my_project.git
+  git push origin master
+#+end_src
+
+If you already have a project and defined a remote named origin (say
+you followed GitHub's instructions), you'll want to delete the remote
+first,
+
+#+begin_src sh
+  git remote rm origin
+#+end_src
+
+and add your remote,
+
+#+begin_src sh
+  git remote add origin ssh://git@myserver.com:22/~/my_project.git
+  git push origin master
+#+end_src

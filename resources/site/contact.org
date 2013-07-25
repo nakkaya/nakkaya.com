@@ -1,0 +1,23 @@
+#+title: About
+#+tags: nurullah akkaya
+#+description: About Nurullah Akkaya.
+#+OPTIONS: toc:nil
+
+This blog is way to keep track of stuff that I am thinking about or
+working on. I research things that I find interesting, then document
+my findings with a public blog post, which I can refer to
+later. Hopefully other people will find these posts helpful, relevant,
+or interesting.
+
+You can reach me at [[mailto:nurullah@nakkaya.com][nurullah@nakkaya.com]]
+
+#+BEGIN_HTML
+  <img src="/images/nurullahAkkaya.jpeg" />
+#+END_HTML
+
+*** Other Places I am At
+
+ - [[http://github.com/nakkaya][Github]]
+ - [[http://twitter.com/nakkaya][Twitter]]
+ - [[http://www.last.fm/user/nurullah_akkaya][last.fm]]
+ - [[https://plus.google.com/111001257638031474718?rel%3Dauthor][Google+]]

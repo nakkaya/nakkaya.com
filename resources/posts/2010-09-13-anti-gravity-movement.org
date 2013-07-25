@@ -1,0 +1,127 @@
+#+title: Anti-Gravity Movement
+#+tags: clojure
+
+Anti-Gravity movement (or in the field of robotics it is also known as
+[[http://en.wikipedia.org/wiki/Motion_planning#Potential_Fields][potential field motion planning]])
+is a path finding technique, the idea is to use the formula for gravity
+to calculate a path, unlike [[http://en.wikipedia.org/wiki/Graph_traversal][graph search algorithms]] where we
+calculate the full path between /A/ and /B/, anti-gravity movement
+calculates the path one step at a time. This makes it ideal for dynamic
+worlds because there is no risk that a path becomes obsolete due to
+changes in the world.
+
+The theory behind anti-gravity is actually quite simple, we place
+imaginary points on the map called gravity points that we want to be
+repelled or attracted to, each gravity point has a force associated with
+it which determines how much we want to be attracted or repelled from
+the point allowing us to easily create movement patterns. At each step,
+for each point we calculate gravitational force acting on us from that
+point using the formula \(\frac{strength}{distance\^n}\), summing all the forces
+from all the points on the map will yield the total gravitational force
+acting on us then we let it push us in whatever direction it push us in.
+
+#+BEGIN_HTML
+  <p>
+    <video src="/video/anti-gravity-movement.mp4" width="80%" controls>
+      Looks like HTML5 Video tag did not work you can download
+      the video <a href="/video/anti-gravity-movement.mp4">here</a>.
+    </video>
+  </p>
+#+END_HTML
+
+All vector operations used are from my [[http://github.com/nakkaya/vector-2d][vector-2d]] library you can grab it
+from [[http://clojars.org/vector-2d][clojars]].
+
+#+begin_src clojure
+  (ns gravity.core
+    (:refer-clojure :exclude [+ - * =])
+    (:use (clojure.contrib.generic [arithmetic :only [+ - *]]
+                                   [comparison :only [=]]))
+    (:use [vector-2d.core]))
+  
+  (defn gravity-vector [u v]
+    (let [force (/ 2000 (Math/pow (magnitude (- u v)) 2))
+          angle (bearing u v)] 
+      (vector-2d (* (Math/sin angle) force) (* (Math/cos angle) force))))
+  
+  (defn total-gravitational-force [state]
+    (apply + (map #(gravity-vector (:player @state) %) (:obstacles @state))))
+#+end_src
+
+Using the formula \(\frac{strength}{distance\^n}\), in this case strength is 2000
+and n is 2, we calculate the force then using the angle between /v/ and
+/u/ we create a new vector from /v/ to /u/ which pushes us away from
+/v/. Experimenting with different strength and n values will yield
+different behaviours. i.e increasing n will cause you to avoid points
+when you get very close to them. Doing this for all the points on the
+map and then summing them up yields total gravitational force.
+
+#+begin_src clojure
+  (defn seek [state]
+    (normalize (+ (normalize (- (:target @state) (:player @state)))
+                  (total-gravitational-force state))))
+  
+  (defn steer [state]
+    (when (> (dist (:player @state) (:target @state)) 1)
+      (dosync (alter state assoc :player (+ (:player @state) (seek state))))))
+#+end_src
+
+To actually go where we want to go, we subtract our current position
+from the target, normalizing this resulting vector gives us a unit
+vector pointing to where we want to go, then we add total gravitational
+force to the direction vector which will push us away from the obstacles
+and towards our target.
+
+#+begin_src clojure
+  (defn circle [g pt rad color]
+    (let [[x y] (vals pt)
+          offset (int (/ rad 2))
+          x (- x offset)
+          y (- y offset)]
+      (doto g
+        (.setColor color)
+        (.fill (java.awt.geom.Ellipse2D$Double. x y rad rad)))))
+  
+  (defn board [state]
+    (proxy [javax.swing.JPanel
+            java.awt.event.ActionListener] []
+      (paintComponent
+       [g]
+       (.setColor g java.awt.Color/WHITE)
+       (.fillRect g 0 0 (.getWidth this) (.getHeight this))
+       (circle g (:player @state) 20 java.awt.Color/GREEN)
+       (doseq [pt (:obstacles @state)] 
+         (circle g pt 60 java.awt.Color/BLUE)))
+      (actionPerformed 
+       [e]
+       (steer state)
+       (.repaint this))))
+  
+  (defn mouse-listener [state]
+    (let [dragging (ref nil)]
+      (proxy [java.awt.event.MouseAdapter 
+              java.awt.event.MouseMotionListener] [] 
+        (mousePressed 
+         [e]
+         (dosync (alter state assoc :target 
+                        (vector-2d (.getX e) (.getY e))))))))
+  
+  (defn frame []
+    (let [state (ref {:player (vector-2d 325 200) :target (vector-2d 325 200)
+                      :obstacles [(vector-2d 379 90)
+                                  (vector-2d 135 223) (vector-2d 560 290)
+                                  (vector-2d 550 120) (vector-2d 145 70)
+                                  (vector-2d 350 320) (vector-2d 60 50)
+                                  (vector-2d 210 313) (vector-2d 450 210)]})
+          board (board state)
+          timer  (javax.swing.Timer. 5 board)
+          mouse-listener (mouse-listener state)]
+      (.addMouseListener board mouse-listener)
+      (.start timer)
+      (doto (javax.swing.JFrame.)
+        (.setAlwaysOnTop true)
+        (.add board)
+        (.setSize 650 400)
+        (.setVisible true))))
+#+end_src
+

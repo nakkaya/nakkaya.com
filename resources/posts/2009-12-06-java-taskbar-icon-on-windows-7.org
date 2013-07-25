@@ -1,0 +1,34 @@
+#+title: Java Taskbar Icon on Windows 7
+#+tags: java windows
+
+I was testing an application, on Windows 7 which had a 25x25 png image
+to be used as the taskbar icon. Windows 7's new taskbar uses much bigger
+icons so my 25x25 png turned in to big blur. There is a solution
+however, Java 1.6 introduces a new function called, setIconImages. 
+
+#+BEGIN_SRC java
+  public void setIconImages(List<? extends Image> icons)
+#+END_SRC
+
+Build a list of images of different sizes, set it with setIconImages,
+instead of setIconImage, and Windows will pick the right size depending
+on the context (e.g. window decoration, window list, taskbar, etc.).
+
+In my case I needed compatibility with Java 1.5, so I ended up calling
+setIconImage via reflection and if an exception is raised I fall back to
+old setIconImage function.
+
+#+BEGIN_SRC java
+  try{
+      Class[] types = {java.util.List.class};
+      java.lang.reflect.Method method = 
+          Class.forName("java.awt.Window")
+          .getDeclaredMethod("setIconImages",types);
+  
+      Object[] params = {images};
+      method.invoke(frame,params);
+  
+  }catch( Exception e ) { 
+      frame.setIconImage((Image)images.get(0));
+  }
+#+END_SRC

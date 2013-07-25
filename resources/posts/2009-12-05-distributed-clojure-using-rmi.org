@@ -1,0 +1,107 @@
+#+title: Distributed Clojure Using RMI
+#+tags: clojure rmi distributed-computing
+
+The [[http://java.sun.com/javase/technologies/core/basic/rmi/index.jsp][Java Remote Method Invocation API]], or RMI is the Java way of doing
+[[http://en.wikipedia.org/wiki/Remote_procedure_call][remote procedure calls]] (RPC). Remote Method Invocation (RMI)
+facilitates object function calls between [[http://en.wikipedia.org/wiki/Java_Virtual_Machine][Java Virtual Machines]]
+(JVMs). JVMs can be located on separate computers, one JVM can invoke
+methods belonging to an object stored in another JVM. I have been
+meaning to play with RMI from Clojure for a while, so I have put
+together a distributed "Hello, World!" application.
+
+A RMI application is made up of three parts,
+
+ - Remote Interface
+ - Server
+ - Client
+
+Remote interface contains the methods that are exposed by the server
+that can be called from another JVM, and it is the only part of code
+that can't be written in Clojure, every method in the interface must
+throw RemoteException, this can't be done with gen-interface macro. If
+you create your interfaces with gen-interface you will get exceptions.
+
+#+begin_src java
+  package stub;
+  
+  import java.rmi.Remote;
+  import java.rmi.RemoteException;
+  
+  public interface Hello extends Remote {
+      String sayHello() throws RemoteException;
+  }
+#+end_src
+
+Our interface exposes a single function called sayHello, when called, it
+will return the "Hello, World!" string. Compile this file,
+
+#+begin_example
+  javac Hello.java
+#+end_example
+
+and place it in a folder called stub, place this stub folder anywhere on
+your classpath.
+
+First thing, server has to do is to start remote object registry,
+servers and clients locate each other using this registry mechanism.
+
+#+begin_src clojure
+  (def rmi-registry (java.rmi.registry.LocateRegistry/createRegistry 1099))
+#+end_src
+
+We start the RMI registry on port 1099, if we need to programmatically
+stop the registry for any reason we can use the following function,
+
+#+begin_src clojure
+  (defn stop-rmi []
+    (java.rmi.server.UnicastRemoteObject/unexportObject rmi-registry true))
+#+end_src
+
+We need to create an instance of the interface we defined, containing the
+implementations of the functions we exposed in the interface,
+
+#+begin_src clojure
+  (defn hello-server []
+    (proxy [stub.Hello] [] 
+      (sayHello [] "Hello, World!")))
+#+end_src
+
+Server needs to be registered with the RMI registry before it can be
+called from another JVM.
+
+#+begin_src clojure
+  (defn register-server []
+    (.bind
+     (java.rmi.registry.LocateRegistry/getRegistry)
+     "Hello"
+     (java.rmi.server.UnicastRemoteObject/exportObject (hello-server) 0)))
+#+end_src
+
+We bind the name "Hello" to our hello-server, now server is ready to
+accept connections, we register the server and wait for incoming
+connections.
+
+#+begin_example
+  (register-server)
+#+end_example
+
+On the client side, first we locate the registry,
+
+#+begin_src clojure
+  (def rmi-registry (java.rmi.registry.LocateRegistry/getRegistry "127.0.0.1"))
+#+end_src
+
+Replace 127.0.0.1 with the IP of the server machine if the server is on
+another IP. Now that we have located the registry, we can lookup objects
+by name.
+
+#+begin_src clojure
+  (let [hello (.lookup rmi-registry "Hello")]
+    (println (.sayHello hello)))
+#+end_src
+
+Thats all the code that is needed for a distributed "Hello, World!". To
+put it all to action, run server.clj, it will start listening for
+incoming connections, on the same machine or on another machine on the
+same network, run client.clj, you should get "Hello, World!" returned to
+the client.

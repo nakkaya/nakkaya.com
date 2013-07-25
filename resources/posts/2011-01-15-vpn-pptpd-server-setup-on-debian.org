@@ -1,0 +1,65 @@
+#+title: VPN (PPTPD) Server Setup on Debian
+#+tags: debian vpn
+
+Note to self, grab the pptp server package,
+
+#+BEGIN_SRC sh
+  apt-get install pptpd
+#+END_SRC
+
+Edit */etc/pptpd.conf* add,
+
+#+BEGIN_EXAMPLE
+  localip <vps-ip>
+  remoteip 10.1.0.1-100
+#+END_EXAMPLE
+
+Edit */etc/ppp/pptpd-options* add,
+
+#+BEGIN_EXAMPLE
+  refuse-pap
+  refuse-chap
+  refuse-mschap
+  require-mschap-v2
+  require-mppe-128
+
+  ms-dns 8.8.8.8
+
+  proxyarp
+  nodefaultroute
+  lock
+  nobsdcomp
+  noipx
+  mtu 1490
+  mru 1490
+#+END_EXAMPLE
+
+Add users & passwords to */etc/ppp/chap-secrets*
+
+#+BEGIN_EXAMPLE
+  nakkaya    *    super_secret_pass    *
+#+END_EXAMPLE
+
+Enable IP Forwarding by,
+
+#+BEGIN_SRC sh
+  echo 1 > /proc/sys/net/ipv4/ip_forward
+#+END_SRC
+
+Finally configure your iptables settings to enable access for PPTP
+clients,
+
+#+BEGIN_SRC sh
+  iptables -A INPUT -i ppp+ -j ACCEPT
+  iptables -A OUTPUT -o ppp+ -j ACCEPT
+  
+  iptables -A INPUT -p tcp --dport 1723 -j ACCEPT
+  iptables -A INPUT -p 47 -j ACCEPT
+  iptables -A OUTPUT -p 47 -j ACCEPT
+  
+  iptables -F FORWARD
+  iptables -A FORWARD -j ACCEPT
+  
+  iptables -A POSTROUTING -t nat -o eth0 -j MASQUERADE
+  iptables -A POSTROUTING -t nat -o ppp+ -j MASQUERADE
+#+END_SRC

@@ -1,0 +1,64 @@
+#+title: Clojure Persistence for Java Programmers
+#+tags: clojure
+
+Using Java for a long time, whenever I needed to save some data
+structure to disk, my first response was to serialize it to a
+file. While working on a Clojure application, I did just that, it
+worked half the time because not every data structure implements
+[[http://java.sun.com/j2se/1.4.2/docs/api/java/io/Serializable.html][Serializable]].
+
+Then I remembered Clojure being a Lisp, code is data. This allows you
+to dump everything as a String to a file and read it back as a data
+structure.
+
+#+begin_example
+  user=> (doc prn)
+  -------------------------
+  clojure.core/prn
+  ([& more])
+    Same as pr followed by (newline). Observes *flush-on-newline*
+  nil
+#+end_example
+
+You can pass prn a vector,map or any object you want, it will print the
+object to the output stream.
+
+#+begin_src clojure
+  (defstruct db :file :data)
+   
+  (defn write-db [db]
+    (binding [*out* (java.io.FileWriter. (:file db))]
+      (prn (:data db))))
+#+end_src
+
+By binding out to a FileWriter we can easily dump any object to a
+file,
+
+#+begin_src clojure
+  (write-db (struct db "test" [1 2 3]))
+  (write-db (struct db "test" {:test "test" :ax "ax"}))
+#+end_src
+
+To read it back we use read-string function,
+
+#+begin_example
+  user=> (doc read-string)
+  -------------------------
+  clojure.core/read-string
+  ([s])
+    Reads one object from the string s
+  nil
+#+end_example
+
+read-string takes a string and returns an object,
+
+#+begin_src clojure
+  (defn read-db [fname]
+    (try
+      (let [object (read-string (slurp fname))]
+        (struct db fname object))
+      (catch Exception e nil)))
+  
+  (read-db "test")
+#+end_src
+

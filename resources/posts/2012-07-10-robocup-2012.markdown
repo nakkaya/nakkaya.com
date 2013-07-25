@@ -1,0 +1,29 @@
+---
+title: Robocup 2012
+tags: clojure robocup arduino robotics
+---
+
+Blog has been silent for a while, I've been sleeping in the lab for
+the past couple of months trying to get theses little guys working in
+time for Robocup 2012.
+
+![NEUIslanders Robocup 2012 Mexico City](/images/post/robocup-2012-robots.jpg)
+
+RoboCup is an international robotics competition founded in
+1997. There are three main branches under the name of RoboCup, these
+are "Robot Soccer World Cup", "Search and Rescue", and "Robot
+Dancing". The main goal of this organization is to build fully
+autonomous robots to play against FIFA 2050 World Cup winner and win
+the game.
+
+This project started two years ago with us thinking how hard can it
+be. Turns out it was hard, took us two years to qualify for the
+event. Despite countless electrical problems, (electronics was/is our
+weakest spot) we managed to play two out of four games.
+
+Unfortunately we were too busy trying to keep the robots working on
+the field, non of us though of recording any game play footage.
+
+For those of you who think talk is cheap, here is our [literate
+code](https://dl.dropbox.com/u/11332353/neu-islanders.pdf). Its
+written in Clojure except for the firmware which is in C.

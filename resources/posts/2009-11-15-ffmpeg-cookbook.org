@@ -1,0 +1,53 @@
+#+title: FFmpeg Cookbook
+#+tags: ffmpeg apple linux debian
+#+alias: ["/2009/11/12/mp4-conversion-for-mac-os-x-and-linux/index.html" "/2009/11/15/extracting-audio-track-from-videos/index.html"]
+
+Note to self, \\
+
+Get info for a video file,
+
+#+begin_src sh
+  ffmpeg -i video.avi
+#+end_src
+
+Convert a set of images to a video sequence,
+
+#+begin_src sh
+  ffmpeg -f image2 -i image%d.jpg video.mpg
+#+end_src
+
+Convert a video to a set of images,
+
+#+begin_src sh
+  ffmpeg -i video.mpg image%d.jpg
+#+end_src
+
+Extract audio from the video,
+
+#+begin_src sh
+  ffmpeg -i source_video.avi -vn -ar 44100 -ac 2 -ab 192 -f mp3 sound.mp3
+#+end_src
+
+Encode one format to another such as /.avi/ to /.mpg/,
+
+#+begin_src sh
+  ffmpeg -i video_origine.avi video_finale.mpg
+#+end_src
+
+Compress using divx,
+
+#+begin_src sh
+  ffmpeg -i video_origine.avi -s 320x240 -vcodec msmpeg4v2 video_finale.avi
+#+end_src
+
+To record your desktop screen,
+
+#+begin_src sh
+  ffmpeg -r 30 -s 1280x720 -f x11grab -i :0.0 -vcodec msmpeg4v2 -qscale 1 filename.avi
+#+end_src
+
+To scale, rotate and encode,
+
+#+begin_src sh
+  ffmpeg -vf "transpose=1,scale=360:640" -qscale 1  -i 1.MOV -vcodec msmpeg4v2 video_finale.avi
+#+end_src

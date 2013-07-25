@@ -1,0 +1,96 @@
+#+title: Using Clojure with org-babel and inferior-lisp
+#+tags: clojure org-babel inferior-lisp
+
+
+Whenever I am experimenting with an idea I always have two buffers
+open, one for the source file I am working on and one for an org file
+to take notes in, so that I don't have to keep 20 tabs open until I am
+done, in order to combine these two activities I have been
+experimenting with [[http://orgmode.org/worg/org-contrib/babel/][Org Babel]], which allows you to embed source code
+into org files which can then be executed or extracted to a file.
+
+If you are a Slime user Clojure support is already built in using
+[[http://orgmode.org/worg/org-contrib/babel/languages/ob-doc-clojure.php][Org-babel-clojure]] but if you are like me and use inferior-lisp instead,
+following snippet will cause Clojure source blocks to be evaluated
+using a running inferior-lisp process.
+
+#+BEGIN_SRC emacs-lisp
+  (require 'ob)
+    
+  (add-to-list 'org-babel-tangle-lang-exts '("clojure" . "clj"))
+    
+  (defvar org-babel-default-header-args:clojure 
+    '((:results . "silent") (:tangle . "yes")))
+    
+  (defun org-babel-execute:clojure (body params)
+    "Evaluate a block of Clojure code with Babel."
+    (lisp-eval-string body)
+    "Done!")
+    
+  (provide 'ob-clojure)
+#+END_SRC
+
+Unless you enable it org-mode won't highlight source blocks you need
+to add the following to your /.emacs/  to enable syntax highlighting,
+
+#+BEGIN_SRC emacs-lisp
+  (setq org-src-fontify-natively t)
+#+END_SRC
+
+This is fontification only meaning no indentation, so the default
+method of editing code is C-c ' (org-edit-src-code), and to disable
+confirmation before every evaluation you need to add the following,
+
+#+BEGIN_SRC emacs-lisp
+  (setq org-confirm-babel-evaluate nil)
+#+END_SRC
+
+and to make org-mode use the same window for editing (otherwise it
+will rearrange windows everytime you edit source effectively hiding
+REPL),
+
+#+begin_src emacs-lisp
+  (setq org-src-window-setup 'current-window)
+#+end_src
+
+Thats pretty much all the setup needed, assuming you have a org file
+with the following code block in it,
+
+#+BEGIN_EXAMPLE
+  #+begin_src clojure
+  (+ 1 2)
+  #+end_src
+#+END_EXAMPLE
+
+Placing the cursor anywhere between the begin\_src..end\_src lines and
+hitting C-c C-c will send that block of code to inferior-lisp
+for evaluation. 
+
+Of course you are not limited to only evaluating snippets, babel
+supports [[http://en.wikipedia.org/wiki/Noweb][noweb]] style code re-ordering and will spit out all the files
+required by the project, so you can organize all kinds of code related
+to one project in one big hierarchical org file and let babel produce
+the file/directory structure required by the project.
+
+By default if you run,
+
+#+BEGIN_SRC emacs-lisp
+  org-babel-tangle
+#+END_SRC
+
+it will create a source file using the name of your org file but you
+can also specify which snippets goes in to which file using the tangle
+option,
+
+#+BEGIN_EXAMPLE
+#+begin_src clojure :tangle src/vector_utilities.clj
+  (ns vector-utilities)
+  .
+  .
+  (defn polar [p]
+    {:r (magnitude p) :t (Math/atan2 (:y p) (:x p))})
+  .
+  .
+#+end_src
+#+END_EXAMPLE
+

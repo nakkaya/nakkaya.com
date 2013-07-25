@@ -1,0 +1,201 @@
+#+title: Modifying Behaviors Using Decorators
+#+tags: clojure alter-ego robocode
+
+My previous post on [[/2010/06/29/alter-ego-a-reactive-ai-library/][behavior trees]] made use of composite and action
+types, this posts serves as an example on how to improve behaviors
+using decorators. They take their name from the [[http://en.wikipedia.org/wiki/Decorator_pattern][software design
+pattern]]. In the context of behavior trees a decorator node is a node
+with a single child, it modifies the behavior of the branch in some
+way, i.e. you don't want your NPC to keep kicking the door forever
+when it is blocked or replay an animation without completing the
+cycle.
+
+The problem with my previous Robocode tree was that every time we
+execute it, it searched through the whole tree and as a consequence it
+kept switching targets, using decorators we can create loops in the tree
+that way we don't switch targets unless the robot we are going after
+dies.
+
+#+begin_html
+  <p> <img src="/images/post/behavior-tree-decorator.png" alt="behavior tree decorator"/> </p>
+#+end_html
+
+*Kill All* sequence demonstrates two decorators used for looping, since 
+at the beginning of the match we don't have any enemies to fight we scan
+around until we find a robot to kill, until-success decorator will keep 
+executing its child until it returns success meaning we found at
+least one robot to fight. Next in the sequence is *Attack* branch, using
+until-fail decorator it will pick a target to attack, keep attacking
+until the enemy is dead then move on to a new target until select-target
+fails which means all the robots in the arena are dead, having loops in
+the tree allows us to execute the tree once unlike the previous example
+which kept executing the tree forever in a while loop.
+
+In order to combat robots that track our movement, two non deterministic
+composite nodes exists which shuffle their children prior to execution
+such as the one used in the *Strafe* branch which gives us some degree
+of non determinism.
+
+#+BEGIN_HTML
+  <p>
+    <video src="/video/alter-ego-robocode-2.mp4" width="80%" controls>
+      Looks like HTML5 Video tag did not work you can download
+      the video <a href="/video/alter-ego-robocode-2.mp4">here</a>.
+    </video>
+  </p>
+#+END_HTML
+
+#+begin_src clojure :mkdirp yes :tangle source/src/gez.clj
+  (ns gez
+    (:refer-clojure :exclude [sequence])
+    (:use [alter-ego.core])
+    (:import (java.awt Color)
+             (robocode.util Utils))
+    (:gen-class :extends robocode.AdvancedRobot :init init :state board))
+  
+  (def safety 200)
+  
+  (defn execute [robot]
+    (.execute robot) true)
+  
+  (defn back [robot]
+    (action "Back"
+            (.setBack robot 100)
+            (execute robot)))
+  
+  (defn forward [robot]
+    (action "Forward"
+            (.setAhead robot 100)
+            (execute robot)))
+  
+  (defn lock-gun [robot bb]
+    (action (let [target ((:enemies @bb) (:target @bb))
+                  self-bearing (.getHeadingRadians robot)
+                  target-bearing (Math/toRadians (:bearing target))
+                  gun-heading (.getGunHeadingRadians robot)
+                  abs-bearing (+ self-bearing target-bearing)
+                  sin (Math/sin (- target-bearing abs-bearing))
+                  vel (/ (* (:velocity target) sin) 13)
+                  angle (Utils/normalRelativeAngle 
+                         (+ (- abs-bearing gun-heading) vel))]
+              (.setTurnGunRight robot (Math/toDegrees angle))
+              (execute robot))))
+  
+  (defn too-close-to-wall? [robot]
+    (action "Too Close to Wall?"
+            (let [margin 50 x (.getX robot) y (.getY robot)
+                  w (.getBattleFieldWidth robot) 
+                  h (.getBattleFieldHeight robot)]
+              (or (<= x margin) (>= x (- w margin))
+                  (<= y margin) (>= y (- h margin))))))
+  
+  (defn fire [robot]
+    (action "Fire" (.fire robot 3) true))
+  
+  (defn move [robot board]
+    (selector "Move"
+              (sequence "Approach Target"
+                        (inverter
+                         (action "In Range?"
+                                 (let [distance (:distance ((:enemies @board)
+                                                            (:target @board)))]
+                                   (< distance safety))))
+                        (action "Face Target"
+                                (.setTurnRight robot (:bearing ((:enemies @board)
+                                                                (:target @board))))
+                                (execute robot))
+                        (forward robot))
+              
+              (sequence "Attack Target"
+                        (action "Face Sideways"
+                                (let [bearing (:bearing ((:enemies @board)
+                                                         (:target @board)))] 
+                                  (.setTurnRight robot (+ 90 bearing))
+                                  (execute robot)))
+  
+                        (selector "Strafe/Fire"
+                                  (sequence "Strafe"
+                                            (inverter
+                                             (too-close-to-wall? robot))
+                                            (non-deterministic-selector
+                                             (forward robot)
+                                             (back robot))
+                                            (fire robot))
+                                  (fire robot)))))
+  
+  (defn scan [robot]
+    (action "Scan"
+            (.setTurnRadarLeft robot 360)
+            (execute robot)))
+  
+  (defn look-for-enemy? [robot board]
+    (until-success
+     (sequence "Look for Enemy?"
+               (scan robot)
+               (action "Enemy Found?"
+                       (not (empty? (:enemies @board)))))))
+  
+  (defn attack [robot board]
+    (until-fail
+     (sequence "Attack"
+               (scan robot)
+               (action "Target Not Dead?"
+                       (if (nil? (:target @board))
+                         false (not (contains? (:dead @board)
+                                               (:target @board)))))
+               (lock-gun robot board)
+               (move robot board))))
+  
+  (defn next-target [board]
+    (let [{:keys [enemies dead]} @board
+          alive (filter #(not (contains? dead (key %))) enemies)] 
+      (first (first (sort-by #(:distance (val %)) alive)))))
+  
+  (defn tree [robot board]
+    (sequence "Kill All"
+              (look-for-enemy? robot board)
+              (until-fail
+               (sequence "Until No Enemy Left"
+                         (action "Select Target"
+                                 (dosync (alter board assoc 
+                                                :target (next-target board))))
+                         (attack robot board)))))
+  
+  (defn -init []
+    [[] (ref {:enemies {} :dead #{} :scanned [0 0]})])
+  
+  (defn setup [robot]
+    (doto robot
+      (.setColors Color/RED Color/WHITE Color/RED)
+      (.setAdjustGunForRobotTurn true)
+      (.setAdjustRadarForGunTurn true)
+      (.setAdjustRadarForRobotTurn true))
+    (dosync (alter (.board robot) assoc :robot robot)))
+  
+  (defn -run [robot]
+    (setup robot)
+    (exec (tree robot (.board robot))))
+  
+  (defn -onPaint [robot g]
+    (let [[x y] (:scanned @(.board robot))] 
+      (.setColor g (java.awt.Color. 0xff 0x00 0x00 0x80))
+      (.fillRect g (- x 20) (- y 20) 40 40)))
+  
+  (defn -onRobotDeath [robot event]
+    (dosync (alter (.board robot) assoc 
+                   :dead (conj (:dead @(.board robot)) (.getName event)))))
+  
+  (defn -onScannedRobot [robot event]
+    (let [distance (.getDistance event)
+          name (.getName event)
+          bearing (.getBearing event)
+          velocity (.getVelocity event)
+          distance (.getDistance event)
+          target {:distance distance :bearing bearing :velocity velocity}
+          heading (.getHeading robot)
+          angle (Math/toRadians (mod (+ heading bearing) 360))
+          x (+ (.getX robot) (* (Math/sin angle) distance))
+          y (+ (.getY robot) (* (Math/cos angle) distance))]
+      (dosync (alter (.board robot) assoc-in [:enemies name] target)
+              (alter (.board robot) assoc :scanned [x y]))))
+#+end_src

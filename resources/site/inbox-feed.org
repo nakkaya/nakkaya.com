@@ -1,0 +1,64 @@
+#+title: inbox-feed - RSS/Atom to Email
+#+tags: rss atom feed email imap
+#+description: A tool for retrieving content from RSS/ATOM feeds and mailing it.
+#+OPTIONS: toc:nil
+
+inbox-feed is a tool for delivering news from RSS feeds to your email
+program. It is an attempt to add some features that are missing from
+other RSS to email applications.
+
+*** Configuration
+
+  Following is the sample configuration, by default configuration file
+  is *./config.clj* but you change its name and location using command
+  line options.
+
+  #+BEGIN_SRC clojure
+    [:smtp-creds {:to "user@domain.com"}
+    
+     ;; :smtp-creds {:to "user@domain.com"
+     ;;              :host "smtp.gmail.com"
+     ;;              :user "user@gmail.com"
+     ;;              :pass "super_secret_pass"
+     ;;              :ssl :yes}
+    
+     ;; :imap-creds ["imaps" "imap.gmail.com" "nurullah@nakkaya.com" "super_secret_pass"]
+     
+     :feed-list [["http://news.ycombinator.com/rss" 15 "3cdbbd1e-5559-45d5-8dd6-d60408301580"]
+                 ["http://www.reddit.com/r/programming/.rss" 15 "780e3966-547c-40a7-855b-23161ceee8d3"]
+                 ;; when using IMAP
+                 ;; ["http://news.ycombinator.com/rss" 15 ["feeds" "hackernews"]]
+                 ]]
+  #+END_SRC
+
+  Above setup will inject mails to local sendmail process
+  alternatively you can use an SMTP server or you can provide IMAP
+  credentials then message will be placed in folder/s. *feed-list*
+  is a list of vectors at the very least it should contain a list of
+  feed URLs rest is optional. Having the following structure,
+
+  #+BEGIN_EXAMPLE
+     [url freq id name]
+  #+END_EXAMPLE
+
+   - url - URL of the feed.
+   - freq - Optional. How often we should check the URL (Defaults to 60 mins)
+   - id - Optional string that will be appended to the email in *white*
+     which allows you to create filters looking for that text or a
+     vector of folder names defining a folder hierarchy entries should be
+     placed in when using /IMAP/. ex. ["Feeds" "Feed"] will place the
+     entries into the /Feed/ folder under /Feeds/ folder.
+   - name - Optional name that will override the name for the feed.
+
+*** Code
+
+  You can grab the latest version from the [[https://github.com/nakkaya/inbox-feed][repo]].
+
+  For bug reports/fixes/help, see [[http://nakkaya.com/contact.html][contact]].
+
+  Any feature requests are also welcome see [[http://nakkaya.com/contact.html][contact]].
+
+*** License
+
+  Beerware Revision 42
+

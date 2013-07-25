@@ -1,0 +1,230 @@
+#+title: Simple Robocup/Simspark Agent in Clojure
+#+tags: clojure robocup simspark
+
+[[http://en.wikipedia.org/wiki/RoboCup][Robocup]], is an international
+robotics competition. It is made up of multiple competitions one of
+which is the simulation league where instead of actual robots you
+control virtual ones by interacting with the soccer server.  Following
+code demonstrates, how to communicate with the soccer server and how to
+move the joints of the robot to make it do stuff. For instructions on
+how to install SimSpark you can checkout their [[http://simspark.sourceforge.net/wiki/index.php/Main_Page][wiki]]
+pages. (For Mac OS X they provide pre-compiled binaries check out their
+sourceforge download section.)
+
+#+BEGIN_HTML
+  <p>
+    <video src="/video/robocup-simspark-agent.mp4" width="80%" controls>
+      Looks like HTML5 Video tag did not work you can download
+      the video <a href="/video/robocup-simspark-agent.mp4">here</a>.
+    </video>
+  </p>
+#+END_HTML
+
+#+begin_src clojure
+  (ns robocup.core
+    (:import (java.net Socket)
+             (java.nio ByteBuffer)))
+  
+  (def joints 
+    {:shoulder {:type :hinge 
+                :perceptor {:left :laj1 :right :raj1} 
+                :efector   {:left :lae1 :right :rae1}}
+     :upper-arm {:type :hinge 
+                 :perceptor {:left :laj2 :right :raj2} 
+                 :efector   {:left :lae2 :right :rae2}}})
+  
+  (defn connect [ip port]
+    (let [socket (Socket. ip port)
+          out (.getOutputStream socket)
+          in (.getInputStream socket)]
+      {:socket socket :in in :out out :out-agent (agent "")}))
+  
+  (defn write-msg [conn msg]
+    (let [{out :out agent :out-agent} conn
+          write (fn [_]
+                  (try
+                    (doto out
+                      (.write (-> (ByteBuffer/allocate 4) 
+                                  (.putInt (count msg)) .array))
+                      (.write (.getBytes msg))
+                      (.flush))
+                    (catch Exception e "")))]
+      (send agent write)))
+#+end_src
+
+Communication with the server is done through TCP/IP by passing
+S-Expressions back and forth.  Messages to the server are made up of one
+or more S-Expressions prefixed with message length which is a 32 bit
+unsigned integer in network order, using ByteBuffer we can emulate htonl
+call and get our 32 bit unsigned integer, all writes are done through an
+agent so that we can safely write from multiple threads and let the
+agent handle serialization of the writes.
+
+#+begin_src clojure
+  (defn msg-length [conn]
+    (let [buf (ByteBuffer/allocate 4)] 
+      (doseq [i (range 4)] (.put buf (byte (.read (:in conn)))))
+      (.getInt buf 0)))
+  
+  (defn read-msg [conn]
+    (let [length (msg-length conn)
+          buffer (byte-array length)]
+      (.read (:in conn) buffer 0 length)
+      (read-string (str "(" (apply str (map char buffer)) ")"))))
+  
+  (defn close [conn]
+    (.close (:in conn))
+    (.close (:out conn))
+    (.close (:socket conn)))
+  
+  (defmacro forever [& body] 
+    `(try (while true  ~@body) (catch Exception e#)))
+  
+  (defn in-thread [f]
+    (doto (Thread. f)
+      (.start)))
+#+end_src
+
+Messages from the server follows the same spec, we decode the message,
+by parsing first 4 bytes which gives us the length of the message, than
+reading that many bytes from the stream, received message will contain
+multiple S-Expressions wrapping this returned message inside a pair of
+parentheses "*(.. msg received..)*" calling read-string with it gives us
+a list of lists which we can easily iterate and extract information
+from.
+
+For our simple purposes we are only interested in messages that will
+tell us the position of our joints. These are the messages that begin
+with either the symbol HJ (Hinge Joint) or UJ (Universal Joint).
+
+#+begin_src clojure
+  (defn hinge-joints [msg]
+    (reduce (fn[h v] 
+              (let [[_ [_ n] [_ ax]] v] (assoc h (keyword n) ax)))
+            {} (filter #(= (first %) 'HJ) msg)))
+  
+  (defn universal-joints [msg]
+    (reduce (fn[h v] 
+              (let [[_ [_ n] [_ ax1] [_ ax2]] v]
+                (assoc h (keyword n) [ax1 ax2])))
+            {} (filter #(= (first %) 'UJ) msg)))
+#+end_src
+
+#+begin_example
+  robocup.core=> (def sample-msg '((HJ (n laj3) (ax -1.02)) 
+                                   (UJ (n laj1 2) (ax1 -1.32) (ax2 2.00))))
+  #'robocup.core/sample-msg
+  robocup.core=> (hinge-joints sample-msg)
+  {:laj3 -1.02}
+  robocup.core=> (universal-joints sample-msg)
+  {:laj1 [-1.32 2.0]}
+#+end_example
+
+First we filter the message based on the type of joint we are interested 
+in then destructure the list into its name and angle components. In the
+resulting map keys are the names of the perceptors and values are their
+angles. (For a complete listing of available joints see SimSpark User
+Manual pg. 38)
+
+#+begin_src clojure
+  (defn player [ip port]
+    (let [conn (connect ip port)
+          hjoints (ref {})
+          ujoints (ref {})]
+      (write-msg conn "(scene rsg/agent/nao/nao.rsg)")
+      (in-thread 
+       #(forever 
+         (let [msg (read-msg conn)]
+           (dosync
+            (alter hjoints merge (hinge-joints msg))
+            (alter ujoints merge (universal-joints msg))))))
+      {:conn conn :hinge-joints hjoints :universal-joints ujoints}))
+#+end_src
+
+In order to put a player on to the field, we connect to the soccer
+server but we will be invisible until we send the /scene/ command which
+will tell the server how to render our robot. /nao.rsg/ is the simulated
+version of the [[http://en.wikipedia.org/wiki/Nao_(robot)][Nao Robot]]. After we send the
+scene command we fire up a thread and forever keep reading and parsing
+messages from the server.
+
+#+begin_src clojure
+  (defn direction [player perceptor angle]
+    (let [target-angle (+ 200 angle)
+          current-angle (+ 200 (perceptor @(:hinge-joints player)))]
+      (if (> target-angle current-angle) 1 -1)))
+#+end_src
+
+Now that we know the angular position of the hinges, we need to figure
+out which direction we need to turn the hinge in order to reach our
+target angle.
+
+#+begin_example
+  robocup.core=> (direction {:hinge-joints (ref {:raj1 1})} :raj1 40)
+  1
+  robocup.core=> (direction {:hinge-joints (ref {:raj1 -1})} :raj1 -40)
+  -1
+#+end_example
+
+As an example if the hinge is at 1 degree angle and we want to move it
+to 40 degrees we need to turn it in the positive direction but if
+the hinge is at -1 degrees and we want to move it to -40 degrees we need
+to turn it in the negative direction. 
+
+#+begin_src clojure
+  (defn in-range? [val target error]
+    (some true? (map #(= (int val) %) 
+                     (range (- target error) (+ target error)))))
+#+end_src
+
+After instructing a hinge to turn it will keep turning until we tell it
+stop, we determine when to stop by repeatedly reading the hinges angle
+and checking if it is falls in between target +/- error range.
+
+#+begin_src clojure
+  (defn move-joint [player start-cmd stop-cmd angle perceptor]
+    (future 
+     (write-msg (:conn player) start-cmd)
+     (while (not (in-range? (perceptor @(:hinge-joints player)) angle 5)))
+     (write-msg (:conn player) stop-cmd)
+     (println perceptor (perceptor @(:hinge-joints player)))))
+#+end_src
+
+In order to move a joint we issue the start command then wait until the
+hinge reaches our target angle then we issue the stop command.
+
+#+begin_src clojure
+  (defn command [player side j angle]
+    (let [joint (j joints)
+          perceptor (side (:perceptor joint))
+          effector (side (:efector joint))
+          dir (direction player perceptor angle)
+          start-cmd (str (list (symbol (name effector)) dir))
+          stop-cmd (str (list (symbol (name effector)) 0))]
+      (move-joint player start-cmd stop-cmd angle perceptor)))
+#+end_src
+
+You may have noticed that all hinges have weird perceptor and effector
+names in order to make sending commands more user friendly joints map,
+maps body parts to their effectors and perceptors, using the joints map
+we get the perceptor and effector we are interested in then calculate
+the direction of travel and build the start and stop commands, commands
+are S-Expressions having the format /(effector_name change_in_angle)/.
+
+That pretty much covers everything in order to create simple kinematics,
+waving action in the above video is defined like the following,
+
+#+begin_src clojure
+  (def nao-bot (player "127.0.0.1" 3100))
+  
+  ;;wave
+  (do
+    (command nao-bot :right :shoulder -90)
+    @(command nao-bot :left :shoulder 60)
+    (doseq [i (range 3)]
+      @(command nao-bot :left :upper-arm 50)
+      @(command nao-bot :left :upper-arm 0))
+    (command nao-bot :left :shoulder -90))
+  
+  (close (:conn nao-bot))
+#+end_src

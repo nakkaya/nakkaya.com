@@ -1,0 +1,108 @@
+#+title: Using Offlineimap with Gnus
+#+tags: offlineimap gnus
+
+As I rely more and more on my [[http://en.wikipedia.org/wiki/3G][3G]] connection, its high latency made my
+Gnus experience more more unbearable. I wanted to keep using IMAP in
+order to use multiple clients while on the go, so I settled on using
+[[http://software.complete.org/software/projects/show/offlineimap][OfflineIMAP]]. OfflineIMAP will download all your mail and keep it in
+Maildir format any changes Gnus makes will be synchronized back to
+GMail and as a bonus you get a backup of all your emails. Even though
+both OfflineIMAP and Gnus has been around for years they still don't
+play well with each other, Gnus uses its own flags instead of using
+standard Maildir flags so your changes aren't synchronized back to
+GMail, [[http://groups.google.com/group/linux.debian.user/msg/7594165a2b6d1c49][someone]] complained about this 6 years ago but sadly nothing has
+changed. There is still hope though, using the script he posted with
+OfflineIMAP's pre/post hooks we can sync Gnus flags to Maildir and
+vice versa.
+
+#+BEGIN_SRC conf
+  [general]
+  ui = Noninteractive.Basic
+  accounts = nakkaya
+  
+  [Account nakkaya]
+  localrepository = nakkayaLocal
+  remoterepository = nakkayaRemote
+  autorefresh = 1
+  
+  presynchook = ~/Projects/scripts/sync_nnmaildir -g
+  postsynchook = ~/Projects/scripts/sync_nnmaildir -m
+  
+  [Repository nakkayaLocal]
+  type = Maildir
+  localfolders = ~/Documents/mail/
+  
+  [Repository nakkayaRemote]
+  type = Gmail
+  remoteuser = nurullah@nakkaya.com
+  remotepass = super_secret_password
+  holdconnectionopen = true
+  keepalive = 60
+  
+  #Setting realdelete = yes will Really Delete email from the server.
+  #Otherwise "deleting" a message will just remove any labels and 
+  #retain the message in the All Mail folder.
+  realdelete = no
+#+END_SRC
+
+Save this snippet as ".offlineimaprc", change remote repository type to
+IMAP if you need to use this with some other IMAP server. Only trick here is
+to sync Gnus flags to Maildir before IMAP sync and sync Maildir flags to
+Gnus flags after IMAP sync. Now run /offlineimap/ while it
+synchronizes your messages open your *~/.gnus* set your select method
+to use nnmaildir,
+
+#+BEGIN_SRC emacs-lisp
+  (setq gnus-select-method 
+        '(nnmaildir "GMail" 
+                    (directory "~/Documents/mail/")
+                    (directory-files nnheader-directory-files-safe) 
+                    (get-new-mail nil)))
+  
+  (define-key gnus-group-mode-map (kbd "vo")
+    '(lambda ()
+       (interactive)
+       (shell-command "offlineimap&" "*offlineimap*" nil)))
+#+END_SRC
+
+Now start Gnus, press ^ (gnus-group-enter-server-mode), open
+nnimap:GMail, for each folder press u
+(gnus-browse-unsubscribe-current-group) to toggle the subscription
+status until you’re subscribed to the group. Then it should show up on
+the group screen (M-x gnus). This also adds a new key binding to the
+group buffer, typing "vo" will start OfflineIMAP.
+
+For sending email using GMail, you need to install gnutls package, then
+add the following to your .gnus,
+
+#+BEGIN_SRC emacs-lisp
+  (load "tls")
+  (setq send-mail-function 'smtpmail-send-it
+        message-send-mail-function 'smtpmail-send-it
+        starttls-use-gnutls t
+        starttls-gnutls-program "/opt/local/bin/gnutls-cli"
+        starttls-extra-arguments nil      
+        smtpmail-gnutls-credentials
+        '(("smtp.gmail.com" 587 nil nil))
+        ;; smtpmail-auth-credentials
+        ;;'(("smtp.gmail.com" 587 "nurullah@nakkaya.com" "pass" ))
+        smtpmail-starttls-credentials 
+        '(("smtp.gmail.com" 587 "nurullah@nakkaya.com" nil))
+        smtpmail-default-smtp-server "smtp.gmail.com"
+        smtpmail-smtp-server "smtp.gmail.com"
+        smtpmail-smtp-service 587
+        smtpmail-debug-info t
+        smtpmail-local-domain "nakkaya.com")
+#+END_SRC
+
+You also need a .netrc file in your home directory with the following
+content,
+
+#+BEGIN_EXAMPLE
+  machine smtp.gmail.com login nurullah@nakkaya.com password pass port 587
+#+END_EXAMPLE
+
+With this setup you should be able to send and receive email. This setup
+isn't perfect, an OS X bug makes OfflineIMAP crash while trying to download
+large emails, also it does crash every 10 hours or so but I can live
+with that, on the plus side it makes Gnus blazing fast.

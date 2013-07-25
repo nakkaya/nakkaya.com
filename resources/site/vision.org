@@ -1,0 +1,67 @@
+#+title: Vision - OpenCV wrapper for Clojure
+#+tags: clojure opencv
+#+description: Vision is a OpenCV wrapper for Clojure.
+
+Vision is a OpenCV wrapper for Clojure.
+
+*** Installation
+
+There are no pre build packages available. For now you have to build it
+your self. Only dependency is the OpenCV library.
+
+Run,
+
+#+begin_example
+   cmake .
+#+end_example
+
+in the *resources/lib* directory to create your platform specific build
+file then build the shared library, for Linux/OS X run,
+
+#+begin_example
+   make
+#+end_example
+
+Windows build instructions (without using cygwin) courtesy of Dusan
+Miloradovic,
+
+ - Make sure OPENCV\_DIR points to the installation on fhe OPENCV. If
+   cmake-gui was used for building the OpenCV, it stores the
+   information in the registry, so that needs not to be set. 
+ - Edit the CMakeLists.txt:
+   - Set the link directories to point to the location of OPENCV dlls:
+     for example:LINK\_DIRECTORIES( c:/opencv\_out/bin/ ) 
+   - Replace the library names with the full dll names: replace
+     opencv\_core with opencv\_core231.dll , etc.. 
+ - Run cmake-gui, and choose the vision\_install\_dir/resources/lib as
+   "Where is the source code", and pick arbitrary build folder. 
+ - Choose mingw32 from the list of the compiler options
+ - Run Configure, and Generate
+ - go to the build folder , and type mingw32-make
+
+
+On the Clojure side you need to start the JVM with the
+jna.library.path pointing to the location of the shared library, for a
+leiningen project it can be done by the following,
+
+#+begin_src clojure
+  (defproject awesome-project "1.0.0-SNAPSHOT"
+    :dependencies [[vision  "1.0.0-SNAPSHOT"]]
+    :jvm-opts ["-Djna.library.path=/path/to/vision/resources/lib"])
+#+end_src
+
+*** Usage
+
+resources/examples/ folder contains examples to give a feel for the
+API, I also have the following hacks using Vision,
+
+ - [[http://nakkaya.com/2011/01/24/lane-detection-using-clojure-and-opencv/][Lane Detection using Clojure and OpenCV]]
+ - [[http://nakkaya.com/2013/01/10/a-clojure-autopilot-for-parrot-ar-drone/][A Clojure Autopilot for Parrot A.R. Drone]]
+
+*** Source
+
+Project is hosted at github, grab it [[http://github.com/nakkaya/vision][here]].
+
+*** License
+
+Beerware Revision 42

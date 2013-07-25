@@ -1,0 +1,195 @@
+#+title: alter-ego - A Reactive AI Library
+#+tags: alter-ego clojure robocode
+#+TAGS: noexport(e)
+#+EXPORT_EXCLUDE_TAGS: noexport
+
+[[http://nakkaya.com/alter-ego.html][alter-ego]] is a reactive AI library based on the
+concept of behavior trees. Behavior trees combines a number of AI
+techniques such as Hierarchical State Machines, Scheduling, Planning,
+and Action Execution. Their strength comes from the fact that it is very
+easy to see logic, they are fast to execute and easy to maintain.
+
+Behavior trees allow programmers to piece together reusable blocks of
+code which can be as simple as looking up a variable in game state to
+running an animation, then the behavior tree is used to control the flow
+and execution of these blocks of code.
+
+As its name implies a behavior tree is a tree structure, made up of
+three types of nodes, action, decorator, composite. Composite and
+decorator nodes are used to control the flow within the three and action
+nodes are where we execute code they return success or failure and their
+return value is then used to decide where to navigate next in the tree.
+
+In alter-ego actions are functions, Actions are used to change state such
+as calculating a new path or shooting at the player.
+
+Selector and sequence nodes are workhorse internal nodes. Selector node
+will try to execute its first child, if it returns success it will also
+return success if it fails it will try executing its next child until
+one of its children returns success or it runs out of children at which
+point it will return failure. This property allows us to choose which
+behavior to run next,
+
+#+begin_html
+  <p> <img src="/images/post/selector.png" alt="An Example Selector Node"/> </p>
+#+end_html
+
+On the other hand a sequence represents a series of behaviors that we
+need to accomplish. A sequence will try to execute all its children from
+left to right, if all of its children succeeds sequence will also
+succeed, if one of its children fails sequence will stop and return
+failure.
+
+#+begin_html
+  <p> <img src="/images/post/sequence.png" alt="An Example Sequence Node"/> </p>
+#+end_html
+
+With the above tree, root selector first checks attack sequence,
+attack in return executes action *Player In Range?* if it succeeds we
+pick a weapon, face the player and fire. If *Player In Range?* fails we
+stop execution and it causes attack sequence to fail and selector tries
+to execute Taunt sequence.
+
+Thats enough theory to put together something that works, 
+
+#+begin_html
+  <p> <img src="/images/post/robocode.png" alt="Simple Robocode AI"/> </p>
+#+end_html
+
+This represents a very simple AI logic for a robocode bot, every time we
+execute the tree, we scan for others bots in the arena, pick one to
+attack, then we execute Move selector, if we are not too close we
+move forward, if we are too close forward sequence will fail and we fall
+back to  back action. We want our robot to be always ready to fire so
+the first thing we do in Fire sequence is to turn the turret towards the
+target then we check if we are within gun range, if we are we fire, if
+we are not we bail out which takes us back to scan, whether we fire or
+not we always keep the gun locked on the target.
+
+#+begin_src clojure :exports none :mkdirp yes :tangle source/src/tank.clj
+  (ns tank
+    (:refer-clojure :exclude [sequence])
+    (:use [alter-ego.core])
+    (:import (java.awt Color)
+             (robocode.util Utils))
+    (:gen-class :extends robocode.AdvancedRobot :init init :state blackboard))
+  
+  (defn debug [s]
+    (.println System/out s))
+  
+  (def safety 200)
+  (def gun-range 250)
+#+end_src
+
+Actions are Clojure functions, when working with Java methods you need
+to keep in mind that return value of the action will be coerced to
+boolean that is what determines success or failure of the action when
+methods return null even when they succeed such as fire above you need
+to return true explicitly. We define the tree,
+
+#+begin_src clojure :mkdirp yes :tangle source/src/tank.clj
+  (defn execute [robot]
+    (.execute robot) true)
+  
+  ;;http://robowiki.net/wiki/Linear_Targeting
+  (defn lock-gun [robot bb]
+    (action (if-let [target (:target @bb)]
+              (let [self-bearing (.getHeadingRadians robot)
+                    target-bearing (Math/toRadians (:bearing target))
+                    gun-heading (.getGunHeadingRadians robot)
+                    abs-bearing (+ self-bearing target-bearing)
+                    sin (Math/sin (- target-bearing abs-bearing))
+                    vel (/ (* (:velocity target) sin) 13)
+                    angle (Utils/normalRelativeAngle 
+                           (+ (- abs-bearing gun-heading) vel))]
+                (.setTurnGunRight robot (Math/toDegrees angle))
+                (execute robot)))))
+  
+  (defn tree [robot bb]
+    (sequence "Attack"
+              (action "Scan"
+                      (.setTurnRadarLeft robot 360)
+                      (execute robot))
+              
+              (action "Pick Target"
+                      (dosync 
+                       (alter bb assoc :target 
+                              (first (sort-by :distance (vals (:enemies @bb)))))))
+              
+              (action "Face Target"
+                      (when (:target @bb)
+                        (.setTurnRight robot (:bearing (:target @bb)))
+                        (execute robot)))
+              
+              (selector "Move"
+                        (sequence (action "If Not Too Close"
+                                          (if (nil? (:target @bb))
+                                            true
+                                            (> (:distance (:target @bb)) safety)))
+                                  
+                                  (action "Forward"
+                                          (.setAhead robot 100)
+                                          (execute robot)))
+                        (action "Back"
+                                (.setBack robot 100)
+                                (execute robot)))
+              (sequence "Fire"
+                        (lock-gun robot bb)
+  
+                        (action "In Gun Range"
+                                (when (:target @bb)
+                                  (< (:distance (:target @bb)) gun-range)))
+                        
+                        (action "Fire"
+                                (.fire robot 3) true))))
+#+end_src
+
+and execute it,
+
+#+begin_src clojure :mkdirp yes :tangle source/src/tank.clj
+  (defn -init []
+    [[] (ref {:enemies {}})])
+  
+  (defn setup [robot]
+    (.setColors robot Color/RED Color/WHITE Color/RED)
+    (dosync (alter (.blackboard robot) assoc :robot robot)))
+  
+  (defn -onScannedRobot [robot event]
+    (let [distance (.getDistance event)
+          name (.getName event)
+          bearing (.getBearing event)
+          velocity (.getVelocity event)
+          target {:distance distance :bearing bearing :velocity velocity}]
+      (dosync (alter (.blackboard robot) assoc-in [:enemies name] target))))
+
+  (defn -run [robot]
+    (setup robot)
+    (let [tree (tree robot (.blackboard robot))]
+      (exec (forever tree))))
+#+end_src
+
+#+BEGIN_HTML
+  <p>
+    <video src="/video/alter-ego-robocode-1.mp4" width="80%" controls>
+      Looks like HTML5 Video tag did not work you can download
+      the video <a href="/video/alter-ego-robocode-1.mp4">here</a>.
+    </video>
+  </p>
+#+END_HTML
+
+Appendix in the [[https://raw.github.com/nakkaya/nakkaya.com/master/resources/posts/2010-06-29-alter-ego-a-reactive-ai-library.org][raw]] file contains instructions on how to extract the
+source and interact with robocode.
+
+* Appendix                                                         :noexport:
+
+  You can either open this file with emacs and run,
+
+  #+begin_example
+    M-x org-babel-tangle
+  #+end_example
+
+  It will build the necessary directory structure and export the files
+  into their proper place, or copy/paste snippets in the following
+  order. For controlling robocode from Clojure you can refer to the
+  following article,
+  http://nakkaya.com/2010/07/06/controlling-robocode-engine-from-clojure/
