@@ -10,7 +10,7 @@
  :atomic-build true
  :emacs "/usr/bin/emacs"
  :emacs-eval ['(add-to-list 'load-path "/usr/share/org-mode/lisp/")
-              '(add-to-list 'load-path "~/Dropbox/code/emacs/ext/clojure-mode/")   
+              '(add-to-list 'load-path "~/source/emacs/ext/clojure-mode/")   
               '(require 'htmlize)
               '(require 'org)
               '(require 'ob)
