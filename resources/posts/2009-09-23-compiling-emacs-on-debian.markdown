@@ -16,6 +16,9 @@ using apt-get
     libtiff-dev
 
 
+    texinfo
+    libncurses5-dev
+
 #### Getting Latest Source
 
 Choose your favarite CVS and get the latest source.
@@ -41,7 +44,6 @@ First you need to run the configure script,
 
 Now you are ready to build.
 
-    make bootstrap
     make
     make install
 
