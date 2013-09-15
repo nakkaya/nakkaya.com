@@ -1,0 +1,27 @@
+#+title: xmobarrc
+#+tags: xmonad xmobar window-manager
+
+xmobar RC File,
+
+#+BEGIN_SRC fundamental :tangle ~/.xmobarrc
+  Config { font = "xft:Monaco:size=9:bold:antialias=true"
+         , bgColor = "black"
+         , fgColor = "grey"
+         , position = TopW L 95
+         , lowerOnStart = True
+         , commands = [ Run Weather "LCEN" ["-t","<tempC>°C","-L","18","-H","25","--normal","green","--high","red","--low","lightblue"] 3600
+                      , Run Network "eth0" ["-t","<dev>: <rx>KB <tx>KB","-L","0","-H","32","--normal","green","--high","red"] 10
+                      , Run Network "wlan0" ["-t","<dev>: <rx>KB <tx>KB","-L","0","-H","32","--normal","green","--high","red"] 10
+                      , Run Cpu ["-t","CPU: <total>%","-L","3","-H","50","--normal","green","--high","red"] 10
+                      , Run DiskIO [("/", "<read> <write>")] ["-l", "green", "--normal","orange","--high","red"] 10
+                      , Run Com "~/.xmonad/cpu_avg_temp.sh" [] "" 20
+                      , Run BatteryP ["BAT0"] ["-t","<left>% / <timeleft>","-L","50","-H","75","-h","green","-n","yell","-l","red","--", "-c", "energy_full"] 50
+                      , Run Memory ["-t","Mem: <usedratio>%"] 10
+                      , Run Swap [] 10
+                      , Run Date "%a %b %_d %H:%M" "date" 10
+                      ]
+         , sepChar = "%"
+         , alignSep = "}{"
+         , template = "%cpu% %~/.xmonad/cpu_avg_temp.sh% | %memory% %swap% | I/O %diskio% | %eth0% - %wlan0% | %battery%  }{ <fc=#ee9a00>%date%</fc> %LCEN%"
+         }
+#+END_SRC
