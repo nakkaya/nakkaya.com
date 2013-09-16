@@ -28,3 +28,4 @@ function tangle(){
 tangle
 
 #wget -qO- http://127.0.0.1:8000/bootstrap.sh | bash
+#wget -qO- https://raw.github.com/nakkaya/nakkaya.com/master/resources/site/dotfiles/bootstrap.sh | bash

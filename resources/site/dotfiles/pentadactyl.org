@@ -102,7 +102,7 @@
   map -b zo ZO
 #+END_SRC
 
-#+BEGIN_SRC javascript :tangle ~/.pentadactyl/user.css 
+#+BEGIN_SRC javascript :mkdirp yes :tangle ~/.pentadactyl/user.css 
   /* @-moz-document domain("www.reddit.com") { */
   /*     .side{ display: none !important; } */
   /*     .md { max-width: 100% ! important;} */
