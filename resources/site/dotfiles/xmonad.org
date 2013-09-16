@@ -1,7 +1,119 @@
-#+title: xmobarrc
+#+title: Xmonad & Xmobar Configuration
 #+tags: xmonad xmobar window-manager
 
-xmobar RC File,
+#+BEGIN_SRC fundamental :mkdirp yes :tangle ~/.xmonad/xmonad.hs
+  import XMonad
+  import XMonad.Hooks.DynamicLog
+  import XMonad.Hooks.ManageDocks
+  import XMonad.Util.Run(spawnPipe)
+  import XMonad.Util.EZConfig(additionalKeys)
+  import System.IO
+  import XMonad.Layout.Spacing
+  import XMonad.Layout.NoBorders
+  import XMonad.Actions.CopyWindow
+  import XMonad.Hooks.SetWMName
+  import XMonad.Hooks.ICCCMFocus
+  import XMonad.Actions.GridSelect
+  import XMonad.Prompt
+  import XMonad.Prompt.Shell
+  import qualified XMonad.Layout.IndependentScreens as LIS
+  import XMonad.Actions.Warp
+  import XMonad.Actions.CycleWS
+#+END_SRC
+
+#+BEGIN_SRC fundamental :mkdirp yes :tangle ~/.xmonad/xmonad.hs
+  toggleMonitor = do
+    screencount <- LIS.countScreens
+    if screencount > 1
+     then spawn "xrandr --output HDMI1 --off; /bin/bash ~/.xmonad/init.sh"
+     else spawn "xrandr --output HDMI1 --primary --auto --rotate normal --pos 0x0 --output eDP1 --auto  --rotate normal  --right-of HDMI1; /bin/bash ~/.xmonad/init.sh"
+#+END_SRC
+
+#+BEGIN_SRC fundamental :mkdirp yes :tangle ~/.xmonad/xmonad.hs
+  myTerminal = "urxvt -tr +sb -fg white -bg black -tint white -sh 15 -fade 10 -fadecolor black -pr black -pr2 white -fn \"xft:Monaco-11\""
+#+END_SRC
+
+#+BEGIN_SRC fundamental :mkdirp yes :tangle ~/.xmonad/xmonad.hs
+  myWorkspaces = ["1:emacs","2:web","3:music","4","5","6","7","8","9","0"]
+#+END_SRC
+
+-- To find the property name associated with a program, use
+-- > xprop | grep WM_CLASS
+
+#+BEGIN_SRC fundamental :mkdirp yes :tangle ~/.xmonad/xmonad.hs
+  myManageHook = composeAll
+                 [className =? "java-lang-Thread" --> doFloat,
+                  className =? "sun-awt-X11-XFramePeer" --> doFloat,
+                  className =? "clojure-main" --> doFloat,
+                  className =? "Vlc" --> doFloat,
+                  className =? "avplay" --> doFloat,
+                  className =? "FlightGear" --> doFloat,
+                  className =? "osgViewer" --> doFloat,
+                  className =? "VirtualBox" --> doFloat,
+                  className =? "Gnome-contacts" --> doFloat,
+                  className =? "Steam" --> doFloat,
+                  className =? "Wine" --> doFloat,
+                  className =? "Emacs24" --> doShift "1:emacs",
+                  className =? "Google-chrome" --> doShift "2:web",
+                  className =? "Firefox" --> doShift "2:web",
+                  className =? "Rhythmbox" --> doShift "3:music"
+                 ]
+                 <+> manageDocks <+> manageHook defaultConfig
+#+END_SRC
+
+#+BEGIN_SRC fundamental :mkdirp yes :tangle ~/.xmonad/xmonad.hs
+myLayutHook = smartBorders $ lessBorders OnlyFloat $  avoidStruts $ layoutHook defaultConfig ||| noBorders Full
+#+END_SRC
+
+#+BEGIN_SRC fundamental :mkdirp yes :tangle ~/.xmonad/xmonad.hs
+  myModMask = mod4Mask -- mod4mask is the windows key
+  myKeyBindings = [((mod4Mask, xK_p), shellPrompt defaultXPConfig)
+                  , ((0, xK_Print), spawn "gnome-screenshot")
+                  , ((mod4Mask, xK_v ), windows copyToAll) -- @@ Make focused window always visible
+                  , ((mod4Mask .|. shiftMask, xK_v ),  killAllOtherCopies) -- @@ Toggle window state back
+                  , ((mod4Mask .|. shiftMask, xK_m ),  toggleMonitor)
+                  , ((mod4Mask .|. shiftMask, xK_h ),  spawn "nautilus --no-desktop --browser")
+                  -- Suspend
+                  , ((mod4Mask .|. shiftMask, xK_s ),  spawn "gnome-screensaver-command -l; dbus-send --print-reply --system --dest=org.freedesktop.UPower /org/freedesktop/UPower org.freedesktop.UPower.Suspend")
+                  -- Lock Screen
+                  , ((mod4Mask .|. controlMask, xK_s ),  spawn "gnome-screensaver-command -l")
+                  -- Hibernate
+                  , ((mod4Mask .|. controlMask, xK_z ),  spawn "gnome-screensaver-command -l; dbus-send --system --print-reply --dest=\"org.freedesktop.UPower\" /org/freedesktop/UPower org.freedesktop.UPower.Hibernate")
+                  , ((mod4Mask, xK_F1 ), spawn "xbacklight -dec 10")
+                  , ((mod4Mask, xK_F2 ), spawn "xbacklight -inc 10")
+                  , ((mod4Mask, xK_F7 ), spawn "cmus-remote -r")
+                  , ((mod4Mask, xK_F8 ), spawn "cmus-remote -u")
+                  , ((mod4Mask, xK_F9 ), spawn "cmus-remote -n")
+                  , ((mod4Mask, xK_F10 ), spawn "amixer -D pulse set Master toggle")
+                  , ((mod4Mask, xK_F11 ), spawn "amixer -D pulse set Master 3%-")
+                  , ((mod4Mask, xK_F12 ), spawn "amixer -D pulse set Master 3%+")
+                  , ((mod4Mask, xK_s), goToSelected defaultGSConfig)
+                  , ((mod4Mask, xK_g), spawnSelected defaultGSConfig ["emacs","firefox","rhythmbox","gnome-control-center sound","gnome-control-center","virtualbox","google-chrome --incognito"])
+                  , ((mod4Mask, xK_z), warpToWindow (1/2) (1/2)) -- @@ Move pointer to currently focused window
+                  , ((mod4Mask, xK_a),     toggleWS)
+                  ]
+#+END_SRC
+
+#+BEGIN_SRC fundamental :mkdirp yes :tangle ~/.xmonad/xmonad.hs
+  main = do
+  
+  xmproc <- spawnPipe "/bin/bash ~/.xmonad/init.sh"
+  
+  xmonad $ defaultConfig
+      { manageHook = myManageHook
+      , terminal = myTerminal
+      , workspaces = myWorkspaces
+      , borderWidth = 1
+      , normalBorderColor  = "#303030"
+      , focusedBorderColor = "#4D8686"
+      , modMask = myModMask
+      , layoutHook = myLayutHook
+      , logHook = takeTopFocus
+      , startupHook = setWMName "LG3D"
+      } `additionalKeys` myKeyBindings
+#+END_SRC
+
+xmobarrc File,
 
 #+BEGIN_SRC fundamental :tangle ~/.xmobarrc
   Config { font = "xft:Monaco:size=9:bold:antialias=true"
@@ -24,4 +136,32 @@ xmobar RC File,
          , alignSep = "}{"
          , template = "%cpu% %~/.xmonad/cpu_avg_temp.sh% | %memory% %swap% | I/O %diskio% | %eth0% - %wlan0% | %battery%  }{ <fc=#ee9a00>%date%</fc> %LCEN%"
          }
+#+END_SRC
+
+#+BEGIN_SRC sh :mkdirp yes :tangle ~/.xmonad/init.sh
+  function killAll (){
+      for PID in `pgrep $1`; do
+          kill ${PID} > /dev/null &
+      done
+  }
+  
+  killAll xmobar
+  killAll trayer
+  killAll nm-applet
+  killAll bluetooth-applet
+  killAll keynav
+  
+  #/usr/bin/xmobar ~/.xmobarrc &
+  /usr/bin/trayer --edge top --align right --SetDockType true --widthtype percent --width 5 --transparent true --tint 0x000000 --height 20 &
+  ~/source/bash/caps-setup &
+  ~/source/bash/disable-touch-tap &
+  nm-applet &
+  bluetooth-applet &
+  keynav &
+  
+  if [ -f ~/Dropbox/Photos/Misc/Wallpaper/Tgg54.jpeg ]; then
+      feh --bg-fill ~/Dropbox/Photos/Misc/Wallpaper/Tgg54.jpeg &
+  else
+      xsetroot -solid black &
+  fi
 #+END_SRC
