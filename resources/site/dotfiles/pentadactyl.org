@@ -1,0 +1,331 @@
+#+title: Pentadactyl Configuration
+#+tags: firefox pentadactyl
+
+#+BEGIN_SRC fundamental :mkdirp yes :tangle ~/.pentadactylrc
+  so ~/.pentadactyl/user.css
+  
+  " Share link on twitter and google+
+  command share-all -nargs=0 -description "Share Link" -javascript <<EOF
+          dactyl.execute(":open share-twitter");
+          dactyl.execute(":open share-google");
+  EOF
+  
+  " Toggle private browsing
+  command private-tab -nargs=+ -description "Open Private Tab" -javascript <<EOF
+          privateTab.readyToOpenTab(true);
+          gBrowser.addTab("about:blank");
+          dactyl.execute(":tablast");
+          dactyl.execute(":open " + args);
+          privateTab.stopToOpenTabs();
+  EOF
+  
+  " Toggle plugins.click_to_play
+  command toggle-click-to-play -js <<EOF
+          if(Services.prefs.getBoolPref("plugins.click_to_play"))
+              Services.prefs.setBoolPref("plugins.click_to_play", false);
+          else
+              Services.prefs.setBoolPref("plugins.click_to_play", true);
+          dactyl.execute(":reload");
+  EOF
+  
+  " Email current url
+  command email-url :open gmail-this
+  
+  " Save to org-mode Read Later Tree
+  command read-later :open org-capture-read-later
+  
+  command search-nakkaya -nargs=+ -description "Search nakkaya.com" -javascript <<EOF
+          dactyl.execute(":tabopen");
+          dactyl.open("site:nakkaya.com " + args);
+  EOF
+  
+  command search-hackernews -nargs=+ -description "Search news.ycombinator.com" -javascript <<EOF
+          dactyl.execute(":tabopen");
+          dactyl.open("site:news.ycombinator.com " + args);
+  EOF
+  
+  command local-time -nargs=+ -description "Convert Date to Local Time" -javascript <<EOF
+          dactyl.execute(":tabopen");
+          dactyl.open("http://www.wolframalpha.com/input/?i=" + args + " in local time");
+  EOF
+  
+  "" disable smooth scroll
+  set scrollsteps=1
+  set scrolltime=0
+  
+  " Editor, C-e invokes it in text fields
+  set editor="emacsclient -c"
+  
+  " Show pattern matches as you type
+  set incfind
+  
+  " Hilight previous search pattern matches
+  set hlfind
+  
+  " Ignore case in search unless pattern has uppercase chars
+  set findcase=smart
+  
+  " Color Scheme
+  colorscheme solarized-dark
+  
+  " Allow GMail shortcuts
+  set passkeys+=mail.google.com:jksacr#<CR>,gi,gl,gp
+  set strictfocus=google.com:laissez-faire,'chrome:*':laissez-faire,*:despotic
+  " Let Hint Message from X Links 
+  autocmd LocationChange mail.google.com set ht+=span.ata-asJ
+  " Let Hint Expand Collapsed Conversations
+  autocmd LocationChange mail.google.com set ht+=span.adx
+  " Let Hint Expand Message
+  autocmd LocationChange mail.google.com set ht+=td.gF
+  " Let Hint Expand Delete All Spam Messages
+  autocmd LocationChange mail.google.com set ht+=span.x2
+  
+  " Hint x New Tweets on Twitter
+  autocmd LocationChange twitter.com set ht+=div.new-tweets-bar
+  " Hint Instagram Load More
+  autocmd LocationChange instagram.com set ht+=a.button.button-grey.button-large
+  
+  " Use characters for hints
+  "set hintkeys=asdfg;lkj
+  set hintkeys=asdflkj
+  hi -a Hint font-size: 9pt !important;
+  
+  " Faster Scrolling
+  map -b j 8j
+  map -b k 8k
+  map -b h 8h
+  map -b l 8l
+  
+  " Use Full Zoom
+  
+  map -b zi ZI
+  map -b zo ZO
+#+END_SRC
+
+#+BEGIN_SRC javascript :tangle ~/.pentadactyl/user.css 
+  /* @-moz-document domain("www.reddit.com") { */
+  /*     .side{ display: none !important; } */
+  /*     .md { max-width: 100% ! important;} */
+  /* } */
+  
+  @-moz-document domain("youtube.com") {
+      #confirmBox.yt-alert-default.yt-alert-warn{ display: none !important; }
+  }
+  
+  @-moz-document domain("google.com.tr"), domain("google.com"), domain("google.de"){
+      #gbzw,       /* links */
+      #gbx3, #gbx4, /* background */
+      #fll, #bfl
+      {
+          display: none !important;
+      }
+  
+      #gbq, #gbu,  /* controls */
+      #gbx1, #gbx2 /* background */
+      {
+          top: 0 !important;
+      }
+  
+      /* remove google plus  */
+      ol.gbtc { display: none ! important;}
+      /* remove safe search button */
+      a#abar_button_ss.ab_button { display: none ! important;}
+  }
+  
+  @-moz-document url-prefix("https://mail.google.com/"){
+      #gbzw,       /* links */
+      #gbx3, #gbx4 /* background */
+      {
+          display: none;
+      }
+  
+      #gbq, #gbu,  /* controls */
+      #gbx1, #gbx2 /* background */
+      {
+          top: 0 !important;
+      }
+  
+      /* Bar container */
+      #gb {
+          height: 72px !important;
+      }
+  
+      /* Share pop-up content */
+      #gbwc.gbmwca {
+          top: -29px;
+      }
+  
+      /* remove google plus shit  */
+      ol.gbtc { display: none ! important;}
+  
+      /* get rid of copy right */
+      div.wIFnie { display: none !important; }
+  
+      /* Remove people widget completely */
+      .nH.adC {
+          display: none ! important;
+      }
+  
+      .yPPMxf, .nH.adC, .qHcrae, .y3, .y4 {
+          width: 0 ! important;
+      }
+      
+      /* Plain-text Message Body */
+      /* Compose Interfaces */
+      .ii, .Ak { font: medium monospace !important; }
+      .editable { font: medium monospace !important; }
+      /* .editable.LW-avf { font: medium monospace !important; } */
+  }
+  
+  @-moz-document domain("www.facebook.com") {
+      #rightCol{ display: none !important; }
+      #appsNav{ display: none !important; }
+      #pagesNav{ display: none !important; }
+      .fbChatSidebar,#fbDockChatBuddylistNub{ display: none !important; }
+  }
+  
+  @-moz-document domain("twitter.com") {
+      div.module.trends{ display: none !important; }
+      div.module.site-footer{ display: none !important; }
+      div.module.wtf-module.js-wtf-module.has-content{ display: none !important; }
+      div.global-nav{ display: none !important; }
+      .wrapper.white { background: none !important;}
+  }
+  
+  @-moz-document domain("facebook.com") {
+      /** Set Background color for page **/
+      .fbIndex { background-color: #3B5998 !important }
+  
+      /** Hide Crap **/
+      .fbIndex #globalContainer #dropmenu_container,
+      .fbIndex #globalContainer #content,
+      .fbIndex #globalContainer #pageFooter { display: none !important }
+  
+      /** Center Login Bar **/
+      .fbIndex .loggedout_menubar_container {
+          position: fixed !important;
+          width: 420px !important;
+          height: 82px !important;
+          min-width: 0 !important;
+          top: 50% !important;
+          left: 50% !important;
+          margin-top: -17px !important;
+          margin-left: -210px !important;
+          z-index: -1 !important;
+      }
+  
+      /** Center Login form **/
+      .fbIndex .loggedout_menubar { width: auto !important }
+      .fbIndex .loggedout_menubar_container .lfloat,
+      .fbIndex .loggedout_menubar_container .rfloat { float: none !important }
+      .fbIndex .loggedout_menubar_container .lfloat img,
+      .fbIndex .loggedout_menubar_container .rfloat #login_form table { display: block !important; margin: 0 auto !important }
+      .fbIndex .loggedout_menubar_container .lfloat i { display: block !important; margin: -70px auto 20px !important; }
+      .fbIndex .loggedout_menubar_container .sp_69c1xs { display: block !important; }
+  
+      /** Hide Homepage Box **/
+      #SetAsHomepage_Callout {
+          display: none;
+      }
+  
+      /** Reset bluBar z-index **/
+      .fbIndex div#blueBar {
+          z-index: 0 !important;
+          border: none !important;
+          box-shadow: none !important;
+      }
+  }
+  
+  @-moz-document domain(news.ycombinator.com), domain(news.usethesource.com) {
+    p { word-break: break-all; }
+    
+    #non-existent-id {}
+  
+    #csres { display: none; }
+  
+    .title {
+      font-size: 120% !important;
+    }
+  
+    .subtext {
+      font-size: 90% !important;
+    }
+  
+    ,* {
+      font-family: Helvetica !important;
+      line-height: 1.4 !important;
+    }
+  
+    body {
+      padding: 10px !important;
+      background: #F6F6EF;
+    }
+  
+    body > center > table {
+      width: 100% !important;
+    }
+  
+    body > center > table > tbody > tr:first-child > td {
+      font-size: 120%;
+      -moz-border-radius: 5px;
+      -moz-box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+  
+    .title a {
+      font-family: Museo !important;
+    }
+  
+    .title a:visited {
+      color: #666 !important;
+    }
+  
+    .comment,
+    .comhead {
+      font-size: 120% !important;
+    }
+  
+    .title .comhead {
+      font-size: 85% !important;
+    }
+  
+    .pagetop {
+      display: block;
+      padding: 6px 0 4px;
+      font-size: 110% !important;
+    }
+  
+    .pagetop a {
+      font-family: Helvetica !important;
+      color: rgba(0,0,0,0.6) !important;
+      font-size: 110% !important;
+    }
+  
+    img[src=http\:\/\/ycombinator\.com\/images\/y18\.gif] {
+      margin: 0 2px 0 5px;
+    }
+  }
+  
+  @-moz-document domain("instapaper.com") {
+      #right_column {
+          display: none ! important;
+      }
+  
+      #left_column {
+          width: 100% ! important;
+      }
+  
+      #bookmark_list {
+          width: 100% ! important;
+      }
+  
+  
+      .tableViewCell .titleRow {
+          width: 70% ! important;
+      }
+  
+      #footer {
+          display: none ! important;
+      }
+  }
+#+END_SRC
+

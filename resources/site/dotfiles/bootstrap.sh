@@ -19,7 +19,10 @@ function tangle(){
     rm -f ~/.keynavrc
     rm -f ~/.Xresources
     tangleFile xmonad
-    
+
+    rm -rf ~/.pentadactyl
+    rm -f ~/.pentadactylrc
+    tangleFile pentadactyl
 }
 
 tangle
