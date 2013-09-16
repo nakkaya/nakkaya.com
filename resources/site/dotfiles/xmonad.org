@@ -165,3 +165,35 @@ xmobarrc File,
       xsetroot -solid black &
   fi
 #+END_SRC
+
+#+BEGIN_SRC fundamental :tangle ~/.keynavrc
+  Left cut-left
+  Down cut-down
+  Up cut-up
+  Right cut-right
+  control+Left move-left
+  control+Down move-down
+  control+Up move-up
+  control+Right move-right
+  space warp,click 1,end
+  shift+space warp,click 3,end
+#+END_SRC
+
+#+BEGIN_SRC fundamental :tangle ~/.Xresources
+  Xft.dpi:                      110
+  Xft.antialias:                true
+  Xft.hinting:                  true
+  Xft.hintstyle:                hintfull
+  Xft.rgba:                     rgb
+#+END_SRC
+
+#+BEGIN_SRC fundamental  :tangle ~/.Xdefaults
+  urxvt*urlLauncher:  firefox
+  urxvt*matcher.button:  1
+  urxvt*perl-ext-common:  default,matcher,searchable-scrollback
+  urxvt.matcher.pattern.1:  \\bwww\\.[\\w-]\\.[\\w./?&@#-]*[\\w/-]
+#+END_SRC
+
+#+BEGIN_SRC sh :mkdirp yes :tangle ~/.xmonad/init.sh
+
+#+END_SRC
