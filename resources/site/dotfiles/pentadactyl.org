@@ -103,7 +103,7 @@
   map -b zo ZO
 #+END_SRC
 
-#+BEGIN_SRC javascript :mkdirp yes :tangle ~/.pentadactyl/user.css 
+#+BEGIN_SRC css :mkdirp yes :tangle ~/.pentadactyl/user.css 
   /* @-moz-document domain("www.reddit.com") { */
   /*     .side{ display: none !important; } */
   /*     .md { max-width: 100% ! important;} */
@@ -237,7 +237,7 @@
       }
   }
   
-  @-moz-document domain(news.ycombinator.com), domain(news.usethesource.com) {
+  @-moz-document domain(news.ycombinator.com) {
     p { word-break: break-all; }
     
     #non-existent-id {}
@@ -304,29 +304,6 @@
     img[src=http\:\/\/ycombinator\.com\/images\/y18\.gif] {
       margin: 0 2px 0 5px;
     }
-  }
-  
-  @-moz-document domain("instapaper.com") {
-      #right_column {
-          display: none ! important;
-      }
-  
-      #left_column {
-          width: 100% ! important;
-      }
-  
-      #bookmark_list {
-          width: 100% ! important;
-      }
-  
-  
-      .tableViewCell .titleRow {
-          width: 70% ! important;
-      }
-  
-      #footer {
-          display: none ! important;
-      }
   }
 #+END_SRC
 
