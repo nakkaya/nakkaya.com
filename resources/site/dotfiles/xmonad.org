@@ -154,7 +154,7 @@ xmobarrc File,
   #/usr/bin/xmobar ~/.xmobarrc &
   /usr/bin/trayer --edge top --align right --SetDockType true --widthtype percent --width 5 --transparent true --tint 0x000000 --height 20 &
   ~/source/bash/caps-setup &
-  ~/source/bash/disable-touch-tap &
+  ~/.disable-touch-tap &
   nm-applet &
   bluetooth-applet &
   keynav &
@@ -192,4 +192,11 @@ xmobarrc File,
   urxvt*matcher.button:  1
   urxvt*perl-ext-common:  default,matcher,searchable-scrollback
   urxvt.matcher.pattern.1:  \\bwww\\.[\\w-]\\.[\\w./?&@#-]*[\\w/-]
+#+END_SRC
+
+#+BEGIN_SRC fundamental  :tangle ~/.disable-touch-tap
+#/bin/bash
+
+synclient TapButton1=0
+synclient TapButton2=0
 #+END_SRC
