@@ -1,0 +1,139 @@
+#+title: tmux Configuration
+#+tags: tmux
+
+#+BEGIN_SRC fundamental :tangle ~/.tmux.conf
+  #new-session
+  
+  # Start windows and panes at 1, not 0
+  set -g base-index 1
+  set -g pane-base-index 1
+  
+  ##### Key Bindings
+  
+  unbind C-b 
+  set -g prefix C-o
+  bind C-o send-prefix
+  set-window-option -g xterm-keys on
+  
+  bind t source-file ~/.tmux-over-ssh.conf
+  bind k confirm kill-window
+  bind K confirm kill-server
+  
+  bind e source-file ~/.tmux-emacs-new-frame.conf
+  
+  #### Status Bar
+  
+  set-option -g  status-interval 1
+  set-option -g status-right-length 120
+  set -g status-right '#(~/.tmux-monitor-scripts/cpu.sh) #(~/.tmux-monitor-scripts/cpu_avg_temp.sh) | #(~/.tmux-monitor-scripts/disk.sh) | #(~/.tmux-monitor-scripts/netspeed eth0) | #(~/.tmux-monitor-scripts/battery.sh) | #(date +"%a %b %_d %H:%M") | #(hostname)'
+#+END_SRC
+
+#+BEGIN_SRC fundamental :tangle ~/.tmux-emacs-new-frame.conf
+  neww -n emacs-client
+  send-keys -t emacs-client "cd ~/" C-m
+  send-keys -t emacs-client "emacsclient -t" C-m
+#+END_SRC
+
+#+BEGIN_SRC fundamental :tangle ~/.tmux-over-ssh.conf
+  neww -n tmux-ssh
+  send-keys -t tmux-ssh "cd ~/" C-m
+  send-keys -t tmux-ssh "tmux-ssh "
+#+END_SRC
+
+#+BEGIN_SRC fundamental :tangle ~/.tmux.conf
+  #### COLOUR (Solarized 256)
+  
+  # default statusbar colors
+  set-option -g status-bg colour235 #base02
+  set-option -g status-fg colour136 #yellow
+  set-option -g status-attr default
+  
+  # default window title colors
+  set-window-option -g window-status-fg colour244 #base0
+  set-window-option -g window-status-bg default
+  #set-window-option -g window-status-attr dim
+  
+  # active window title colors
+  set-window-option -g window-status-current-fg colour166 #orange
+  set-window-option -g window-status-current-bg default
+  #set-window-option -g window-status-current-attr bright
+  
+  # pane border
+  set-option -g pane-border-fg colour235 #base02
+  set-option -g pane-active-border-fg colour240 #base01
+  
+  # message text
+  set-option -g message-bg colour235 #base02
+  set-option -g message-fg colour166 #orange
+  
+  # pane number display
+  set-option -g display-panes-active-colour colour33 #blue
+  set-option -g display-panes-colour colour166 #orange
+  
+  # clock
+  set-window-option -g clock-mode-colour colour64 #green
+#+END_SRC
+
+#+BEGIN_SRC sh :mkdirp yes :tangle ~/.tmux-monitor-scripts/battery.sh
+  if [ -d /sys/class/power_supply/BAT0 ];
+  then    
+      now=`cat /sys/class/power_supply/BAT0/energy_now`
+      full=`cat /sys/class/power_supply/BAT0/energy_full`
+      out=`echo $now/$full*100 | bc -l | cut -c 1-5`
+      printf "%.f%%" $out
+  else
+      echo "N/A"
+  fi
+#+END_SRC
+
+#+BEGIN_SRC sh :mkdirp yes :tangle ~/.tmux-monitor-scripts/cpu_avg_temp.sh
+  if which sensors > /dev/null; then
+      sensors | grep Core | awk '{print $3;}' | grep -oEi '[0-9]+.[0-9]+' | awk '{total+=$1; count+=1} END {print total/count,"°C"}'
+  else
+      ""
+  fi
+#+END_SRC
+
+#+BEGIN_SRC sh :mkdirp yes :tangle ~/.tmux-monitor-scripts/cpu.sh
+  #!/bin/bash     
+  #echo CPU: `top -b -n1 | grep "Cpu(s)" | awk '{print $2 + $4}'` 
+  
+  CPU=`eval $(awk '/^cpu /{print "previdle=" $5 "; prevtotal=" $2+$3+$4+$5 }' /proc/stat); sleep 0.4; eval $(awk '/^cpu /{print "idle=" $5 "; total=" $2+$3+$4+$5 }' /proc/stat); intervaltotal=$((total-${prevtotal:-0})); echo "$((100*( (intervaltotal) - ($idle-${previdle:-0}) ) / (intervaltotal) ))"`
+  
+  FREE_MEM=`free | awk '/buffers\/cache/{print (100 - ($4/($3+$4) * 100.0));}'`
+  
+  printf "CPU: %.f%% MEM: %.f%%" $CPU $FREE_MEM
+#+END_SRC
+
+#+BEGIN_SRC sh :mkdirp yes :tangle ~/.tmux-monitor-scripts/disk.sh
+  #!/bin/bash
+  
+  io_line_count=`iostat -d -x -m | wc -l` ; 
+  iostat -d -x -m 1 2 -z | tail -n +$io_line_count | grep -e "^sd[a-z].*" | awk 'BEGIN{rsum=0; wsum=0}{ rsum+=$6; wsum+=$7} END {print "I/O: " rsum " " wsum " mb/s"}'
+#+END_SRC
+
+#+BEGIN_SRC sh :mkdirp yes :mkdirp yes :tangle ~/.tmux-monitor-scripts/netspeed
+  #!/bin/bash
+  
+  if [ -z "$1" ]; then
+          echo
+          echo usage: $0 network-interface
+          echo
+          echo e.g. $0 eth0
+          echo
+          exit
+  fi
+  
+  IF=$1
+  
+  R1=`cat /sys/class/net/$1/statistics/rx_bytes`
+  T1=`cat /sys/class/net/$1/statistics/tx_bytes`
+  sleep 1
+  R2=`cat /sys/class/net/$1/statistics/rx_bytes`
+  T2=`cat /sys/class/net/$1/statistics/tx_bytes`
+  TBPS=`expr $T2 - $T1`
+  RBPS=`expr $R2 - $R1`
+  TKBPS=`expr $TBPS / 1024`
+  RKBPS=`expr $RBPS / 1024`
+  printf "%s: %d %d kb/s" $1 $RKBPS $TKBPS
+#+END_SRC

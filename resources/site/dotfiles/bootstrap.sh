@@ -23,6 +23,10 @@ function tangle(){
     rm -rf ~/.pentadactyl
     rm -f ~/.pentadactylrc
     tangleFile pentadactyl
+
+    rm -f ~/.tmux.conf
+    rm -rf ~/.tmux-monitor-scripts/
+    tangleFile tmux
 }
 
 tangle
