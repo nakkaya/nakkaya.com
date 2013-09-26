@@ -1,0 +1,47 @@
+#+title: Bash Configuration
+#+tags: linux bash
+
+#+BEGIN_SRC sh :tangle ~/.profile
+  # if running bash
+  if [ -n "$BASH_VERSION" ]; then
+      # include .bashrc if it exists
+      if [ -f "$HOME/.bashrc" ]; then
+          . "$HOME/.bashrc"
+      fi
+  fi
+  
+  if [ -d "$HOME/" ] ; then
+      PATH="$HOME/:$PATH"
+  fi
+#+END_SRC
+
+#+BEGIN_SRC sh :tangle ~/.lock
+  #!/usr/bin/env bash
+  cd ~/
+  mr fastPush
+  
+  gnome-screensaver-command -l
+  until gnome-screensaver-command -q | grep -m 1 "inactive"; do sleep 1 ; done
+  
+  echo "Downloading Chages"
+  echo `date`
+  cd ~/
+  mr up
+#+END_SRC
+
+#+BEGIN_SRC sh :tangle ~/.sleep
+  #!/usr/bin/env bash
+  cd ~/
+  mr fastPush
+  
+  gnome-screensaver-command -l
+  
+  dbus-send --print-reply --system --dest=org.freedesktop.UPower /org/freedesktop/UPower org.freedesktop.UPower.Suspend
+  
+  until gnome-screensaver-command -q | grep -m 1 "inactive"; do sleep 1 ; done
+  
+  echo "Downloading Chages"
+  echo `date`
+  cd ~/
+  mr up
+#+END_SRC
