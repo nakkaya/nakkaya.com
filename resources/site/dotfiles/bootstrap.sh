@@ -18,6 +18,7 @@ function tangle(){
     rm -rf ~/.xmonad
     rm -f ~/.keynavrc
     rm -f ~/.Xresources
+    rm -f ~/.caps-setup
     tangleFile xmonad
 
     rm -rf ~/.pentadactyl
