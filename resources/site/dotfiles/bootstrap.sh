@@ -33,6 +33,8 @@ function tangle(){
     rm -f ~/.lock
     rm -f ~/.sleep
     tangleFile bash
+    chmod +x ~/.sleep
+    chmod +x ~/.lock
 }
 
 tangle
