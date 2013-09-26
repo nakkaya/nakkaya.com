@@ -39,6 +39,7 @@ function tangle(){
 tangle
 
 chmod +x ~/.tmux-monitor-scripts/*
+chmod +x ~/.caps-setup
 
 rm -f ~/.emacs
 echo "(load-file \"~/source/emacs/init.el\")" > ~/.emacs
