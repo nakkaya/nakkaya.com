@@ -1,6 +1,189 @@
 #+title: Bash Configuration
 #+tags: linux bash
 
+#+BEGIN_SRC sh :tangle ~/.bashrc
+  export HISTSIZE=100000 SAVEHIST=100000
+  # avoid duplicates..
+  HISTCONTROL='ignoreboth:erasedups'
+  # append history entries..
+  shopt -s histappend
+  
+  # After each command, save and reload history
+  export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
+#+END_SRC
+
+#+BEGIN_SRC sh :tangle ~/.bashrc
+  case `id -u` in
+      0) PROM="#";;
+      ,*) PROM="$";;
+  esac
+  
+  export PS1='\[\e[0;32m\]\h \[\e[0;33m\]\W/$(__git_ps1 "(%s)")\[\e[0;31m\] $PROM\[\e[m\] '
+#+END_SRC
+
+#+BEGIN_SRC sh :tangle ~/.bashrc
+  case "$TERM" in
+      screen*)
+          export TERM=screen-256color
+          ;;
+  esac
+#+END_SRC
+
+#+BEGIN_SRC sh :tangle ~/.bashrc
+  PATH=$PATH:/opt/local/bin
+  PATH=$PATH:/opt/local/sbin
+  PATH=$PATH:/opt/local/sbin
+  PATH=$PATH:~/Apps/git-annex.linux/
+  PATH=$PATH:~/source/bash
+  PATH=$PATH:~/.bin/
+  export PATH
+  
+  export LC_ALL=en_US.UTF-8  
+  export LANG=en_US.UTF-8
+#+END_SRC
+
+#+BEGIN_SRC sh :tangle ~/.bashrc
+  function finder (){
+      nautilus --no-desktop --browser "$1" > /dev/null 2>&1 &
+  }
+  
+  alias ta='TERM=xterm-256color tmux new-session -t default || TERM=xterm-256color tmux new-session -s default'
+  function tmux-ssh (){
+      printf '\033k%s\033\\' $1
+      ssh $1 -t "mr up; tmux attach"
+  }
+  alias g='git'
+  alias ga='git annex'
+  alias m='mr'
+  alias rm='rm -i'
+  alias ssl-ref='cd ~/ && /usr/bin/sslrefbox &>/dev/null &'
+  alias ssl-sim='cd ~/Apps/grSim/bin/ && ~/Apps/grSim/bin/grSim &>/dev/null &'
+  alias ssl-vis='cd ~/Apps/ssl-vision/ && ./bin/vision &>/dev/null &'
+  alias ssl-cli='cd ~/Apps/ssl-vision/ && ./bin/client'
+  alias ssl-gra-cli='cd ~/Apps/ssl-vision/ && ./bin/graphicalClient &>/dev/null &' 
+  alias android-sim='cd ~/Apps/adt-bundle-linux-x86_64-20130219/sdk/tools && ./emulator'
+  alias android-logcat='cd ~/Apps/adt-bundle-linux-x86_64-20130219/sdk/platform-tools && ./adb logcat -c && ./adb logcat'
+  alias droid-build='lein do droid build, droid apk'
+  alias droid-install='lein do droid install, droid run'
+  alias droid-deploy='lein do droid build, droid apk && mv target/latte-debug.apk ~/Dropbox/public/'
+  alias latte-ports='lein droid forward-port && ~/Apps/adt-bundle-linux-x86_64-20130219/sdk/platform-tools/adb forward tcp:8080 tcp:8080'
+  alias wow='cd ~/wow && wine Wow.exe'
+  alias cljsc='~/Dropbox/kiler/clojurescript/bin/cljsc'
+  alias servedir='python -m SimpleHTTPServer'
+  alias tc='truecrypt'
+  # Get readable list of network IPs
+  alias ips="ifconfig -a | perl -nle'/(\d+\.\d+\.\d+\.\d+)/ && print $1'"
+  alias myip="dig +short myip.opendns.com @resolver1.opendns.com"
+  alias flush="dscacheutil -flushcache" # Flush DNS cache
+  alias pgrep="ps ax | grep -i"
+  alias hgrep="history | grep -i"
+  alias ag="sudo apt-get"
+  alias cls="clear"
+  alias br="sudo service bluetooth restart"
+  alias vpn="cd ~/Dropbox/bash && sudo ./vpn.sh"
+  alias youtube-dl-1080="youtube-dl -f 37"
+  alias youtube-dl-720="youtube-dl -f 22"
+  alias sbuild="java -jar /home/nakkaya/annex/www/dropbox.nakkaya.com/builds/static-app.jar --build"
+  alias sjetty="java -jar /home/nakkaya/annex/www/dropbox.nakkaya.com/builds/static-app.jar --jetty"
+  alias ssh-x='ssh -c arcfour,blowfish-cbc -XC' 
+  
+  alias transmission-server="transmission-daemon -c /home/nakkaya/Downloads/ --incomplete-dir /home/nakkaya/Downloads/transmission-incomplete/ --download-dir /home/nakkaya/Downloads/ --no-auth"
+  alias transmission-cli="transmission-remote-cli"
+  alias s3sync="s3cmd sync --delete --acl-public"
+  alias annex-size="s3cmd du -H s3://cloud-`git config remote.cloud.annex-uuid`"
+#+END_SRC
+
+Autocomplete for 'g' as well,
+
+#+BEGIN_SRC sh :tangle ~/.bashrc
+  complete -o default -o nospace -F _git g
+#+END_SRC
+
+#+BEGIN_SRC sh :tangle ~/.bashrc
+  if [ -f ~/.ssh/config ];
+  then
+      function _ssh_completion() {
+          perl -ne 'print "$1 " if /^[Hh]ost (.+)$/' ~/.ssh/config
+      }
+      complete -W "$(_ssh_completion)" ssh
+      complete -W "$(_ssh_completion)" tmux-ssh
+  fi
+#+END_SRC
+
+#+BEGIN_SRC sh :tangle ~/.bashrc
+  if [ -f ~/.mrconfig ];
+  then
+      function _mr_completion() {
+          perl -ne 'print "$1 " if /^git_(.+)\s+=/' ~/.mrconfig
+      }
+      complete -W "$(_mr_completion)" mr
+      complete -W "$(_mr_completion)" m
+  fi
+  
+  if [ -d /media/nakkaya ];
+  then
+      usb(){
+          if [ -d "/media/nakkaya/${1}/kiler" ];
+          then
+              cd "/media/nakkaya/${1}/kiler"
+          else
+              cd "/media/nakkaya/${1}/"
+          fi
+      }
+      complete -W "`cd /media/nakkaya/;compgen -A directory`" usb
+  fi
+  
+  src() {
+      eval "cd ~/source/${1}"
+  }
+  complete -W "`cd ~/source/;compgen -A directory`" src
+  
+  anx() {
+      eval "cd ~/annex/${1}"
+  }
+  complete -W "`cd ~/annex/;compgen -A directory`" anx
+  
+  runx () {
+      DISPLAY=:0.0 ${1} &
+  }
+#+END_SRC
+
+#+BEGIN_SRC sh :tangle ~/.bashrc
+  case "$OSTYPE" in
+      cygwin)
+          alias open="cmd /c start"
+          source /cygdrive/c/source/bash/git-completion.bash
+          alias ls="ls -aG --color"
+          export PATH="$PATH:/cygdrive/c/Dropbox/bash"
+          clear () { command.COM /c cls;}
+          export -f clear
+          ;;
+      linux-gnu)
+          alias open="gnome-open"
+          source ~/source/bash/git-completion.bash
+          alias ls="ls -aG --color"
+          alias df="df -h"
+          alias du="du -hcs"
+          alias emacs-nx='emacs &> /dev/null &'
+          alias emacs="env TERM=xterm-256color emacs -nw"
+          ;;
+      darwin*)
+          source ~/Dropbox/bash/git-completion.bash
+          alias ls="ls -aG"
+          alias emacs="env TERM=xterm-256color /opt/local/bin/emacs -nw"
+          export CLOJURESCRIPT_HOME=/Users/nakkaya/Dropbox/kiler/clojurescript/
+          alias open="open"
+          ;;
+  esac
+  
+  HOST=$(hostname)
+   
+  if [ "${HOST}" == "kocatepe" ]; then
+      export PATH=~/Apps/jdk1.6.0_43/bin/:$PATH
+      alias emacs="~/Apps/emacs/bin/emacs"
+  fi
+#+END_SRC
+
 #+BEGIN_SRC sh :mkdirp yes :tangle ~/.bin/sftpfs
   _sftpfs(){
       local cur prev opts base
