@@ -29,6 +29,7 @@ function tangle(){
     rm -rf ~/.tmux-monitor-scripts/
     tangleFile tmux
 
+    rm -f ~/.bashrc
     rm -f ~/.profile
     rm -rf ~/.bin/
     tangleFile bash
