@@ -15,7 +15,7 @@
   fi
 #+END_SRC
 
-#+BEGIN_SRC sh :tangle ~/.lock
+#+BEGIN_SRC sh :mkdirp yes :tangle ~/.bin/lock-screen
   #!/usr/bin/env bash
   cd ~/
   mr fastPush
@@ -29,7 +29,7 @@
   mr up
 #+END_SRC
 
-#+BEGIN_SRC sh :tangle ~/.sleep
+#+BEGIN_SRC sh :mkdirp yes :tangle ~/.bin/sleep-computer
   #!/usr/bin/env bash
   cd ~/
   mr fastPush
