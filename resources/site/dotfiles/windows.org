@@ -1,0 +1,17 @@
+#+title: Windows Configuration
+#+tags: cygwin windows
+
+#+BEGIN_SRC fundamental
+  REGEDIT4
+  [HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Keyboard Layout]
+  "Scancode Map"=hex:00,00,00,00,00,00,00,00,02,00,00,00,1d,00,3a,00,00,00,00,00
+#+END_SRC
+
+#+BEGIN_SRC fundamental
+  @echo off
+  
+  C:
+  chdir C:\cygwin\bin
+  run.exe -p /usr/X11R6/bin bash --login -c /usr/bin/checkx ||  XWin -multiwindow -clipboard -silent-dup-error +bs &
+  run.exe urxvt +sb -title Terminal -fg white -bg Black -fn "xft:Monaco:style=Regular:pixelsize=15" -fade 0  -e /bin/bash -login
+#+END_SRC
