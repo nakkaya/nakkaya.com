@@ -32,5 +32,11 @@ function tangle(){
 
 tangle
 
+chmod +x ~/.tmux-monitor-scripts/*
+
+wget https://raw.github.com/technomancy/leiningen/stable/bin/lein
+chmod +x lein
+sudo mv lein /usr/bin/
+
 #wget -qO- http://127.0.0.1:8000/bootstrap.sh | bash
 #wget -qO- https://raw.github.com/nakkaya/nakkaya.com/master/resources/site/dotfiles/bootstrap.sh | bash
