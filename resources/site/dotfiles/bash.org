@@ -154,7 +154,6 @@ Autocomplete for 'g' as well,
   case "$OSTYPE" in
       cygwin)
           alias open="cmd /c start"
-          source /cygdrive/c/source/bash/git-completion.bash
           alias ls="ls -aG --color"
           export PATH="$PATH:/cygdrive/c/Dropbox/bash"
           clear () { command.COM /c cls;}
@@ -162,7 +161,6 @@ Autocomplete for 'g' as well,
           ;;
       linux-gnu)
           alias open="gnome-open"
-          source ~/source/bash/git-completion.bash
           alias ls="ls -aG --color"
           alias df="df -h"
           alias du="du -hcs"
@@ -170,7 +168,6 @@ Autocomplete for 'g' as well,
           alias emacs="env TERM=xterm-256color emacs -nw"
           ;;
       darwin*)
-          source ~/Dropbox/bash/git-completion.bash
           alias ls="ls -aG"
           alias emacs="env TERM=xterm-256color /opt/local/bin/emacs -nw"
           export CLOJURESCRIPT_HOME=/Users/nakkaya/Dropbox/kiler/clojurescript/
