@@ -1,6 +1,152 @@
 #+title: Bash Configuration
 #+tags: linux bash
 
+#+BEGIN_SRC sh :mkdirp yes :tangle ~/.bin/sftpfs
+  _sftpfs(){
+      local cur prev opts base
+      COMPREPLY=()
+      cur="${COMP_WORDS[COMP_CWORD]}"
+      prev="${COMP_WORDS[COMP_CWORD-1]}"
+  
+      #  The basic options we'll complete.
+      opts="mount umount"
+  
+      #  Complete the arguments to some of the basic commands.
+      case "${prev}" in
+          mount)
+              local running=$(grep ^Host $HOME/.ssh/config | awk '{print $2}' | grep -v \*)
+              COMPREPLY=( $(compgen -W "${running}" -- ${cur}) )
+              return 0
+              ;;
+          umount)
+              local running=$(ls --color=none /media/nakkaya/ | grep -v '\.')
+              COMPREPLY=( $(compgen -W "${running}" -- ${cur}) )
+              return 0
+              ;;
+          ,*)
+              ;;
+      esac
+  
+      COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+      return 0
+  }
+  complete -F _sftpfs sftpfs
+  
+  sftpfs(){
+      case "${1}" in
+          mount)
+              echo "Mounting" $2
+              mount_point="/media/nakkaya/$2"
+              if [ -d "$mount_point" ]; then
+                  echo "Already Mounted"
+                  return 1
+              fi
+              mkdir $mount_point
+              mount_command="sshfs $2:/ $mount_point -oauto_cache,reconnect,compression=no,follow_symlinks"
+              if [ ! -z $3 ]
+              then
+                  echo "Port $3"
+                  mount_command="$mount_command,port=$3"
+                  echo $mount_command
+              fi 
+              eval $mount_command
+              return 0
+              ;;
+          umount)
+              echo "Unmounting" $2
+              mount_point="/media/nakkaya/$2"
+  
+              if [ ! -d "$mount_point" ]; then
+                  echo "Not Mounted"
+                  return 1
+              fi
+              
+              if fusermount -u $mount_point; then
+                  rm -rf $mount_point
+              fi
+              return 0
+              ;;
+          ,*)
+              ;;
+      esac
+  }
+#+END_SRC
+
+#+BEGIN_SRC sh :mkdirp yes :tangle ~/.bin/vm
+  _vm() {
+      local cur prev opts base
+      COMPREPLY=()
+      cur="${COMP_WORDS[COMP_CWORD]}"
+      prev="${COMP_WORDS[COMP_CWORD-1]}"
+  
+      #  The basic options we'll complete.
+      opts="start start-head stop unplug running"
+  
+      #  Complete the arguments to some of the basic commands.
+      case "${prev}" in
+          start)
+              local running=$(for x in `VBoxManage list vms | awk '{print $1}'`; do echo ${x} ; done )
+              COMPREPLY=( $(compgen -W "${running}" -- ${cur}) )
+              return 0
+              ;;
+          start-head)
+              local running=$(for x in `VBoxManage list vms | awk '{print $1}'`; do echo ${x} ; done )
+              COMPREPLY=( $(compgen -W "${running}" -- ${cur}) )
+              return 0
+              ;;
+          stop)
+              local names=$(for x in `VBoxManage list runningvms | awk '{print $1}'`; do echo ${x} ; done )
+              COMPREPLY=( $(compgen -W "${names}" -- ${cur}) )
+              return 0
+              ;;
+          unplug)
+              local names=$(for x in `VBoxManage list runningvms | awk '{print $1}'`; do echo ${x} ; done )
+              COMPREPLY=( $(compgen -W "${names}" -- ${cur}) )
+              return 0
+              ;;
+          ,*)
+              ;;
+      esac
+  
+      COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+      return 0
+  }
+  complete -F _vm vm
+  
+  vm(){
+      case "${1}" in
+          start)
+              echo "Starting" $2
+              VBoxHeadless --startvm $2 --vrde off &
+              disown
+              return 0
+              ;;
+          start-head)
+              echo "Starting" $2
+              VBoxManage startvm $2 &
+              disown
+              return 0
+              ;;
+          stop)
+              echo "Stopping" $2
+              VBoxManage controlvm $2 acpipowerbutton
+              return 0
+              ;;
+          unplug)
+              echo "Unplugging" $2
+              VBoxManage controlvm $2 poweroff
+              return 0
+              ;;
+          running)
+              VBoxManage list runningvms
+              return 0
+              ;;
+          ,*)
+              ;;
+      esac
+  }
+#+END_SRC
+
 #+BEGIN_SRC sh :tangle ~/.profile
   # if running bash
   if [ -n "$BASH_VERSION" ]; then
@@ -10,8 +156,8 @@
       fi
   fi
   
-  if [ -d "$HOME/" ] ; then
-      PATH="$HOME/:$PATH"
+  if [ -d "$HOME/.bin/" ] ; then
+      PATH="$HOME/.bin/:$PATH"
   fi
 #+END_SRC
 

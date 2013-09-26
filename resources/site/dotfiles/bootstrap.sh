@@ -30,11 +30,9 @@ function tangle(){
     tangleFile tmux
 
     rm -f ~/.profile
-    rm -f ~/.bin/lock-screen
-    rm -f ~/.bin/sleep-computer
+    rm -rf ~/.bin/
     tangleFile bash
-    chmod +x ~/.bin/lock-screen
-    chmod +x ~/.bin/sleep-computer
+    chmod +x ~/.bin/*
 }
 
 tangle
