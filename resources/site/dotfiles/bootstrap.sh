@@ -28,6 +28,11 @@ function tangle(){
     rm -f ~/.tmux.conf
     rm -rf ~/.tmux-monitor-scripts/
     tangleFile tmux
+
+    rm -f ~/.profile
+    rm -f ~/.lock
+    rm -f ~/.sleep
+    tangleFile bash
 }
 
 tangle
