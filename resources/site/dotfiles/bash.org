@@ -15,7 +15,7 @@
 #+BEGIN_SRC sh :tangle ~/.bashrc
   case `id -u` in
       0) PROM="#";;
-      ,*) PROM="$";;
+      *) PROM="$";;
   esac
   
   export PS1='\[\e[0;32m\]\h \[\e[0;33m\]\W/$(__git_ps1 "(%s)")\[\e[0;31m\] $PROM\[\e[m\] '
