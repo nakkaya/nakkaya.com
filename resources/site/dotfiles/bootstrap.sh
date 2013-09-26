@@ -40,9 +40,14 @@ tangle
 
 chmod +x ~/.tmux-monitor-scripts/*
 
+rm -f ~/.emacs
+echo "(load-file \"~/source/emacs/init.el\")" > ~/.emacs
+
 wget https://raw.github.com/technomancy/leiningen/stable/bin/lein
 chmod +x lein
 sudo mv lein /usr/bin/
+
+#sudo apt-get update;sudo apt-get upgrade;sudo apt-get install emacs24 xmonad trayer vlc cmus git feh rxvt-unicode-256color offlineimap gnupg lm-sensors build-essential ubuntu-restricted-extras vilistextum graphviz openjdk-6-jdk keynav tmux sysstat
 
 #wget -qO- http://127.0.0.1:8000/bootstrap.sh | bash
 #wget -qO- https://raw.github.com/nakkaya/nakkaya.com/master/resources/site/dotfiles/bootstrap.sh | bash
