@@ -8,8 +8,13 @@ compojure mailing list, it is a small utility function written by
 Robin Brandt. It converts the given HTML file to Hiccup DSL.
 
 #+BEGIN_SRC clojure
+  #^:shebang '[
+               exec java -cp "/home/nakkaya/.m2/repository/org/clojure/clojure/1.4.0/clojure-1.4.0.jar:/home/nakkaya/.m2/repository/org/clojure/data.xml/0.0.7/data.xml-0.0.7.jar" clojure.main "$0" -- "$@"
+               ]
+  
   (ns hiccup-converter
     (:use [clojure.data.xml :only (parse)])
+    (:use clojure.pprint)
     (:import (java.io File)))
   
   (defn format-attrs
