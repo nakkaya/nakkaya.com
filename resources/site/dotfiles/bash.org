@@ -60,7 +60,7 @@
   alias ta='TERM=xterm-256color tmux new-session -t default || TERM=xterm-256color tmux new-session -s default'
   function tmux-ssh (){
       printf '\033k%s\033\\' $1
-      ssh $1 -t "mr up; tmux attach"
+      ssh $1 -t "tmux attach"
   }
   alias g='git'
   alias ga='git annex'
