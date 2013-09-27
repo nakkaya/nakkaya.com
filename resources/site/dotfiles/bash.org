@@ -40,9 +40,16 @@
   
   export LC_ALL=en_US.UTF-8  
   export LANG=en_US.UTF-8
-
-  source /etc/bash_completion.d/git-prompt
-  source /usr/share/bash-completion/completions/git
+  
+  if [ -f /etc/bash_completion.d/git-prompt ];
+  then
+      source /etc/bash_completion.d/git-prompt
+  fi
+  
+  if [ -f /usr/share/bash-completion/completions/git ];
+  then
+      source /usr/share/bash-completion/completions/git
+  fi
 #+END_SRC
 
 #+BEGIN_SRC sh :tangle ~/.bashrc
