@@ -103,6 +103,15 @@
   map -b zo ZO
 #+END_SRC
 
+#+BEGIN_SRC fundamental :mkdirp yes :tangle ~/.pentadactylrc
+  command inject-jquery -js <<EOF
+     (function(){var jQueryVersion="1";var a=document.createElement("script");a.src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.js";a.type="text/javascript";document.getElementsByTagName("head")[0].appendChild(a);})()
+  EOF
+
+  " :autocmd LocationChange mail.google.com :inject-jquery <C-z>
+#+END_SRC
+
+
 #+BEGIN_SRC css :mkdirp yes :tangle ~/.pentadactyl/user.css 
   /* @-moz-document domain("www.reddit.com") { */
   /*     .side{ display: none !important; } */
