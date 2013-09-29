@@ -101,6 +101,18 @@
   alias transmission-cli="transmission-remote-cli"
   alias s3sync="s3cmd sync --delete --acl-public"
   alias annex-size="s3cmd du -H s3://cloud-`git config remote.cloud.annex-uuid`"
+
+  ga_enc_mount(){
+      DIR=$(basename $1)
+      git annex unlock "${1}"
+      encfs "${1}" "/home/nakkaya/$DIR"
+  }
+
+  ga_enc_umount(){
+      DIR=$(basename $1)
+      fusermount -u "/home/nakkaya/$DIR"
+      git annex lock "${1}"
+  }
 #+END_SRC
 
 Autocomplete for 'g' as well,
