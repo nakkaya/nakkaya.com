@@ -55,7 +55,7 @@
   set scrolltime=0
   
   " Editor, C-e invokes it in text fields
-  set editor="emacsclient -c"
+  set editor="emacsclient"
   
   " Show pattern matches as you type
   set incfind
