@@ -153,7 +153,7 @@ xmobarrc File,
   
   #/usr/bin/xmobar ~/.xmobarrc &
   /usr/bin/trayer --edge top --align right --SetDockType true --widthtype percent --width 5 --transparent true --tint 0x000000 --height 20 &
-  ~/.caps-setup &
+  ~/.bin/caps-setup &
   ~/.disable-touch-tap &
   nm-applet &
   bluetooth-applet &
@@ -201,7 +201,7 @@ synclient TapButton1=0
 synclient TapButton2=0
 #+END_SRC
 
-#+BEGIN_SRC sh  :tangle ~/.caps-setup
+#+BEGIN_SRC sh  :tangle ~/.bin/caps-setup
   #!/bin/bash
   
   #disable function keys
