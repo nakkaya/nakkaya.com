@@ -31,7 +31,6 @@ function tangle(){
 
     rm -f ~/.bashrc
     rm -f ~/.profile
-    rm -rf ~/.bin/
     tangleFile bash
     chmod +x ~/.bin/*
 }
