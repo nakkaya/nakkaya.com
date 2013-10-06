@@ -111,7 +111,8 @@
   ga_enc_umount(){
       DIR=$(basename $1)
       fusermount -u "/home/nakkaya/$DIR"
-      git annex lock "${1}"
+      git annex add "${1}"
+      git commit -m 'Update'
   }
 #+END_SRC
 
