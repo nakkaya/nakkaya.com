@@ -182,9 +182,10 @@
       
       /* Plain-text Message Body */
       /* Compose Interfaces */
-      .ii, .Ak { font: medium monospace !important; }
-      .editable { font: medium monospace !important; }
-      /* .editable.LW-avf { font: medium monospace !important; } */
+      .editable.LW-avf, .editable, .ii, .Ak{
+          font-size: 14px ! important;
+          font-family: monospace ! important;
+      }
   }
   
   @-moz-document domain("www.facebook.com") {
