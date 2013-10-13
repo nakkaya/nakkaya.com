@@ -41,6 +41,8 @@
   export LC_ALL=en_US.UTF-8  
   export LANG=en_US.UTF-8
   
+  source ~/.bin/sftpfs
+  
   if [ -f /etc/bash_completion.d/git-prompt ];
   then
       source /etc/bash_completion.d/git-prompt
@@ -237,44 +239,38 @@ Autocomplete for 'g' as well,
   }
   complete -F _sftpfs sftpfs
   
-  sftpfs(){
-      case "${1}" in
-          mount)
-              echo "Mounting" $2
-              mount_point="/media/nakkaya/$2"
-              if [ -d "$mount_point" ]; then
-                  echo "Already Mounted"
-                  return 1
-              fi
-              mkdir $mount_point
-              mount_command="sshfs $2:/ $mount_point -oauto_cache,reconnect,compression=no,follow_symlinks"
-              if [ ! -z $3 ]
-              then
-                  echo "Port $3"
-                  mount_command="$mount_command,port=$3"
-                  echo $mount_command
-              fi 
-              eval $mount_command
-              return 0
-              ;;
-          umount)
-              echo "Unmounting" $2
-              mount_point="/media/nakkaya/$2"
+  case "${1}" in
+      mount)
+          echo "Mounting" $2
+          mount_point="/media/nakkaya/$2"
+          if [ -d "$mount_point" ]; then
+              echo "Already Mounted"
+          fi
+          mkdir $mount_point
+          mount_command="sshfs $2:/ $mount_point -oauto_cache,reconnect,compression=no,follow_symlinks"
+          if [ ! -z $3 ]
+          then
+              echo "Port $3"
+              mount_command="$mount_command,port=$3"
+              echo $mount_command
+          fi 
+          eval $mount_command
+          ;;
+      umount)
+          echo "Unmounting" $2
+          mount_point="/media/nakkaya/$2"
   
-              if [ ! -d "$mount_point" ]; then
-                  echo "Not Mounted"
-                  return 1
-              fi
-              
-              if fusermount -u $mount_point; then
-                  rm -rf $mount_point
-              fi
-              return 0
-              ;;
-          ,*)
-              ;;
-      esac
-  }
+          if [ ! -d "$mount_point" ]; then
+              echo "Not Mounted"
+          fi
+          
+          if fusermount -u $mount_point; then
+              rm -rf $mount_point
+          fi
+          ;;
+      ,*)
+          ;;
+  esac
 #+END_SRC
 
 #+BEGIN_SRC sh :mkdirp yes :tangle ~/.bin/vm
