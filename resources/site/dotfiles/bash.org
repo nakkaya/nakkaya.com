@@ -392,3 +392,25 @@ Autocomplete for 'g' as well,
   cd ~/
   mr up
 #+END_SRC
+
+#+BEGIN_SRC sh :mkdirp yes :tangle ~/.bin/annex-attach
+  #!/usr/bin/env bash
+  
+  DISKS="damla esra merve ozge sedef"
+  
+  for i in $DISKS; do 
+      sudo mkdir /media/nakkaya/$i
+      sudo mount /dev/disk/by-label/$i /media/nakkaya/$i
+  done
+#+END_SRC
+
+#+BEGIN_SRC sh :mkdirp yes :tangle ~/.bin/annex-detach
+  #!/usr/bin/env bash
+  
+  DISKS="damla esra merve ozge sedef"
+  
+  for i in $DISKS; do 
+      sudo umount /media/nakkaya/$i
+      sudo rm -r /media/nakkaya/$i
+  done
+#+END_SRC
