@@ -47,6 +47,10 @@ wget https://raw.github.com/technomancy/leiningen/stable/bin/lein
 chmod +x lein
 mv lein ~/.bin/
 
+wget https://raw.github.com/joeyh/myrepos/master/mr
+chmod +x mr
+mv mr ~/.bin/
+
 #sudo apt-get update;sudo apt-get upgrade;sudo apt-get install emacs24 xmonad trayer vlc cmus git bash-completion feh rxvt-unicode-256color offlineimap gnupg lm-sensors build-essential ubuntu-restricted-extras vilistextum graphviz openjdk-6-jdk keynav tmux sysstat
 
 #wget -qO- http://127.0.0.1:8000/bootstrap.sh | bash
