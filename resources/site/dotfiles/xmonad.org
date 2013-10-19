@@ -34,7 +34,7 @@
 #+END_SRC
 
 #+BEGIN_SRC fundamental :mkdirp yes :tangle ~/.xmonad/xmonad.hs
-  myWorkspaces = ["1:emacs","2:web","3:music","4","5","6","7","8","9","0"]
+  myWorkspaces = ["1:emacs","2:web","3:music","4:video","5","6","7","8","9","0"]
 #+END_SRC
 
 -- To find the property name associated with a program, use
@@ -56,7 +56,9 @@
                   className =? "Emacs24" --> doShift "1:emacs",
                   className =? "Google-chrome" --> doShift "2:web",
                   className =? "Firefox" --> doShift "2:web",
-                  className =? "Rhythmbox" --> doShift "3:music"
+                  className =? "Rhythmbox" --> doShift "3:music",
+                  className =? "Audacious" --> doShift "3:music",
+                  className =? "Vlc" --> doShift "4:video"
                  ]
                  <+> manageDocks <+> manageHook defaultConfig
 #+END_SRC
