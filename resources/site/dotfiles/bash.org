@@ -66,7 +66,9 @@
   }
   alias g='git'
   alias ga='git annex'
-  alias gsync="anx;m push;src;m push"
+  alias gpush="anx;m push;src;m push"
+  alias gpull="anx;m pull;src;m pull"
+  alias gst="anx;m st;src;m st"
   alias m='mr'
   alias rm='rm -i'
   alias ssl-ref='cd ~/ && /usr/bin/sslrefbox &>/dev/null &'
