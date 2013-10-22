@@ -1,0 +1,403 @@
+#+title: Notes on Synchronization and Backup of $HOME using git, git-annex and mr
+#+tags: git git-annex mr
+
+This is a dump of all git, git-annex and mr related configuration and
+scripts so I can edit them in one place. When [[http://orgmode.org/manual/Working-With-Source-Code.html][tangled]],
+
+ - All mr configs will go into their respective folders.
+ - All Bash scripts will go into ~/.bin/ folder.
+
+Repository structure,
+
+ - ~/annex/ - git-annex repositories that are synced between
+   computers.
+ - ~/source/ - Git repos.
+ - /external - Single git-annex repo spread over multiple USB
+   drives. Working as a Poor Mans Raid.
+
+* ~/annex/
+
+   Instead of having a single large annex folder synced across
+   machines, I have split all files into 6 annexes,
+
+   - documents
+   - mail
+   - music
+   - notes
+   - old-code
+   - photos
+
+   This scheme makes git-annex much faster. At first I was reluctant
+   to go with this, instead of pushing pulling single annex, now I
+   have to deal with 6. Then I found about [[http://myrepos.branchable.com/][mr]] which lets you run
+   commands on a collection of repositories, even though there are 6
+   repos with mr a single command will push pull all of them.
+
+   These annexes are shared between 3 computers (one with two full
+   copy of all repos and two with partial copies.), all behind NAT so
+   all clients dump data to S3 (GPG encrypted with separate keys.)
+   and sync changes with a bitbucket repo.
+
+   When ever I make changes to any of the repos, I just run /mr push/.
+   It will iterate repositories with changes (new files/deletes/renames)
+   and upload changes to S3 and sync with bitbucket. Then when I
+   switch machines I just do a /mr pull/ which downloads all changes.
+
+*** ~/annex/.mrconfig
+
+#+BEGIN_SRC conf :tangle ~/annex/.mrconfig
+  [DEFAULT]
+  git_sync = git annex sync "$@"
+  git_push = git fast-push
+  git_pull = git pull-changes
+  git_status = git na-status
+  git_drop = git drop-all-unused "$@"
+  git_upload = git annex sync; git annex copy --to cloud --fast || git annex copy --quiet --to origin --fast ; git annex sync
+  git_download = git annex sync; git annex get --quiet --fast; git annex sync
+  
+  lib = 
+      enableCloud() {
+         git config remote.origin.annex-ignore true
+         git annex init "`hostname`"
+         git annex enableremote cloud
+      }
+  
+  
+  [documents]
+  checkout = git clone 'ssh://git@bitbucket.org/nakkaya/documents.git' 'documents'
+             cd documents/
+             enableCloud     
+  skip = lazy
+  
+  [photos]
+  checkout = git clone 'git@bitbucket.org:nakkaya/photos.git' 'photos'
+             cd photos/
+             enableCloud
+  skip = lazy
+  
+  [old-code]
+  checkout = git clone 'git@bitbucket.org:nakkaya/old-code.git' 'old-code'
+             cd old-code/
+             enableCloud
+  skip = lazy
+  
+  [music]
+  checkout = git clone 'ssh://kocatepe/home/nakkaya/annex/music' 'music'
+             cd music/
+             git annex init "`hostname`"
+  skip = lazy
+  
+  [notes]
+  checkout = git clone 'ssh://git@bitbucket.org/nakkaya/notes.git' 'notes'
+             cd notes/
+             enableCloud
+  
+  [mail]
+  checkout = git clone 'ssh://git@bitbucket.org/nakkaya/mail.git' 'mail'
+             cd mail/
+             enableCloud
+  skip=true
+#+END_SRC
+
+*** ~/.bin/git-drop-all-unused
+
+Drop all unused files,
+
+#+BEGIN_SRC sh :tangle ~/.bin/git-drop-all-unused
+  #/bin/bash
+  
+  if [ -d '.git/annex/' ]; then
+      git annex unused | grep -o -P "^    [0-9]+" | \
+          xargs git annex dropunused --force
+  else
+      true
+  fi
+#+END_SRC
+
+*** ~/.bin/git-na-status
+
+When running /mr status/ avoid running /git status/ on direct mode annex
+repos otherwise you get a bunch of type change changes.
+
+#+BEGIN_SRC sh :tangle ~/.bin/git-na-status
+  #/bin/bash
+  
+  if [ -d ".git/annex/" ]; then
+      if `git config --get annex.direct`; then
+          echo ""
+      else
+          git status --short
+      fi
+  else
+      git status --short
+  fi
+#+END_SRC
+
+*** ~/.bin/git-pull-changes
+
+Try to avoid running /git annex get ./ (which takes a while on large
+repos) by comparing HEAD, before and after sync only try to get
+files when there are changes.
+
+#+BEGIN_SRC sh :tangle ~/.bin/git-pull-changes
+  #/bin/bash
+  
+  if [ -d '.git/annex/' ]; then
+      oldHead=`git rev-parse HEAD`
+      git annex sync;
+      newHead=`git rev-parse HEAD`
+      if [ "$oldHead" != "$newHead" ]; then
+          git annex get . --fast
+          git annex sync
+      else
+          echo "No Change to Get..."
+      fi
+  else
+      git pull origin master
+  fi
+#+END_SRC
+
+***  ~/.bin/git-fast-push
+
+Custom push command. For repositories with no changes it simply
+returns true, for repositories with changes or new files,
+
+ - If acting on a regular git repo, pushes changes to origin.
+ - If acting on a git annex repo, uploads changes to S3 and syncs with
+   bitbucket.
+
+#+BEGIN_SRC sh :tangle ~/.bin/git-fast-push
+  #/bin/bash
+
+  updateAnnexHost() {
+      echo 'Updating Remote...'
+      ORIGIN=`git config --get remote.origin.url`
+      HOST=`echo "$ORIGIN" | grep -oiP '//.*?\/' | cut -d/ -f3`
+      DIR="/${ORIGIN#*//*/}"
+      echo "$HOST $DIR"
+      ssh $HOST "cd $DIR;git annex sync"
+  }
+
+  addFiles() {
+      if hasNewFiles; then 
+          echo 'Auto Add...'
+          git annex add .;git commit -m 'Update'
+      else
+          echo 'Nothing to Auto Add...'
+      fi
+  }
+  
+  hasNoChanges(){
+      git diff-index --quiet HEAD --
+  }
+  
+  hasNewFiles(){
+      if [ `git ls-files --exclude-standard --others| wc -l` != 0 ]; then 
+          true
+      else
+          false
+      fi
+  }
+  
+  isRepoAhead(){
+      if [ `git log origin/$(git branch | grep '*' | cut -d' ' -f2)..HEAD | wc -l` != 0 ]; then 
+          true
+      else
+          false
+      fi
+  }
+
+  if ! hasNoChanges || hasNewFiles || isRepoAhead; then 
+      if [ -d '.git/annex/' ]; then
+          #handle direct annex repo
+          if `git config --get annex.direct`; then
+              oldHead=`git rev-parse HEAD`
+              addFiles
+              git annex sync;
+              newHead=`git rev-parse HEAD`
+              if [ "$oldHead" != "$newHead" ]; then
+                  if git config remote.cloud.annex-uuid; then
+                      git annex copy --to cloud --fast
+                      git annex sync
+                  else
+                      git annex copy --quiet --to origin --fast
+                      updateAnnexHost
+                  fi
+              fi
+          #handle indirect annex repo
+          else
+              addFiles
+              git annex sync
+              if git config remote.cloud.annex-uuid; then
+                  git annex copy --to cloud --fast
+                  git annex sync
+              else
+                  git annex copy --quiet --to origin --fast
+                  updateAnnexHost
+              fi
+          fi
+      else
+          git push origin master
+      fi
+  else
+      true
+  fi
+#+END_SRC
+
+* /external
+
+*** .mrconfig
+
+  I have one repository called /kiler/ (means basement in Turkish)
+  which holds around 4.5 TB of data (OS Disks, VM Images, Tech Talks,
+  Movies, TV Shows etc.) spread over 5x2 TB USB drives.
+
+#+BEGIN_SRC conf :tangle /media/nakkaya/.mrconfig
+  [DEFAULT]
+  git_sync = git annex-add-sync "$@"
+  git_drop = git drop-all-unused "$@"
+  
+  [/media/nakkaya/damla/kiler]
+  
+  [/media/nakkaya/esra/kiler]
+  
+  [/media/nakkaya/merve/kiler]
+  
+  [/media/nakkaya/ozge/kiler]
+  
+  [/media/nakkaya/sedef/kiler]
+#+END_SRC
+
+*** ~/.bin/git-annex-add-sync
+
+  I just dump files into the repo on one of the disks and run /mr
+  sync/ which will add the file and sync with other drives,
+
+#+BEGIN_SRC sh :tangle ~/.bin/git-annex-add-sync
+  #/bin/bash
+  
+  if [ -d '.git/annex/' ]; then
+      oldHead=`git rev-parse HEAD`
+      git annex add .;
+      git annex sync
+      newHead=`git rev-parse HEAD`
+      if [ "$oldHead" != "$newHead" ]; then
+          for remote in ` git config --get-regexp remote.*.url | awk '{print $2}'`; do
+              (cd $remote && git annex sync)
+          done
+      else
+          true
+      fi
+  else
+      true
+  fi
+#+END_SRC
+
+*** Misc
+
+  For my copy/paste pleasure, steps for adding a new disk.
+
+#+BEGIN_SRC sh :tangle no
+  git clone /media/nakkaya/esra/kiler/
+  git remote remove origin
+  
+  DISKS="damla esra merve ozge sedef"
+  
+  for i in $DISKS; do 
+      git remote add $i /media/nakkaya/$i/kiler/
+  done
+  
+  git annex init "new-disk-name"
+  git annex sync
+#+END_SRC
+
+* ~/source/
+
+*** ~/source/.mrconfig
+
+  Git Repos,
+
+#+BEGIN_SRC conf :tangle ~/source/.mrconfig
+  [DEFAULT]
+  git_pull = git pull origin master
+  git_push = git fast-push
+  
+  [encryption-keys]
+  checkout = git clone 'ssh://git_private@kocatepe/~/encryption-keys.git' 'encryption-keys'
+  
+  [server-conf]
+  checkout = git clone 'ssh://git@bitbucket.org/nakkaya/server-conf.git' 'server-conf'
+  pre_pull = git commit -a -m 'Auto Commit' || true
+  pre_push = git commit -a -m 'Auto Commit' || true
+  skip=lazy
+  
+  [latte]
+  checkout = git clone 'ssh://git@bitbucket.org/nakkaya/latte.git' 'latte'
+  skip=lazy
+  
+  [kinect-ardrone-demo]
+  checkout = git clone 'ssh://git@bitbucket.org/nakkaya/kinect-ardrone-demo.git' 'kinect-ardrone-demo'
+  skip=lazy
+  
+  [alter-ego]
+  checkout = git clone 'git@github.com:nakkaya/alter-ego.git' 'alter-ego'
+  skip=lazy
+  
+  [ardrone]
+  checkout = git clone 'git@github.com:nakkaya/ardrone.git' 'ardrone'
+  skip=lazy
+  
+  [clodiuno]
+  checkout = git clone 'git@github.com:nakkaya/clodiuno.git' 'clodiuno'
+  skip=lazy
+  
+  [easy-dns]
+  checkout = git clone 'git@github.com:nakkaya/easy-dns.git' 'easy-dns'
+  skip=lazy
+  
+  [emacs]
+  checkout = git clone 'git@github.com:nakkaya/emacs.git' 'emacs'
+             cd emacs
+             git submodule init
+             git submodule update
+  
+  [inbox-feed]
+  checkout = git clone 'git@github.com:nakkaya/inbox-feed.git' 'inbox-feed'
+  skip=lazy
+  
+  [nakkaya.com]
+  checkout = git clone 'git@github.com:nakkaya/nakkaya.com.git' 'nakkaya.com'
+  skip=lazy
+  
+  [net-eval]
+  checkout = git clone 'git@github.com:nakkaya/net-eval.git' 'net-eval'
+  skip=lazy
+  
+  [neu-islanders]
+  checkout = git clone 'ssh://git@bitbucket.org/nakkaya/neu-islanders.git' 'neu-islanders'
+  skip=lazy
+  
+  [pid]
+  checkout = git clone 'git@github.com:nakkaya/pid.git' 'pid'
+  skip=lazy
+  
+  [static]
+  checkout = git clone 'git@github.com:nakkaya/static.git' 'static'
+  skip=lazy
+  
+  [vector-2d]
+  checkout = git clone 'git@github.com:nakkaya/vector-2d.git' 'vector-2d'
+  skip=lazy
+  
+  [vision]
+  checkout = git clone 'git@github.com:nakkaya/vision.git' 'vision'
+  skip=lazy
+  
+  [classic-car-db]
+  checkout = git clone 'ssh://git@bitbucket.org/nakkaya/classic-car-db.git' 'classic-car-db'
+  skip=lazy
+  
+  [doganilic.com]
+  checkout = git clone 'ssh://git@bitbucket.org/nakkaya/doganilic.com.git' 'doganilic.com'
+  skip=lazy
+#+END_SRC
