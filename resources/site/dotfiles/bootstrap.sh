@@ -1,5 +1,5 @@
 function tangleFile(){
-    URL="https://raw.github.com/nakkaya/nakkaya.com/master/resources/${1}.org"
+    URL="https://raw.github.com/nakkaya/nakkaya.com/master/resources/${1}${2}.org"
     `wget $URL`
     emacs -Q --batch \
         --eval "(progn
@@ -7,10 +7,10 @@ function tangleFile(){
                   (require 'org-exp)
                   (require 'ob)
                   (require 'ob-tangle)
-                  (find-file \"${1}.org\")
+                  (find-file \"${2}.org\")
                   (org-babel-tangle)
                   (kill-buffer))"
-    `rm "${1}.org"`
+    `rm "${2}.org"`
 }
 
 function tangle(){
@@ -19,21 +19,21 @@ function tangle(){
     rm -f ~/.keynavrc
     rm -f ~/.Xresources
     rm -f ~/.caps-setup
-    tangleFile site/dotfiles/xmonad
+    tangleFile site/dotfiles/ xmonad
 
     rm -rf ~/.pentadactyl
     rm -f ~/.pentadactylrc
-    tangleFile site/dotfiles/pentadactyl
+    tangleFile site/dotfiles/ pentadactyl
 
     rm -f ~/.tmux.conf
     rm -rf ~/.tmux-monitor-scripts/
-    tangleFile site/dotfiles/tmux
+    tangleFile site/dotfiles/ tmux
 
     rm -f ~/.bashrc
     rm -f ~/.profile
-    tangleFile site/dotfiles/bash
+    tangleFile site/dotfiles/ bash
 
-    tangleFile posts/2013-10-23-notes-on-synchronization-and-backup-of-home-using-git-git-annex-and-mr
+    tangleFile posts/ 2013-10-23-notes-on-synchronization-and-backup-of-home-using-git-git-annex-and-mr
 
     chmod +x ~/.bin/*
 }
