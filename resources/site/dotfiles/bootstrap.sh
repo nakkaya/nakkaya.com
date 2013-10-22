@@ -1,5 +1,5 @@
 function tangleFile(){
-    URL="https://raw.github.com/nakkaya/nakkaya.com/master/resources/site/dotfiles/${1}.org"
+    URL="https://raw.github.com/nakkaya/nakkaya.com/master/resources/${1}.org"
     `wget $URL`
     emacs -Q --batch \
         --eval "(progn
@@ -19,19 +19,22 @@ function tangle(){
     rm -f ~/.keynavrc
     rm -f ~/.Xresources
     rm -f ~/.caps-setup
-    tangleFile xmonad
+    tangleFile site/dotfiles/xmonad
 
     rm -rf ~/.pentadactyl
     rm -f ~/.pentadactylrc
-    tangleFile pentadactyl
+    tangleFile site/dotfiles/pentadactyl
 
     rm -f ~/.tmux.conf
     rm -rf ~/.tmux-monitor-scripts/
-    tangleFile tmux
+    tangleFile site/dotfiles/tmux
 
     rm -f ~/.bashrc
     rm -f ~/.profile
-    tangleFile bash
+    tangleFile site/dotfiles/bash
+
+    tangleFile posts/2013-10-23-notes-on-synchronization-and-backup-of-home-using-git-git-annex-and-mr
+
     chmod +x ~/.bin/*
 }
 
