@@ -99,12 +99,12 @@
   alias vpn="cd ~/Dropbox/bash && sudo ./vpn.sh"
   alias youtube-dl-1080="youtube-dl -f 37"
   alias youtube-dl-720="youtube-dl -f 22"
-  alias sbuild="java -jar /home/nakkaya/annex/www/dropbox.nakkaya.com/builds/static-app.jar --build"
-  alias sjetty="java -jar /home/nakkaya/annex/www/dropbox.nakkaya.com/builds/static-app.jar --jetty"
+  alias sbuild="java -jar static-app.jar --build"
+  alias sjetty="java -jar static-app.jar --jetty"
   alias ssh-x='ssh -c arcfour,blowfish-cbc -XC' 
   
-  alias transmission-server="transmission-daemon -c /home/nakkaya/Downloads/ --incomplete-dir /home/nakkaya/Downloads/transmission-incomplete/ --download-dir /home/nakkaya/Downloads/ --no-auth"
-  alias transmission-cli="transmission-remote-cli"
+  alias t-server="transmission-daemon -c /home/nakkaya/Downloads/ --incomplete-dir /home/nakkaya/Downloads/transmission-incomplete/ --download-dir /home/nakkaya/Downloads/ --no-auth"
+  alias t-cli="transmission-remote-cli"
   alias s3sync="s3cmd sync --delete --acl-public"
   alias annex-size="s3cmd du -H s3://cloud-`git config remote.cloud.annex-uuid`"
   
