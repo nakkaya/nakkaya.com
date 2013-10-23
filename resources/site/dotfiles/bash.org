@@ -71,6 +71,7 @@
   alias gst="anx;m st;src;m st"
   alias m='mr'
   alias rm='rm -i'
+  alias rcp='rsync -arvL --progress'
   alias ssl-ref='cd ~/ && /usr/bin/sslrefbox &>/dev/null &'
   alias ssl-sim='cd ~/Apps/grSim/bin/ && ~/Apps/grSim/bin/grSim &>/dev/null &'
   alias ssl-vis='cd ~/Apps/ssl-vision/ && ./bin/vision &>/dev/null &'
