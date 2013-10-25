@@ -90,7 +90,7 @@
 
 #+BEGIN_SRC sh :mkdirp yes :tangle ~/.tmux-monitor-scripts/cpu_avg_temp.sh
   if which sensors > /dev/null; then
-      sensors | grep Core | awk '{print $3;}' | grep -oEi '[0-9]+.[0-9]+' | awk '{total+=$1; count+=1} END {print total/count,"°C"}'
+      sensors | grep Core | awk '{print $3;}' | grep -oEi '[0-9]+.[0-9]+' | awk '{total+=$1; count+=1} END {print total/count,"C"}'
   else
       ""
   fi
@@ -104,14 +104,14 @@
   
   FREE_MEM=`free | awk '/buffers\/cache/{print (100 - ($4/($3+$4) * 100.0));}'`
   
-  printf "CPU: %.f%% MEM: %.f%%" $CPU $FREE_MEM
+  printf "C: %.f%% M: %.f%%" $CPU $FREE_MEM
 #+END_SRC
 
 #+BEGIN_SRC sh :mkdirp yes :tangle ~/.tmux-monitor-scripts/disk.sh
   #!/bin/bash
   
   io_line_count=`iostat -d -x -m | wc -l` ; 
-  iostat -d -x -m 1 2 -z | tail -n +$io_line_count | grep -e "^sd[a-z].*" | awk 'BEGIN{rsum=0; wsum=0}{ rsum+=$6; wsum+=$7} END {print "I/O: " rsum " " wsum " mb/s"}'
+  iostat -d -x -m 1 2 -z | tail -n +$io_line_count | grep -e "^sd[a-z].*" | awk 'BEGIN{rsum=0; wsum=0}{ rsum+=$6; wsum+=$7} END {print "IO: " rsum " " wsum}'
 #+END_SRC
 
 #+BEGIN_SRC sh :mkdirp yes :mkdirp yes :tangle ~/.tmux-monitor-scripts/netspeed
@@ -137,5 +137,5 @@
   RBPS=`expr $R2 - $R1`
   TKBPS=`expr $TBPS / 1024`
   RKBPS=`expr $RBPS / 1024`
-  printf "%s: %d %d kb/s" $1 $RKBPS $TKBPS
+  printf "%s: %d %d" $1 $RKBPS $TKBPS
 #+END_SRC
