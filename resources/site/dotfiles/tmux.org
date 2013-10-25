@@ -20,6 +20,8 @@
   bind K confirm kill-server
   
   bind e source-file ~/.tmux-emacs-new-frame.conf
+  # window movement / renumbering like in screen's :number
+  bind-key m command-prompt -p "move window to:"  "swap-window -t '%%'"
   
   #### Status Bar
   
