@@ -41,7 +41,8 @@
   export LC_ALL=en_US.UTF-8  
   export LANG=en_US.UTF-8
   
-  source ~/.bin/sftpfs
+  source ~/.bin/sftpfs_comp
+  source ~/.bin/vm_comp
   
   if [ -f /etc/bash_completion.d/git-prompt ];
   then
@@ -212,7 +213,7 @@ Autocomplete for 'g' as well,
   fi
 #+END_SRC
 
-#+BEGIN_SRC sh :mkdirp yes :tangle ~/.bin/sftpfs
+#+BEGIN_SRC sh :mkdirp yes :tangle ~/.bin/sftpfs_comp
   _sftpfs(){
       local cur prev opts base
       COMPREPLY=()
@@ -242,42 +243,44 @@ Autocomplete for 'g' as well,
       return 0
   }
   complete -F _sftpfs sftpfs
-  
+#+END_SRC
+
+#+BEGIN_SRC sh :mkdirp yes :tangle ~/.bin/sftpfs
   case "${1}" in
       mount)
-          echo "Mounting" $2
-          mount_point="/media/nakkaya/$2"
-          if [ -d "$mount_point" ]; then
-              echo "Already Mounted"
-          fi
-          mkdir $mount_point
-          mount_command="sshfs $2:/ $mount_point -oauto_cache,reconnect,compression=no,follow_symlinks"
-          if [ ! -z $3 ]
-          then
-              echo "Port $3"
-              mount_command="$mount_command,port=$3"
-              echo $mount_command
-          fi 
-          eval $mount_command
-          ;;
+              echo "Mounting" $2
+              mount_point="/media/nakkaya/$2"
+              if [ -d "$mount_point" ]; then
+                  echo "Already Mounted"
+              fi
+              mkdir $mount_point
+              mount_command="sshfs $2:/ $mount_point -oauto_cache,reconnect,compression=no,follow_symlinks"
+              if [ ! -z $3 ]
+              then
+                  echo "Port $3"
+                  mount_command="$mount_command,port=$3"
+                  echo $mount_command
+              fi 
+              eval $mount_command
+              ;;
       umount)
-          echo "Unmounting" $2
-          mount_point="/media/nakkaya/$2"
+              echo "Unmounting" $2
+              mount_point="/media/nakkaya/$2"
   
-          if [ ! -d "$mount_point" ]; then
-              echo "Not Mounted"
-          fi
-          
-          if fusermount -u $mount_point; then
-              rm -rf $mount_point
-          fi
-          ;;
-      ,*)
-          ;;
+              if [ ! -d "$mount_point" ]; then
+                  echo "Not Mounted"
+              fi
+              
+              if fusermount -u $mount_point; then
+                  rm -rf $mount_point
+              fi
+              ;;
+      *)
+              ;;
   esac
 #+END_SRC
 
-#+BEGIN_SRC sh :mkdirp yes :tangle ~/.bin/vm
+#+BEGIN_SRC sh :mkdirp yes :tangle ~/.bin/vm_comp
   _vm() {
       local cur prev opts base
       COMPREPLY=()
@@ -309,7 +312,7 @@ Autocomplete for 'g' as well,
               COMPREPLY=( $(compgen -W "${names}" -- ${cur}) )
               return 0
               ;;
-          ,*)
+          *)
               ;;
       esac
   
@@ -317,39 +320,39 @@ Autocomplete for 'g' as well,
       return 0
   }
   complete -F _vm vm
-  
-  vm(){
-      case "${1}" in
-          start)
+#+END_SRC
+
+#+BEGIN_SRC sh :mkdirp yes :tangle ~/.bin/vm
+  case "${1}" in
+      start)
               echo "Starting" $2
               VBoxHeadless --startvm $2 --vrde off &
               disown
               return 0
               ;;
-          start-head)
+      start-head)
               echo "Starting" $2
               VBoxManage startvm $2 &
               disown
               return 0
               ;;
-          stop)
+      stop)
               echo "Stopping" $2
               VBoxManage controlvm $2 acpipowerbutton
               return 0
               ;;
-          unplug)
+      unplug)
               echo "Unplugging" $2
               VBoxManage controlvm $2 poweroff
               return 0
               ;;
-          running)
+      running)
               VBoxManage list runningvms
               return 0
               ;;
-          ,*)
+      *)
               ;;
-      esac
-  }
+  esac
 #+END_SRC
 
 #+BEGIN_SRC sh :tangle ~/.profile
