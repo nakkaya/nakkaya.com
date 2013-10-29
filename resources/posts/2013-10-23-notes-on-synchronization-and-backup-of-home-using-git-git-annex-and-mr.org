@@ -43,6 +43,14 @@ Repository structure,
    and upload changes to S3 and sync with bitbucket. Then when I
    switch machines I just do a /mr pull/ which downloads all changes.
 
+*** ~/.mrconfig
+
+#+BEGIN_SRC conf :tangle ~/.mrconfig
+  include = cat ~/annex/.mrconfig ~/source/.mrconfig
+  jobs = 3
+#+END_SRC
+
+
 *** ~/annex/.mrconfig
 
 #+BEGIN_SRC conf :tangle ~/annex/.mrconfig
@@ -63,36 +71,36 @@ Repository structure,
       }
   
   
-  [documents]
+  [/home/nakkaya/annex/documents]
   checkout = git clone 'ssh://git@bitbucket.org/nakkaya/documents.git' 'documents'
              cd documents/
              enableCloud     
   skip = lazy
   
-  [photos]
+  [/home/nakkaya/annex/photos]
   checkout = git clone 'git@bitbucket.org:nakkaya/photos.git' 'photos'
              cd photos/
              enableCloud
   skip = lazy
   
-  [old-code]
+  [/home/nakkaya/annex/old-code]
   checkout = git clone 'git@bitbucket.org:nakkaya/old-code.git' 'old-code'
              cd old-code/
              enableCloud
   skip = lazy
   
-  [music]
+  [/home/nakkaya/annex/music]
   checkout = git clone 'ssh://kocatepe/home/nakkaya/annex/music' 'music'
              cd music/
              git annex init "`hostname`"
   skip = lazy
   
-  [notes]
+  [/home/nakkaya/annex/notes]
   checkout = git clone 'ssh://git@bitbucket.org/nakkaya/notes.git' 'notes'
              cd notes/
              enableCloud
   
-  [mail]
+  [/home/nakkaya/annex/mail]
   checkout = git clone 'ssh://git@bitbucket.org/nakkaya/mail.git' 'mail'
              cd mail/
              enableCloud
@@ -321,83 +329,84 @@ returns true, for repositories with changes or new files,
   [DEFAULT]
   git_pull = git pull origin master
   git_push = git fast-push
+  sync = true
   
-  [encryption-keys]
+  [/home/nakkaya/source/encryption-keys]
   checkout = git clone 'ssh://git_private@kocatepe/~/encryption-keys.git' 'encryption-keys'
   
-  [server-conf]
+  [/home/nakkaya/source/server-conf]
   checkout = git clone 'ssh://git@bitbucket.org/nakkaya/server-conf.git' 'server-conf'
   pre_pull = git commit -a -m 'Auto Commit' || true
   pre_push = git commit -a -m 'Auto Commit' || true
   skip=lazy
   
-  [latte]
+  [/home/nakkaya/source/latte]
   checkout = git clone 'ssh://git@bitbucket.org/nakkaya/latte.git' 'latte'
   skip=lazy
   
-  [kinect-ardrone-demo]
+  [/home/nakkaya/source/kinect-ardrone-demo]
   checkout = git clone 'ssh://git@bitbucket.org/nakkaya/kinect-ardrone-demo.git' 'kinect-ardrone-demo'
   skip=lazy
   
-  [alter-ego]
+  [/home/nakkaya/source/alter-ego]
   checkout = git clone 'git@github.com:nakkaya/alter-ego.git' 'alter-ego'
   skip=lazy
   
-  [ardrone]
+  [/home/nakkaya/source/ardrone]
   checkout = git clone 'git@github.com:nakkaya/ardrone.git' 'ardrone'
   skip=lazy
   
-  [clodiuno]
+  [/home/nakkaya/source/clodiuno]
   checkout = git clone 'git@github.com:nakkaya/clodiuno.git' 'clodiuno'
   skip=lazy
   
-  [easy-dns]
+  [/home/nakkaya/source/easy-dns]
   checkout = git clone 'git@github.com:nakkaya/easy-dns.git' 'easy-dns'
   skip=lazy
   
-  [emacs]
+  [/home/nakkaya/source/emacs]
   checkout = git clone 'git@github.com:nakkaya/emacs.git' 'emacs'
              cd emacs
              git submodule init
              git submodule update
   
-  [inbox-feed]
+  [/home/nakkaya/source/inbox-feed]
   checkout = git clone 'git@github.com:nakkaya/inbox-feed.git' 'inbox-feed'
   skip=lazy
   
-  [nakkaya.com]
+  [/home/nakkaya/source/nakkaya.com]
   checkout = git clone 'git@github.com:nakkaya/nakkaya.com.git' 'nakkaya.com'
   skip=lazy
   
-  [net-eval]
+  [/home/nakkaya/source/net-eval]
   checkout = git clone 'git@github.com:nakkaya/net-eval.git' 'net-eval'
   skip=lazy
   
-  [neu-islanders]
+  [/home/nakkaya/source/neu-islanders]
   checkout = git clone 'ssh://git@bitbucket.org/nakkaya/neu-islanders.git' 'neu-islanders'
   skip=lazy
   
-  [pid]
+  [/home/nakkaya/source/pid]
   checkout = git clone 'git@github.com:nakkaya/pid.git' 'pid'
   skip=lazy
   
-  [static]
+  [/home/nakkaya/source/static]
   checkout = git clone 'git@github.com:nakkaya/static.git' 'static'
   skip=lazy
   
-  [vector-2d]
+  [/home/nakkaya/source/vector-2d]
   checkout = git clone 'git@github.com:nakkaya/vector-2d.git' 'vector-2d'
   skip=lazy
   
-  [vision]
+  [/home/nakkaya/source/vision]
   checkout = git clone 'git@github.com:nakkaya/vision.git' 'vision'
   skip=lazy
   
-  [classic-car-db]
+  [/home/nakkaya/source/classic-car-db]
   checkout = git clone 'ssh://git@bitbucket.org/nakkaya/classic-car-db.git' 'classic-car-db'
   skip=lazy
   
-  [doganilic.com]
+  [/home/nakkaya/source/doganilic.com]
   checkout = git clone 'ssh://git@bitbucket.org/nakkaya/doganilic.com.git' 'doganilic.com'
   skip=lazy
 #+END_SRC
