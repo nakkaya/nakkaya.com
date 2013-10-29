@@ -110,6 +110,8 @@
   alias annex-size="s3cmd du -H s3://cloud-`git config remote.cloud.annex-uuid`"
   
   alias tor="~/Apps/tor/App/tor"
+
+  alias bootstrap_new_machine="wget -qO- https://raw.github.com/nakkaya/nakkaya.com/master/resources/site/dotfiles/bootstrap.sh | bash"
   
   ga_enc_mount(){
       DIR=$(basename $1)
