@@ -155,7 +155,7 @@ files when there are changes.
       git annex sync;
       newHead=`git rev-parse HEAD`
       if [ "$oldHead" != "$newHead" ]; then
-          git annex get . --fast
+          git annex get . --fast  --quiet
           git annex sync
       else
           echo "No Change to Get..."
