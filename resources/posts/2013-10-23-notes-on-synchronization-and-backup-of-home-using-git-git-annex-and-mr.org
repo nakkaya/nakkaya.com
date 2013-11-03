@@ -237,7 +237,7 @@ returns true, for repositories with changes or new files,
               addFiles
               git annex sync
               if git config remote.cloud.annex-uuid; then
-                  git annex copy --to cloud --fast
+                  git annex copy --quiet --to cloud --fast
                   git annex sync
               else
                   git annex copy --quiet --to origin --fast
