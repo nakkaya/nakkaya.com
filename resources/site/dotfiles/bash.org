@@ -114,13 +114,16 @@
   alias bootstrap_new_machine="wget -qO- https://raw.github.com/nakkaya/nakkaya.com/master/resources/site/dotfiles/bootstrap.sh | bash"
   
   ga_enc_mount(){
-      DIR=$(basename $1)
+      CUR_DIR=`pwd`
+      cd "$1"
+      DIR=$(basename "$1")
       git annex unlock "${1}"
       encfs "${1}" "/home/nakkaya/$DIR"
+      cd $CUR_DIR
   }
   
   ga_enc_umount(){
-      DIR=$(basename $1)
+      DIR=$(basename "$1")
       fusermount -u "/home/nakkaya/$DIR"
       git annex add "${1}"
       git commit -m 'Update'
