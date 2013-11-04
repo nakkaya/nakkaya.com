@@ -30,6 +30,14 @@
   set -g status-right '#(~/.tmux-monitor-scripts/cpu.sh) #(~/.tmux-monitor-scripts/cpu_avg_temp.sh) | #(~/.tmux-monitor-scripts/disk.sh) | #(~/.tmux-monitor-scripts/netspeed eth0) | #(~/.tmux-monitor-scripts/battery.sh) | #(date +"%a %b %_d %H:%M") | #(hostname)'
 #+END_SRC
 
+Makes using the scroll wheel automatically switch to copy mode and
+scroll back the tmux scrollback buffer.
+
+#+BEGIN_SRC fundamental :tangle ~/.tmux.conf
+  setw -g mode-mouse on
+#+END_SRC
+
+
 #+BEGIN_SRC fundamental :tangle ~/.tmux-emacs-new-frame.conf
   neww -n emacs-client
   send-keys -t emacs-client "cd ~/" C-m
