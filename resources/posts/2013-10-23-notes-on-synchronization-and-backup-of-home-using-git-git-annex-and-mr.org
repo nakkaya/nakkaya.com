@@ -60,7 +60,7 @@ Repository structure,
   git_pull = git pull-changes
   git_status = git na-status
   git_drop = git drop-all-unused "$@"
-  git_upload = git annex sync; git annex copy --to cloud --fast || git annex copy --quiet --to origin --fast ; git annex sync
+  git_upload = git annex sync; git annex copy --quiet --to cloud --fast || git annex copy --quiet --to origin --fast ; git annex sync
   git_download = git annex sync; git annex get --quiet --fast; git annex sync
   
   lib = 
