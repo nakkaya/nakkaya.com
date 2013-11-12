@@ -50,7 +50,6 @@ Repository structure,
   jobs = 3
 #+END_SRC
 
-
 *** ~/annex/.mrconfig
 
 #+BEGIN_SRC conf :tangle ~/annex/.mrconfig
@@ -252,6 +251,24 @@ returns true, for repositories with changes or new files,
       true
   fi
 #+END_SRC
+
+*** Misc
+
+    Setup encrypted annex directory remote,
+
+    #+BEGIN_SRC sh
+      git annex initremote mobile type=directory directory=/path/to/annex/repo/ encryption=hybrid keyid=ID embedcreds=yes
+    #+END_SRC
+
+    Setup encrypted annex S3 remote,
+
+    #+BEGIN_SRC sh
+      export AWS_ACCESS_KEY_ID="KID"
+      export AWS_SECRET_ACCESS_KEY="SKEY"
+      git annex initremote cloud type=S3 encryption=hybrid keyid=ID embedcreds=yes
+      git setup-bitbucket
+      git config remote.origin.annex-ignore true
+    #+END_SRC
 
 * /external
 
