@@ -11,13 +11,15 @@
   ##### Key Bindings
   
   unbind C-b 
-  set -g prefix C-o
-  bind C-o send-prefix
+  set -g prefix '\'
+  bind-key '\' send-prefix
   set-window-option -g xterm-keys on
   
   bind t source-file ~/.tmux-over-ssh.conf
   bind k confirm kill-window
   bind K confirm kill-server
+
+  bind tab last-window
   
   bind e source-file ~/.tmux-emacs-new-frame.conf
   # window movement / renumbering like in screen's :number
@@ -28,6 +30,15 @@
   set-option -g  status-interval 1
   set-option -g status-right-length 120
   set -g status-right '#(~/.tmux-monitor-scripts/cpu.sh) #(~/.tmux-monitor-scripts/cpu_avg_temp.sh) | #(~/.tmux-monitor-scripts/disk.sh) | #(~/.tmux-monitor-scripts/netspeed eth0) | #(~/.tmux-monitor-scripts/battery.sh) | #(date +"%a %b %_d %H:%M") | #(hostname)'
+#+END_SRC
+
+#+BEGIN_SRC fundamental :tangle ~/.tmux.conf
+  setw -g utf8 on
+  set -g status-utf8 on
+#+END_SRC
+
+#+BEGIN_SRC fundamental :tangle ~/.tmux.conf
+  setw -g window-status-current-format "|#I:#W|"
 #+END_SRC
 
 Makes using the scroll wheel automatically switch to copy mode and
