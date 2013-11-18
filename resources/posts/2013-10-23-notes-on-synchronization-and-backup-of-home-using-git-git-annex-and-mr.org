@@ -59,7 +59,7 @@ Repository structure,
   git_pull = git pull-changes
   git_status = git na-status
   git_drop = git drop-all-unused "$@"
-  git_upload = git annex sync; git annex copy --quiet --to cloud --fast || git annex copy --quiet --to origin --fast ; git annex sync
+  git_upload = git annex sync; git annex copy --quiet --to cloud --fast ; git annex sync
   git_download = git annex sync; git annex get --quiet --fast; git annex sync
   git_archive = git annex sync; git annex copy --to mobile --quiet --fast; git annex sync
   
@@ -90,7 +90,7 @@ Repository structure,
   skip = lazy
   
   [/home/nakkaya/annex/music]
-  checkout = git clone 'ssh://kocatepe/home/nakkaya/annex/music' 'music'
+  checkout = git clone 'git@bitbucket.org:nakkaya/music.git' 'music'
              cd music/
              git annex init "`hostname`"
   skip = lazy
