@@ -92,7 +92,7 @@ Repository structure,
   [/home/nakkaya/annex/music]
   checkout = git clone 'git@bitbucket.org:nakkaya/music.git' 'music'
              cd music/
-             git annex init "`hostname`"
+             enableCloud
   skip = lazy
   
   [/home/nakkaya/annex/notes]
