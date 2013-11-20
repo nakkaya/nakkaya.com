@@ -46,13 +46,13 @@ Repository structure,
 *** ~/.mrconfig
 
 #+BEGIN_SRC conf :tangle ~/.mrconfig
-  include = cat ~/annex/.mrconfig ~/source/.mrconfig
+  include = cat ~/annex/.mrconfig-annex ~/source/.mrconfig-source
   jobs = 3
 #+END_SRC
 
 *** ~/annex/.mrconfig
 
-#+BEGIN_SRC conf :tangle ~/annex/.mrconfig
+#+BEGIN_SRC conf :tangle ~/annex/.mrconfig-annex
   [DEFAULT]
   git_sync = git annex sync "$@"
   git_push = git fast-push
@@ -343,7 +343,7 @@ returns true, for repositories with changes or new files,
 
   Git Repos,
 
-#+BEGIN_SRC conf :tangle ~/source/.mrconfig
+#+BEGIN_SRC conf :tangle ~/source/.mrconfig-source
   [DEFAULT]
   git_pull = git pull origin master
   git_push = git fast-push
