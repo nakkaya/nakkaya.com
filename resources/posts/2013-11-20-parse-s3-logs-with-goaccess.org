@@ -1,0 +1,27 @@
+#+title: Parse S3 Logs with Goaccess
+#+tags: aws s3 goaccess
+
+Note to self, create ~/.goaccessrc add S3 log format,
+
+#+BEGIN_SRC conf
+  date_format %d/%b/%Y
+  log_format %^ %^ [%d:%^] %h %^ %^ %^ %^ "%^ %r %^" %s %^ %b %^ %^ %^ "%^" "%u" %^   
+#+END_SRC
+
+Sync log bucket to local folder,
+
+#+BEGIN_SRC sh
+  s3cmd sync  s3://logs.nakkaya.com/ ./
+#+END_SRC
+
+Parse yesterdays logs,
+
+#+BEGIN_SRC sh
+  find . -name "`date +%Y-%m-%d -d "yesterday"`*" -exec cat {} \; | goaccess -a
+#+END_SRC
+
+Parse all logs,
+
+#+BEGIN_SRC sh
+  find . -exec cat {} \; | goaccess -a
+#+END_SRC
