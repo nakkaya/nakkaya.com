@@ -62,6 +62,7 @@ Repository structure,
   git_upload = git annex sync; git annex copy --quiet --to cloud --fast ; git annex sync
   git_download = git annex sync; git annex get --quiet --fast; git annex sync
   git_archive = git annex sync; git annex copy --to mobile --quiet --fast; git annex sync
+  git_archiveUnused = git annex unused --from cloud;git annex move --unused --from cloud;git annex unused; git annex move --unused --to mobile
   
   lib = 
       enableCloud() {
