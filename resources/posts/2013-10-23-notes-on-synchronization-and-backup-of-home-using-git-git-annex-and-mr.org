@@ -106,6 +106,12 @@ Repository structure,
              cd mail/
              enableCloud
   skip=true
+
+  [/home/nakkaya/annex/wallet]
+  checkout = git clone 'git@gitlab.neu.edu.tr:nakkaya/wallet.git' 'wallet'
+             cd wallet/
+             enableCloud
+  skip = lazy
 #+END_SRC
 
 *** ~/.bin/git-drop-all-unused
