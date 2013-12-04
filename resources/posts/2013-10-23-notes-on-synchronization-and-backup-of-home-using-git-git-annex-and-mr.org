@@ -434,4 +434,12 @@ returns true, for repositories with changes or new files,
   [/home/nakkaya/source/doganilic.com]
   checkout = git clone 'ssh://git@bitbucket.org/nakkaya/doganilic.com.git' 'doganilic.com'
   skip=lazy
+  
+  [/home/nakkaya/source/coin-trader]
+  checkout = git clone 'git@gitlab.neu.edu.tr:nakkaya/coin-trader.git' 'coin-trader'
+  skip=lazy
+  
+  [/home/nakkaya/source/vehicle-tracking]
+  checkout = git clone 'git@gitlab.neu.edu.tr:nakkaya/vehicle-tracking.git' 'vehicle-tracking'
+  skip=lazy
 #+END_SRC
