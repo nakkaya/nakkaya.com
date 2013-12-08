@@ -70,7 +70,7 @@
   colorscheme solarized-dark
   
   " Allow GMail shortcuts
-  set passkeys+=mail.google.com:jksacr#<CR>,gi,gl,gp
+  set passkeys+=mail.google.com:jksacrqG#<CR>,gi,gl,gp
   set strictfocus=google.com:laissez-faire,'chrome:*':laissez-faire,*:despotic
   " Let Hint Message from X Links 
   autocmd LocationChange mail.google.com set ht+=span.ata-asJ
