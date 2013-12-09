@@ -62,7 +62,6 @@ Repository structure,
   git_upload = git annex sync; git annex copy --quiet --to cloud --fast ; git annex sync
   git_download = git annex sync; git annex get --quiet --fast; git annex sync
   git_archive = git annex sync; git annex copy --to mobile --quiet --fast; git annex sync
-  git_archiveUnused = git annex unused --from cloud;git annex move --unused --from cloud;git annex unused; git annex move --unused --to mobile
   
   lib = 
       enableCloud() {
@@ -183,7 +182,7 @@ returns true, for repositories with changes or new files,
 
 #+BEGIN_SRC sh :tangle ~/.bin/git-fast-push
   #/bin/bash
-
+  
   updateAnnexHost() {
       echo 'Updating Remote...'
       ORIGIN=`git config --get remote.origin.url`
@@ -191,15 +190,6 @@ returns true, for repositories with changes or new files,
       DIR="/${ORIGIN#*//*/}"
       echo "$HOST $DIR"
       ssh $HOST "cd $DIR;git annex sync"
-  }
-
-  addFiles() {
-      if hasNewFiles; then 
-          echo 'Auto Add...'
-          git annex add .;git commit -m 'Update'
-      else
-          echo 'Nothing to Auto Add...'
-      fi
   }
   
   hasNoChanges(){
@@ -221,36 +211,39 @@ returns true, for repositories with changes or new files,
           false
       fi
   }
-
-  if ! hasNoChanges || hasNewFiles || isRepoAhead; then 
-      if [ -d '.git/annex/' ]; then
-          #handle direct annex repo
-          if `git config --get annex.direct`; then
-              oldHead=`git rev-parse HEAD`
-              addFiles
-              git annex sync;
-              newHead=`git rev-parse HEAD`
-              if [ "$oldHead" != "$newHead" ]; then
-                  if git config remote.cloud.annex-uuid; then
-                      git annex copy --quiet --to cloud --fast
-                      git annex sync
-                  else
-                      git annex copy --quiet --to origin --fast
-                      updateAnnexHost
-                  fi
-              fi
-          #handle indirect annex repo
-          else
-              addFiles
+  
+  #handle direct annex repo
+  if `git config --get annex.direct`; then
+      oldHead=`git rev-parse HEAD`
+      git annex add .
+      git annex sync
+      newHead=`git rev-parse HEAD`
+      if [ "$oldHead" != "$newHead" ]; then
+          if git config remote.cloud.annex-uuid; then
+              git annex copy --quiet --to cloud --fast
               git annex sync
-              if git config remote.cloud.annex-uuid; then
-                  git annex copy --quiet --to cloud --fast
-                  git annex sync
-              else
-                  git annex copy --quiet --to origin --fast
-                  updateAnnexHost
-              fi
+          else
+              git annex copy --quiet --to origin --fast
+              updateAnnexHost
           fi
+      fi
+      exit
+  fi
+  
+  if ! hasNoChanges || hasNewFiles || isRepoAhead; then 
+  #handle indirect annex repo
+      if [ -d '.git/annex/' ]; then    
+          git annex add .
+          git annex sync
+          if git config remote.cloud.annex-uuid; then
+              git annex copy --quiet --to cloud --fast
+              git annex sync
+          else
+              git annex copy --quiet --to origin --fast
+              updateAnnexHost
+          fi
+          exit
+  #handle plain git repo        
       else
           git push origin master
       fi
