@@ -352,12 +352,6 @@ returns true, for repositories with changes or new files,
   [/home/nakkaya/source/encryption-keys]
   checkout = git clone 'ssh://git_private@kocatepe/~/encryption-keys.git' 'encryption-keys'
   
-  [/home/nakkaya/source/server-conf]
-  checkout = git clone 'ssh://git@bitbucket.org/nakkaya/server-conf.git' 'server-conf'
-  pre_pull = git commit -a -m 'Auto Commit' || true
-  pre_push = git commit -a -m 'Auto Commit' || true
-  skip=lazy
-  
   [/home/nakkaya/source/latte]
   checkout = git clone 'ssh://git@bitbucket.org/nakkaya/latte.git' 'latte'
   skip=lazy
