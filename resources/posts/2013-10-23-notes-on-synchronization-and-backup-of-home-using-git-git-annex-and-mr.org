@@ -220,10 +220,10 @@ returns true, for repositories with changes or new files,
       newHead=`git rev-parse HEAD`
       if [ "$oldHead" != "$newHead" ]; then
           if git config remote.cloud.annex-uuid; then
-              git annex copy --quiet --to cloud --fast
+              git annex copy --to cloud --not --in cloud
               git annex sync
           else
-              git annex copy --quiet --to origin --fast
+              git annex copy --to origin --not --in origin
               updateAnnexHost
           fi
       fi
@@ -236,10 +236,10 @@ returns true, for repositories with changes or new files,
           git annex add .
           git annex sync
           if git config remote.cloud.annex-uuid; then
-              git annex copy --quiet --to cloud --fast
+              git annex copy --to cloud --not --in cloud
               git annex sync
           else
-              git annex copy --quiet --to origin --fast
+              git annex copy --to origin --not --in origin
               updateAnnexHost
           fi
           exit
