@@ -376,16 +376,20 @@ Autocomplete for 'g' as well,
 
 #+BEGIN_SRC sh :mkdirp yes :tangle ~/.bin/lock-screen
   #!/usr/bin/env bash
-  cd ~/
-  mr fastPush
-  
   gnome-screensaver-command -l
-  until gnome-screensaver-command -q | grep -m 1 "inactive"; do sleep 1 ; done
-  
-  echo "Downloading Chages"
-  echo `date`
   cd ~/
-  mr up
+  mr push
+  
+  START=$(date +%s);
+  until gnome-screensaver-command -q | grep -m 1 "inactive"; do sleep 1 ; done
+  END=$(date +%s);
+  
+  DIFF=$(( $END - $START ))
+  if ((DIFF > 10800))
+  then
+      cd ~/
+      mr pull
+  fi
 #+END_SRC
 
 #+BEGIN_SRC sh :mkdirp yes :tangle ~/.bin/sleep-computer
