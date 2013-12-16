@@ -53,6 +53,11 @@
   then
       source /usr/share/bash-completion/completions/git
   fi
+
+  if [ -f /etc/bash_completion.d/git ];
+  then
+      source /etc/bash_completion.d/git
+  fi
 #+END_SRC
 
 #+BEGIN_SRC sh :tangle ~/.bashrc

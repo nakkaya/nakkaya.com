@@ -59,9 +59,10 @@ Repository structure,
   git_pull = git pull-changes
   git_status = git na-status
   git_drop = git drop-all-unused "$@"
+  git_dead = git annex dead "$@"
   git_upload = git annex sync; git annex copy --to cloud --not --in cloud ; git annex sync
   git_download = git annex sync; git annex get --quiet --fast; git annex sync
-  git_archive = git annex sync; git annex copy --to mobile --not --in mobile; git annex sync
+  git_archive = git annex sync; git annex copy --to mobile --not --in mobile; git annex sync2
   
   lib = 
       enableCloud() {
@@ -105,7 +106,7 @@ Repository structure,
              cd mail/
              enableCloud
   skip=true
-
+  
   [/home/nakkaya/annex/wallet]
   checkout = git clone 'git@gitlab.neu.edu.tr:nakkaya/wallet.git' 'wallet'
              cd wallet/
