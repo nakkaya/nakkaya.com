@@ -33,9 +33,10 @@ function tangle(){
     rm -f ~/.profile
     tangleFile site/dotfiles/ bash
 
-    mkdir ~/annex
-    mkdir ~/source
-    sudo mkdir /media/nakkaya/
+    mkdir -p ~/annex
+    mkdir -p ~/source
+    sudo mkdir -p /media/nakkaya/
+    sudo chown -R nakkaya:nakkaya /media/nakkaya/
     tangleFile posts/ 2013-10-23-notes-on-synchronization-and-backup-of-home-using-git-git-annex-and-mr
 
     chmod +x ~/.bin/*
