@@ -217,7 +217,7 @@ synclient TapButton2=0
   xmodmap -e "keysym Caps_Lock = Control_L"
   xmodmap -e "add Control = Control_L"
   
-  if [ `hostname -s` = "ai-lab" ]; then
+  if [ `hostname -s` = "buntu" ]; then
       #Exchange left Alt and left Win
       xmodmap -e "remove mod1 = Alt_L"
       xmodmap -e "remove mod4 = Super_L"
