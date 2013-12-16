@@ -293,6 +293,8 @@ returns true, for repositories with changes or new files,
   [/media/nakkaya/ozge/kiler]
   
   [/media/nakkaya/sedef/kiler]
+
+  [/media/nakkaya/ebru/kiler]
 #+END_SRC
 
 *** ~/.bin/git-annex-add-sync
@@ -328,7 +330,7 @@ returns true, for repositories with changes or new files,
   git clone /media/nakkaya/esra/kiler/
   git remote remove origin
   
-  DISKS="damla esra merve ozge sedef"
+  DISKS="ebru damla esra merve ozge sedef"
   
   for i in $DISKS; do 
       git remote add $i /media/nakkaya/$i/kiler/
@@ -336,6 +338,11 @@ returns true, for repositories with changes or new files,
   
   git annex init "new-disk-name"
   git annex sync
+  
+  for i in $DISKS; do 
+      cd /media/nakkaya/$i/kiler/
+      git remote add "new-disk-name" /media/nakkaya/new-disk-name/kiler/
+  done
 #+END_SRC
 
 * ~/source/
