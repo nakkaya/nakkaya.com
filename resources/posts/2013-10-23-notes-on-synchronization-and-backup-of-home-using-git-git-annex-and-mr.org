@@ -62,7 +62,7 @@ Repository structure,
   git_dead = git annex dead "$@"
   git_upload = git annex sync; git annex copy --to cloud --not --in cloud ; git annex sync
   git_download = git annex sync; git annex get --quiet --fast; git annex sync
-  git_archive = git annex sync; git annex copy --to mobile --not --in mobile; git annex sync2
+  git_archive = git annex sync; git annex copy --to mobile --not --in mobile; git annex sync
   
   lib = 
       enableCloud() {
