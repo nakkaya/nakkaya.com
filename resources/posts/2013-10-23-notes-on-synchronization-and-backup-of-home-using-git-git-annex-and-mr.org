@@ -114,6 +114,7 @@ Repository structure,
              enableCloud
   skip = lazy
   pull = git pull-changes
+  archive = true
 #+END_SRC
 
 *** ~/.bin/git-drop-all-unused
@@ -123,8 +124,10 @@ Drop all unused files,
 #+BEGIN_SRC sh :tangle ~/.bin/git-drop-all-unused
   #/bin/bash
   
+  repo=${1:-here}
+  
   if [ -d '.git/annex/' ]; then
-      git annex unused | grep -o -P "^    [0-9]+" | \
+      git annex unused --from $repo | grep -o -P "^    [0-9]+" | \
           xargs git annex dropunused --force
   else
       true
