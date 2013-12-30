@@ -56,7 +56,7 @@ Repository structure,
   [DEFAULT]
   git_sync = git annex sync "$@"
   git_push = git fast-push
-  git_pull = git pull-changes
+  git_pull = git annex sync
   git_status = git na-status
   git_drop = git drop-all-unused "$@"
   git_dead = git annex dead "$@"
@@ -100,7 +100,7 @@ Repository structure,
   checkout = git clone 'ssh://git@bitbucket.org/nakkaya/notes.git' 'notes'
              cd notes/
              enableCloud
-  sync = mr pull
+  pull = git pull-changes
   
   [/home/nakkaya/annex/mail]
   checkout = git clone 'ssh://git@bitbucket.org/nakkaya/mail.git' 'mail'
@@ -113,7 +113,7 @@ Repository structure,
              cd wallet/
              enableCloud
   skip = lazy
-  sync = mr pull
+  pull = git pull-changes
 #+END_SRC
 
 *** ~/.bin/git-drop-all-unused
