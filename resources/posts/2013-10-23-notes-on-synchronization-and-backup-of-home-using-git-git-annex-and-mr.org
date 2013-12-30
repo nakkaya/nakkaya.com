@@ -172,7 +172,7 @@ files when there are changes.
   fi
 #+END_SRC
 
-***  ~/.bin/git-fast-push
+*** ~/.bin/git-fast-push
 
 Custom push command. For repositories with no changes it simply
 returns true, for repositories with changes or new files,
@@ -251,6 +251,25 @@ returns true, for repositories with changes or new files,
   else
       true
   fi
+#+END_SRC
+
+*** Webapp
+
+Create autostart file,
+
+#+BEGIN_SRC conf :tangle ~/.config/git-annex/autostart :mkdirp yes
+  /home/nakkaya/annex/notes
+  /home/nakkaya/annex/music
+  /home/nakkaya/annex/wallet
+  /home/nakkaya/annex/photos
+  /home/nakkaya/annex/old-code
+  /home/nakkaya/annex/documents
+#+END_SRC
+
+Start asistant and webapp,
+
+#+BEGIN_SRC sh :tangle ~/.bin/gwebapp :mkdirp yes
+  git annex assistant --autostart && nohup git annex webapp
 #+END_SRC
 
 *** Misc
