@@ -71,6 +71,13 @@ Repository structure,
          git annex enableremote cloud
       }
   
+
+  [/home/nakkaya/annex/encryption-keys-git]
+  checkout = git clone 'ssh://git@bitbucket.org/nakkaya/encryption-keys-git.git' 'encryption-keys-git'
+             cd encryption-keys-git/
+             enableCloud     
+  skip = lazy
+  pull = git pull-changes
   
   [/home/nakkaya/annex/documents]
   checkout = git clone 'ssh://git@bitbucket.org/nakkaya/documents.git' 'documents'
