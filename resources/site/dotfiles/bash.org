@@ -149,6 +149,7 @@ Autocomplete for 'g' as well,
       }
       complete -W "$(_ssh_completion)" ssh
       complete -W "$(_ssh_completion)" tmux-ssh
+      complete -W "$(_ssh_completion)" autossh
   fi
 #+END_SRC
 
