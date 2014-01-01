@@ -71,14 +71,6 @@ Repository structure,
          git annex enableremote cloud
       }
   
-
-  [/home/nakkaya/annex/encryption-keys-git]
-  checkout = git clone 'ssh://git@bitbucket.org/nakkaya/encryption-keys-git.git' 'encryption-keys-git'
-             cd encryption-keys-git/
-             enableCloud     
-  skip = lazy
-  sync = git pull-changes
-  
   [/home/nakkaya/annex/documents]
   checkout = git clone 'ssh://git@bitbucket.org/nakkaya/documents.git' 'documents'
              cd documents/
@@ -387,9 +379,6 @@ Start asistant and webapp,
   git_pull = git pull origin master
   git_push = git fast-push
   sync = true
-  
-  [/home/nakkaya/source/encryption-keys]
-  checkout = git clone 'ssh://git_private@kocatepe/~/encryption-keys.git' 'encryption-keys'
   
   [/home/nakkaya/source/latte]
   checkout = git clone 'ssh://git@bitbucket.org/nakkaya/latte.git' 'latte'
