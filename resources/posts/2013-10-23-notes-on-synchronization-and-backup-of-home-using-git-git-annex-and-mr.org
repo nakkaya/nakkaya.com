@@ -103,7 +103,7 @@ Repository structure,
          git annex get .
          git annex copy --to cloud --not --in cloud
          git annex sync
-  pull = sync
+  pull = mr sync
   
   [/home/nakkaya/annex/mail]
   checkout = git clone 'ssh://git@bitbucket.org/nakkaya/mail.git' 'mail'
@@ -120,7 +120,7 @@ Repository structure,
          git annex get .
          git annex copy --to cloud --not --in cloud
          git annex sync
-  pull = sync
+  pull = mr sync
   archive = true
 #+END_SRC
 
