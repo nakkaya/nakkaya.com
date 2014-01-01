@@ -18,7 +18,6 @@ function tangle(){
     rm -rf ~/.xmonad
     rm -f ~/.keynavrc
     rm -f ~/.Xresources
-    rm -f ~/.caps-setup
     tangleFile site/dotfiles/ xmonad
 
     rm -rf ~/.pentadactyl
@@ -36,14 +35,12 @@ function tangle(){
     mkdir -p ~/annex
     mkdir -p ~/source
     tangleFile posts/ 2013-10-23-notes-on-synchronization-and-backup-of-home-using-git-git-annex-and-mr
-
-    chmod +x ~/.bin/*
 }
 
 tangle
 
+chmod +x ~/.bin/*
 chmod +x ~/.tmux-monitor-scripts/*
-chmod +x ~/.caps-setup
 
 rm -f ~/.emacs
 echo "(load-file \"~/source/emacs/init.el\")" > ~/.emacs
