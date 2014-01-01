@@ -99,7 +99,10 @@ Repository structure,
   checkout = git clone 'ssh://git@bitbucket.org/nakkaya/notes.git' 'notes'
              cd notes/
              enableCloud
-  sync = git pull-changes
+  sync = git annex sync
+         git annex get .
+         git annex copy --to cloud --not --in cloud
+         git annex sync
   
   [/home/nakkaya/annex/mail]
   checkout = git clone 'ssh://git@bitbucket.org/nakkaya/mail.git' 'mail'
@@ -112,7 +115,10 @@ Repository structure,
              cd wallet/
              enableCloud
   skip = lazy
-  sync = git pull-changes
+  sync = git annex sync
+         git annex get .
+         git annex copy --to cloud --not --in cloud
+         git annex sync
   archive = true
 #+END_SRC
 
