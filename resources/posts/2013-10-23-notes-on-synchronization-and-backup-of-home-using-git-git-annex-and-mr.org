@@ -21,7 +21,6 @@ Repository structure,
    machines, I have split all files into 6 annexes,
 
    - documents
-   - mail
    - music
    - notes
    - old-code
@@ -104,12 +103,6 @@ Repository structure,
          git annex copy --to cloud --not --in cloud
          git annex sync
   pull = mr sync
-  
-  [/home/nakkaya/annex/mail]
-  checkout = git clone 'ssh://git@bitbucket.org/nakkaya/mail.git' 'mail'
-             cd mail/
-             enableCloud
-  skip=true
   
   [/home/nakkaya/annex/wallet]
   checkout = git clone 'git@gitlab.neu.edu.tr:nakkaya/wallet.git' 'wallet'
