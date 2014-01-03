@@ -57,7 +57,7 @@ Repository structure,
   git_push = git fast-push
   git_pull = git annex sync
   git_status = git na-status
-  git_drop = git drop-all-unused "$@"
+  git_drop = git git-drop-unused here 0
   git_dead = git annex dead "$@"
   git_upload = git annex sync; git annex copy --to cloud --not --in cloud ; git annex sync
   git_download = git annex sync; git annex get --quiet --fast; git annex sync
@@ -75,24 +75,32 @@ Repository structure,
              cd documents/
              enableCloud     
   skip = lazy
+  drop = git-drop-unused.hy here 7
+         git-drop-unused.hy cloud 30
   
   [/home/nakkaya/annex/photos]
   checkout = git clone 'git@bitbucket.org:nakkaya/photos.git' 'photos'
              cd photos/
              enableCloud
   skip = lazy
+  drop = git-drop-unused.hy here 7
+         git-drop-unused.hy cloud 120
   
   [/home/nakkaya/annex/old-code]
   checkout = git clone 'git@bitbucket.org:nakkaya/old-code.git' 'old-code'
              cd old-code/
              enableCloud
   skip = lazy
+  drop = git-drop-unused.hy here 7
+         git-drop-unused.hy cloud 30
   
   [/home/nakkaya/annex/music]
   checkout = git clone 'git@bitbucket.org:nakkaya/music.git' 'music'
              cd music/
              enableCloud
   skip = lazy
+  drop = git-drop-unused.hy here 7
+         git-drop-unused.hy cloud 15
   
   [/home/nakkaya/annex/notes]
   checkout = git clone 'ssh://git@bitbucket.org/nakkaya/notes.git' 'notes'
@@ -103,6 +111,8 @@ Repository structure,
          git annex copy --to cloud --not --in cloud
          git annex sync
   pull = mr sync
+  drop = git-drop-unused.hy here 7
+         git-drop-unused.hy cloud 180
   
   [/home/nakkaya/annex/wallet]
   checkout = git clone 'git@gitlab.neu.edu.tr:nakkaya/wallet.git' 'wallet'
@@ -115,23 +125,69 @@ Repository structure,
          git annex sync
   pull = mr sync
   archive = true
+  drop = git-drop-unused.hy here 0
+         git-drop-unused.hy cloud 30
 #+END_SRC
 
-*** ~/.bin/git-drop-all-unused
+*** ~/.bin/git-drop-unused.hy
 
-Drop all unused files,
+Drop all unused files by date,
 
-#+BEGIN_SRC sh :tangle ~/.bin/git-drop-all-unused
-  #/bin/bash
+#+BEGIN_SRC hy :tangle ~/.bin/git-drop-unused.hy :padline no
+  #!/usr/local/bin/hy
   
-  repo=${1:-here}
+  (import  [sh [grep git grep awk ErrorReturnCode]]
+           [re [split]]
+           [datetime [datetime date]]
+           [sys])
   
-  if [ -d '.git/annex/' ]; then
-      git annex unused --from $repo | grep -o -P "^    [0-9]+" | \
-          xargs git annex dropunused --force
-  else
-      true
-  fi
+  (def remote (if (>= (len sys.argv) 2)
+                (second sys.argv)
+                "here"))
+  
+  (def drop-age (if (= (len sys.argv) 3)
+                  (int (nth sys.argv 2))
+                  180))
+  
+  (defn unused-files []
+    (let [[files (try 
+                  (-> (.annex git "unused" "--from" remote)
+                      (grep "-o" "-P" "^    [0-9]+      .*")
+                      str)
+                  (catch [e ErrorReturnCode] ""))]]
+      (->> files 
+           (split "\n")
+           (map (fn [x] 
+                  (->> (.strip x)
+                       (split "      ")
+                       (take 2)
+                       (map (fn [x] (.strip x))))))
+           (filter (fn [x] 
+                     (= (len x) 2)))
+           list)))
+  
+  (defn last-seen [file]
+    (let [[key (second file)]]
+      (->> (git "--no-pager" "log" "-1" "-S" key "--pretty=format:%at")
+           str
+           (split "\n")
+           (map (fn [x] (.fromtimestamp datetime (float x))))
+           first)))
+  
+  (defn age [file]
+    (let [[delta (- (.today datetime) (last-seen file))]]
+      delta.days))
+  
+  (print "Dropping " remote)
+  
+  (for [file (unused-files)]
+    (let [[id (first file)]
+          [file-age (age file)]]
+      
+      (if (>= file-age drop-age)
+        (do 
+         (print "Id " id " age " file-age " days...")
+         (.annex git "dropunused" (str id))))))
 #+END_SRC
 
 *** ~/.bin/git-na-status
@@ -306,7 +362,7 @@ Start asistant and webapp,
 #+BEGIN_SRC conf :tangle /media/nakkaya/.mrconfig
   [DEFAULT]
   git_sync = git annex-add-sync "$@"
-  git_drop = git drop-all-unused "$@"
+  git_drop = git git-drop-unused here 0
   
   [/media/nakkaya/damla/kiler]
   
