@@ -77,6 +77,7 @@ Repository structure,
   skip = lazy
   drop = git-drop-unused.hy here 7
          git-drop-unused.hy cloud 30
+         git-drop-unused.hy mobile 0
   
   [/home/nakkaya/annex/photos]
   checkout = git clone 'git@bitbucket.org:nakkaya/photos.git' 'photos'
@@ -85,6 +86,7 @@ Repository structure,
   skip = lazy
   drop = git-drop-unused.hy here 7
          git-drop-unused.hy cloud 120
+         git-drop-unused.hy mobile 0
   
   [/home/nakkaya/annex/old-code]
   checkout = git clone 'git@bitbucket.org:nakkaya/old-code.git' 'old-code'
@@ -93,6 +95,7 @@ Repository structure,
   skip = lazy
   drop = git-drop-unused.hy here 7
          git-drop-unused.hy cloud 30
+         git-drop-unused.hy mobile 0
   
   [/home/nakkaya/annex/music]
   checkout = git clone 'git@bitbucket.org:nakkaya/music.git' 'music'
@@ -101,6 +104,7 @@ Repository structure,
   skip = lazy
   drop = git-drop-unused.hy here 7
          git-drop-unused.hy cloud 15
+         git-drop-unused.hy mobile 0
   
   [/home/nakkaya/annex/notes]
   checkout = git clone 'ssh://git@bitbucket.org/nakkaya/notes.git' 'notes'
@@ -113,6 +117,7 @@ Repository structure,
   pull = mr sync
   drop = git-drop-unused.hy here 7
          git-drop-unused.hy cloud 180
+         git-drop-unused.hy mobile 0
   
   [/home/nakkaya/annex/wallet]
   checkout = git clone 'git@gitlab.neu.edu.tr:nakkaya/wallet.git' 'wallet'
@@ -187,7 +192,7 @@ Drop all unused files by date,
       (if (>= file-age drop-age)
         (do 
          (print "Id " id " age " file-age " days...")
-         (.annex git "dropunused" (str id))))))
+         (.annex git "dropunused" "--force" (str id))))))
 #+END_SRC
 
 *** ~/.bin/git-na-status
