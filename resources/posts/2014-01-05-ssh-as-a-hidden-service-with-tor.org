@@ -1,0 +1,38 @@
+#+title: SSH as a Hidden Service with Tor
+#+tags: linux tor ssh
+
+Note to self, setup .torrc,
+
+#+BEGIN_SRC conf
+  RunAsDaemon 1
+
+  HiddenServiceDir /home/tor/.hidden-ssh/
+  HiddenServicePort 22 127.0.0.1:22
+#+END_SRC
+
+Locate tor address,
+
+#+BEGIN_SRC sh
+  cat ~/.hidden-ssh/hostname
+#+END_SRC
+
+Edit rc.local so tor starts during boot,
+
+#+BEGIN_SRC sh
+  su - tor -c "/home/tor/Apps/tor/App/tor -f /home/tor/.torrc"
+#+END_SRC
+
+Edit SSH conf so it uses the SOCKS proxy for .onion addresses,
+
+#+BEGIN_SRC conf
+  Host *.onion
+     ProxyCommand nc -xlocalhost:9050 -X5 %h %p
+#+END_SRC
+
+and add hosts,
+
+#+BEGIN_SRC conf
+  Host machine.onion
+     HostName dkflcfnvfkddjfkd.onion
+     Port 22
+#+END_SRC
