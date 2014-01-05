@@ -1,36 +1,39 @@
 #+title: tmux Configuration
 #+tags: tmux
 
+This is a dump of all tmux related configuration and
+scripts so I can edit them in one place.
+
+Start windows and panes at 1, not 0,
+
 #+BEGIN_SRC fundamental :tangle ~/.tmux.conf
-  #new-session
-  
-  # Start windows and panes at 1, not 0
   set -g base-index 1
   set -g pane-base-index 1
-  
-  ##### Key Bindings
-  
+#+END_SRC
+
+Replace C-b with \,
+
+#+BEGIN_SRC fundamental :tangle ~/.tmux.conf
   unbind C-b 
   set -g prefix '\'
   bind-key '\' send-prefix
   set-window-option -g xterm-keys on
-  
+#+END_SRC
+
+Setup key bindings,
+
+#+BEGIN_SRC fundamental :tangle ~/.tmux.conf
   bind t source-file ~/.tmux-over-ssh.conf
   bind k confirm kill-window
   bind K confirm kill-server
 
   bind tab last-window
   
-  bind e source-file ~/.tmux-emacs-new-frame.conf
   # window movement / renumbering like in screen's :number
   bind-key m command-prompt -p "move window to:"  "swap-window -t '%%'"
-  
-  #### Status Bar
-  
-  set-option -g  status-interval 1
-  set-option -g status-right-length 120
-  set -g status-right '#(~/.tmux-monitor-scripts/cpu.sh) #(~/.tmux-monitor-scripts/cpu_avg_temp.sh) | #(~/.tmux-monitor-scripts/disk.sh) | #(~/.tmux-monitor-scripts/netspeed eth0) | #(~/.tmux-monitor-scripts/battery.sh) | #(date +"%a %b %_d %H:%M") | #(hostname)'
 #+END_SRC
+
+Enable UTF-8,
 
 #+BEGIN_SRC fundamental :tangle ~/.tmux.conf
   setw -g utf8 on
@@ -48,12 +51,15 @@ scroll back the tmux scrollback buffer.
   setw -g mode-mouse on
 #+END_SRC
 
+Status bar,
 
-#+BEGIN_SRC fundamental :tangle ~/.tmux-emacs-new-frame.conf
-  neww -n emacs-client
-  send-keys -t emacs-client "cd ~/" C-m
-  send-keys -t emacs-client "emacsclient -t" C-m
+#+BEGIN_SRC fundamental :tangle ~/.tmux.conf
+  set-option -g  status-interval 1
+  set-option -g status-right-length 120
+  set -g status-right '#(~/.tmux-monitor-scripts/cpu.sh) #(~/.tmux-monitor-scripts/cpu_avg_temp.sh) | #(~/.tmux-monitor-scripts/disk.sh) | #(~/.tmux-monitor-scripts/netspeed eth0) | #(~/.tmux-monitor-scripts/battery.sh) | #(date +"%a %b %_d %H:%M") | #(hostname)'
 #+END_SRC
+
+Create a new window, swtich to home directory and type tmux-ssh,
 
 #+BEGIN_SRC fundamental :tangle ~/.tmux-over-ssh.conf
   neww -n tmux-ssh
@@ -61,9 +67,9 @@ scroll back the tmux scrollback buffer.
   send-keys -t tmux-ssh "tmux-ssh "
 #+END_SRC
 
+Solarized theme,
+
 #+BEGIN_SRC fundamental :tangle ~/.tmux.conf
-  #### COLOUR (Solarized 256)
-  
   # default statusbar colors
   set-option -g status-bg colour235 #base02
   set-option -g status-fg colour136 #yellow
@@ -95,6 +101,10 @@ scroll back the tmux scrollback buffer.
   set-window-option -g clock-mode-colour colour64 #green
 #+END_SRC
 
+* System Activity Scripts
+
+Battery status,
+
 #+BEGIN_SRC sh :mkdirp yes :tangle ~/.tmux-monitor-scripts/battery.sh
   if [ -d /sys/class/power_supply/BAT0 ];
   then    
@@ -107,6 +117,8 @@ scroll back the tmux scrollback buffer.
   fi
 #+END_SRC
 
+CPU temperature,
+
 #+BEGIN_SRC sh :mkdirp yes :tangle ~/.tmux-monitor-scripts/cpu_avg_temp.sh
   if which sensors > /dev/null; then
       sensors | grep Core | awk '{print $3;}' | grep -oEi '[0-9]+.[0-9]+' | awk '{total+=$1; count+=1} END {print total/count,"C"}'
@@ -114,6 +126,8 @@ scroll back the tmux scrollback buffer.
       ""
   fi
 #+END_SRC
+
+CPU load and free memory,
 
 #+BEGIN_SRC sh :mkdirp yes :tangle ~/.tmux-monitor-scripts/cpu.sh
   #!/bin/bash     
@@ -126,12 +140,16 @@ scroll back the tmux scrollback buffer.
   printf "C: %.f%% M: %.f%%" $CPU $FREE_MEM
 #+END_SRC
 
+DISK I/O
+
 #+BEGIN_SRC sh :mkdirp yes :tangle ~/.tmux-monitor-scripts/disk.sh
   #!/bin/bash
   
   io_line_count=`iostat -d -x -m | wc -l` ; 
   iostat -d -x -m 1 2 -z | tail -n +$io_line_count | grep -e "^sd[a-z].*" | awk 'BEGIN{rsum=0; wsum=0}{ rsum+=$6; wsum+=$7} END {print "IO: " rsum " " wsum}'
 #+END_SRC
+
+Network I/O
 
 #+BEGIN_SRC sh :mkdirp yes :mkdirp yes :tangle ~/.tmux-monitor-scripts/netspeed
   #!/bin/bash
