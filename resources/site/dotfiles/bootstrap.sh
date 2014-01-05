@@ -26,7 +26,7 @@ function tangle(){
 
     rm -f ~/.tmux.conf
     rm -rf ~/.tmux-monitor-scripts/
-    tangleFile site/dotfiles/ tmux
+    tangleFile posts/ 2014-01-05-tmux-configuration
 
     rm -f ~/.bashrc
     rm -f ~/.profile
