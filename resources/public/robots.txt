@@ -3,3 +3,4 @@ Allow: /
 Disallow: /archives/
 Disallow: /latest-posts/
 Disallow: /archives.html
+Disallow: /dotfiles/

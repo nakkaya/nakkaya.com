@@ -1,8 +1,13 @@
 #+title: tmux Configuration
+#+OPTIONS: toc:nil
 #+tags: tmux
 
 This is a dump of all tmux related configuration and
 scripts so I can edit them in one place.
+
+#+begin_html
+  <p><img src="/images/post/tmux.png" alt="tmux configuration" width="780"/></p>
+#+end_html
 
 Start windows and panes at 1, not 0,
 
