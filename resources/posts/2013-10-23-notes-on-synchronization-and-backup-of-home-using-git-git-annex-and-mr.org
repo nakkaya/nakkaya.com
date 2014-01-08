@@ -71,7 +71,7 @@ Repository structure,
       }
   
   [/home/nakkaya/annex/documents]
-  checkout = git clone 'ssh://git@bitbucket.org/nakkaya/documents.git' 'documents'
+  checkout = git clone 'ssh://nakkaya@base/~/git-bare/documents.git' 'documents'
              cd documents/
              enableCloud     
   skip = lazy
@@ -80,7 +80,7 @@ Repository structure,
          git-drop-unused.hy mobile 0
   
   [/home/nakkaya/annex/photos]
-  checkout = git clone 'git@bitbucket.org:nakkaya/photos.git' 'photos'
+  checkout = git clone 'ssh://nakkaya@base/~/git-bare/photos.git' 'photos'
              cd photos/
              enableCloud
   skip = lazy
@@ -89,7 +89,7 @@ Repository structure,
          git-drop-unused.hy mobile 0
   
   [/home/nakkaya/annex/old-code]
-  checkout = git clone 'git@bitbucket.org:nakkaya/old-code.git' 'old-code'
+  checkout = git clone 'ssh://nakkaya@base/~/git-bare/old-code.git' 'old-code'
              cd old-code/
              enableCloud
   skip = lazy
@@ -98,7 +98,7 @@ Repository structure,
          git-drop-unused.hy mobile 0
   
   [/home/nakkaya/annex/music]
-  checkout = git clone 'git@bitbucket.org:nakkaya/music.git' 'music'
+  checkout = git clone 'ssh://nakkaya@base/~/git-bare/music.git' 'music'
              cd music/
              enableCloud
   skip = lazy
@@ -107,7 +107,7 @@ Repository structure,
          git-drop-unused.hy mobile 0
   
   [/home/nakkaya/annex/notes]
-  checkout = git clone 'ssh://git@bitbucket.org/nakkaya/notes.git' 'notes'
+  checkout = git clone 'ssh://nakkaya@base/~/git-bare/notes.git' 'notes'
              cd notes/
              enableCloud
   sync = git annex sync
