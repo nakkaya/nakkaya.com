@@ -504,10 +504,6 @@ Start asistant and webapp,
   checkout = git clone 'git@github.com:nakkaya/vision.git' 'vision'
   skip=lazy
   
-  [/home/nakkaya/source/classic-car-db]
-  checkout = git clone 'ssh://git@bitbucket.org/nakkaya/classic-car-db.git' 'classic-car-db'
-  skip=lazy
-  
   [/home/nakkaya/source/doganilic.com]
   checkout = git clone 'ssh://git@bitbucket.org/nakkaya/doganilic.com.git' 'doganilic.com'
   skip=lazy
