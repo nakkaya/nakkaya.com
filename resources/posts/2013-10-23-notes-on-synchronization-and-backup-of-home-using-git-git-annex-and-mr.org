@@ -446,10 +446,6 @@ Start asistant and webapp,
   checkout = git clone 'ssh://git@bitbucket.org/nakkaya/latte.git' 'latte'
   skip=lazy
   
-  [/home/nakkaya/source/kinect-ardrone-demo]
-  checkout = git clone 'ssh://git@bitbucket.org/nakkaya/kinect-ardrone-demo.git' 'kinect-ardrone-demo'
-  skip=lazy
-  
   [/home/nakkaya/source/alter-ego]
   checkout = git clone 'git@github.com:nakkaya/alter-ego.git' 'alter-ego'
   skip=lazy
