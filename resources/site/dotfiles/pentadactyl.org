@@ -71,7 +71,6 @@
   
   " Allow GMail shortcuts
   set passkeys+=mail.google.com:jksacrqG#<CR>,gi,gl,gp
-  set strictfocus=google.com:laissez-faire,'chrome:*':laissez-faire,*:despotic
   " Let Hint Message from X Links 
   autocmd LocationChange mail.google.com set ht+=span.ata-asJ
   " Let Hint Expand Collapsed Conversations
@@ -101,6 +100,14 @@
   
   map -b zi ZI
   map -b zo ZO
+#+END_SRC
+
+#+BEGIN_SRC fundamental :mkdirp yes :tangle ~/.pentadactylrc
+  set strictfocus=base.nakkaya.com:laissez-faire,google.com:laissez-faire,'chrome:*':laissez-faire,*:despotic
+#+END_SRC
+
+#+BEGIN_SRC fundamental :mkdirp yes :tangle ~/.pentadactylrc
+  autocmd LocationChange base.nakkaya.com :normal! <C-z>
 #+END_SRC
 
 #+BEGIN_SRC fundamental :mkdirp yes :tangle ~/.pentadactylrc
