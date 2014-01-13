@@ -192,7 +192,7 @@ Drop all unused files by date,
       (if (>= file-age drop-age)
         (do 
          (print "Id " id " age " file-age " days...")
-         (.annex git "dropunused" "--force" (str id))))))
+         (.annex git "dropunused" "--force" "--from" remote (str id))))))
 #+END_SRC
 
 *** ~/.bin/git-na-status
