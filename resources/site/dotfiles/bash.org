@@ -366,6 +366,10 @@ Autocomplete for 'g' as well,
   esac
 #+END_SRC
 
+#+BEGIN_SRC sh :mkdirp yes :tangle ~/.bin/base
+  /usr/bin/chromium-browser --app=https://base.nakkaya.com/
+#+END_SRC
+
 #+BEGIN_SRC sh :tangle ~/.profile
   # if running bash
   if [ -n "$BASH_VERSION" ]; then
