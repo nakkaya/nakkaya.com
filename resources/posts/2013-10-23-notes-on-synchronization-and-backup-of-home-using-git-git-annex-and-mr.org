@@ -115,6 +115,7 @@ Repository structure,
          git annex copy --to cloud --not --in cloud
          git annex sync
   pull = mr sync
+  archive = true
   drop = git-drop-unused.hy here 7
          git-drop-unused.hy cloud 180
          git-drop-unused.hy mobile 0
@@ -192,7 +193,9 @@ Drop all unused files by date,
       (if (>= file-age drop-age)
         (do 
          (print "Id " id " age " file-age " days...")
-         (.annex git "dropunused" "--force" "--from" remote (str id))))))
+         (if (= remote "here")
+           (.annex git "dropunused" "--force" (str id))
+           (.annex git "dropunused" "--force" "--from" remote (str id)))))))
 #+END_SRC
 
 *** ~/.bin/git-na-status
