@@ -206,7 +206,7 @@ Autocomplete for 'g' as well,
           alias df="df -h"
           alias du="du -hcs"
           alias emacs-nx='emacs &> /dev/null &'
-          alias emacs="env TERM=xterm-256color emacs -nw"
+          alias emacs="TERM=xterm-256color emacsclient -t || TERM=xterm-256color emacs -nw"
           ;;
       darwin*)
           alias ls="ls -aG"
