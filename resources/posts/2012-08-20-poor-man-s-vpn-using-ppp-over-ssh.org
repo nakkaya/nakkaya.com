@@ -16,19 +16,19 @@ though as you have PPP (TCP) inside of SSH (TCP) which is a [[http://sites.inka.
 
 On the remote end, install pppd if not already installed,
 
-#+BEGIN_SRC sh
+#+BEGIN_SRC sh :tangle no
   apt-get install ipppd
 #+END_SRC
 
 Enable IP Forwarding by editing */proc/sys/net/ipv4/ip\_forward*
 
-#+BEGIN_SRC sh
+#+BEGIN_SRC sh :tangle no
   echo 1 > /proc/sys/net/ipv4/ip_forward
 #+END_SRC
 
 Configure your iptables settings to enable access for PPP Clients,
 
-#+BEGIN_SRC sh
+#+BEGIN_SRC sh :tangle no
   iptables -F FORWARD
   iptables -A FORWARD -j ACCEPT
   
@@ -43,9 +43,9 @@ mode, start pppd on the remote server, and use the SSH connection as
 the communication channel.
 
 #+name: pppd
-#+BEGIN_SRC sh
+#+BEGIN_SRC sh :tangle no
   pppd updetach defaultroute replacedefaultroute usepeerdns noauth passive pty \
-      "ssh $remote -o Batchmode=yes /usr/sbin/pppd nodetach notty noauth ms-dns 8.8.8.8" \
+      "ssh root@$remote -o Batchmode=yes /usr/sbin/pppd nodetach notty noauth ms-dns 8.8.8.8" \
       10.0.0.1:10.0.0.2
 #+END_SRC
 
@@ -61,7 +61,7 @@ the tunnel through the tunnel, to fix that we add a route to
 /remote-host/ via /local-gateway/.
 
 #+name: route
-#+BEGIN_SRC sh
+#+BEGIN_SRC sh :tangle no
   route add $remote gw $gateway
 #+END_SRC
 
@@ -73,13 +73,13 @@ The script below automates all of the steps above, when run it will
 figure out the current /gateway/ setup the tunnel and the routes so
 all traffic goes through the tunnel.
 
-#+BEGIN_SRC sh  :noweb yes :tangle vpn.sh :eval never
+#+BEGIN_SRC sh  :noweb yes :tangle ~/.bin/vpn.sh :eval never
   #!/bin/bash
   
   pidfile=/var/run/ppp0.pid
   pid=
   
-  remote=1.2.3.4
+  remote=95.85.48.115
   gateway=$(/sbin/ip route | awk '/default/ { print $3 }')
   
   # trap ctrl-c and signal pppd to shutdown
