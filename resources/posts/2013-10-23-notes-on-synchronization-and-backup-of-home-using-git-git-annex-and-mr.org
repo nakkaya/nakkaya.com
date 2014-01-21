@@ -118,7 +118,6 @@ Repository structure,
   archive = true
   drop = git-drop-unused.hy here 7
          git-drop-unused.hy cloud 180
-         git-drop-unused.hy mobile 0
   
   [/home/nakkaya/annex/wallet]
   checkout = git clone 'git@gitlab.neu.edu.tr:nakkaya/wallet.git' 'wallet'
