@@ -207,7 +207,7 @@ repos otherwise you get a bunch of type change changes.
   
   if [ -d ".git/annex/" ]; then
       if `git config --get annex.direct`; then
-          echo ""
+          git annex status
       else
           git status --short
       fi
