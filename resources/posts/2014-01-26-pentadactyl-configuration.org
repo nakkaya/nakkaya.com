@@ -1,6 +1,12 @@
 #+title: Pentadactyl Configuration
-#+tags: firefox pentadactyl
+#+tags: firefox pentadactyl configuration
 #+EXPORT_EXCLUDE_TAGS: noexport
+
+This is a dump of all [[http://5digits.org/pentadactyl/][Pentadactyl]] related configuration and scripts so
+I can edit them in one place and tangle from a single
+file. Pentadactyl is a Firefox extension that provides a more
+efficient user interface for keyboard-fluent users, allowing you to
+browse without using a mouse.
 
 Disable smooth scroll,
 
@@ -21,7 +27,7 @@ Show pattern matches as you type,
   set incfind
 #+END_SRC
 
-Hilight previous search pattern matches,
+Highlight previous search pattern matches,
 
 #+BEGIN_SRC fundamental :mkdirp yes :tangle ~/.pentadactylrc  
   set hlfind
@@ -153,7 +159,7 @@ Additional hints,
   autocmd LocationChange instagram.com set ht+=a.button.button-grey.button-large
 #+END_SRC
 
-* User CSS
+~/.pentadactyl/user.css,
 
 #+BEGIN_SRC css :mkdirp yes :tangle ~/.pentadactyl/user.css 
   /* @-moz-document domain("www.reddit.com") { */

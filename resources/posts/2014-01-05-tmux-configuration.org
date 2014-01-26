@@ -1,9 +1,10 @@
 #+title: tmux Configuration
 #+OPTIONS: toc:nil
-#+tags: tmux
+#+tags: tmux configuration
 
 This is a dump of all tmux related configuration and
-scripts so I can edit them in one place.
+scripts so I can edit them in one place and tangle from a single
+file.
 
 #+begin_html
   <p><img src="/images/post/tmux.png" alt="tmux configuration" width="780"/></p>

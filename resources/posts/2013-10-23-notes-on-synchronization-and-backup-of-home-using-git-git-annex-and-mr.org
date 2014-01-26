@@ -1,5 +1,5 @@
 #+title: Notes on Synchronization and Backup of $HOME using git, git-annex and mr
-#+tags: git git-annex mr
+#+tags: git git-annex mr configuration
 
 This is a dump of all git, git-annex and mr related configuration and
 scripts so I can edit them in one place. When [[http://orgmode.org/manual/Working-With-Source-Code.html][tangled]],

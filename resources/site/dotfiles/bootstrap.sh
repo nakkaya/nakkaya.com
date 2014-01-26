@@ -22,7 +22,7 @@ function tangle(){
 
     rm -rf ~/.pentadactyl
     rm -f ~/.pentadactylrc
-    tangleFile site/dotfiles/ pentadactyl
+    tangleFile posts/ 2014-01-26-pentadactyl-configuration
 
     rm -f ~/.tmux.conf
     rm -rf ~/.tmux-monitor-scripts/
