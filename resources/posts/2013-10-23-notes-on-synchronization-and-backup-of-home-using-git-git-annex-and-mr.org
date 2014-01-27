@@ -366,7 +366,7 @@ Start asistant and webapp,
   which holds around 4.5 TB of data (OS Disks, VM Images, Tech Talks,
   Movies, TV Shows etc.) spread over 5x2 TB USB drives.
 
-#+BEGIN_SRC conf :tangle /media/nakkaya/.mrconfig
+#+BEGIN_SRC conf :tangle ~/.external-mrconfig
   [DEFAULT]
   git_sync = git annex-add-sync "$@"
   git_drop = git git-drop-unused here 0
