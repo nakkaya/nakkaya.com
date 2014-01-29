@@ -358,6 +358,12 @@ Start asistant and webapp,
       git config remote.origin.annex-ignore true
     #+END_SRC
 
+    Setup encrypted annex rsync remote,
+
+    #+BEGIN_SRC sh
+      git annex initremote depot type=rsync encryption=hybrid rsyncurl=rsync:repo/ keyid=ID
+    #+END_SRC
+
 * /external
 
 *** .mrconfig
