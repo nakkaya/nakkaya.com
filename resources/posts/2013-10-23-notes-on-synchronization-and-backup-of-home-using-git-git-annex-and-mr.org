@@ -361,7 +361,7 @@ Start asistant and webapp,
     Setup encrypted annex rsync remote,
 
     #+BEGIN_SRC sh
-      git annex initremote depot type=rsync encryption=hybrid rsyncurl=rsync:repo/ keyid=ID
+      git annex initremote depot type=rsync encryption=hybrid rsyncurl=rsync:annex/repo/ keyid=ID
     #+END_SRC
 
 * /external
