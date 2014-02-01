@@ -53,14 +53,16 @@
   then
       source /usr/share/bash-completion/completions/git
   fi
-
+  
   if [ -f /etc/bash_completion.d/git ];
   then
       source /etc/bash_completion.d/git
   fi
-
-  if [ -f $(brew --prefix)/etc/bash_completion ]; then
-    . $(brew --prefix)/etc/bash_completion
+  
+  if which brew >/dev/null; then
+      if [ -f $(brew --prefix)/etc/bash_completion ]; then
+          . $(brew --prefix)/etc/bash_completion
+      fi
   fi
 #+END_SRC
 
