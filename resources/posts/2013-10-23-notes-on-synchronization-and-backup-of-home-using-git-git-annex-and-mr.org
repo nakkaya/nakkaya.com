@@ -71,7 +71,7 @@ Repository structure,
          git annex enableremote depot
       }
   
-  [/home/nakkaya/annex/documents]
+  [annex/documents]
   checkout = git clone 'ssh://nakkaya@base/~/git-bare/documents.git' 'documents'
              cd documents/
              enableCloud     
@@ -80,7 +80,7 @@ Repository structure,
          git-drop-unused.hy depot 30
          git-drop-unused.hy mobile 0
   
-  [/home/nakkaya/annex/photos]
+  [annex/photos]
   checkout = git clone 'ssh://nakkaya@base/~/git-bare/photos.git' 'photos'
              cd photos/
              enableCloud
@@ -89,7 +89,7 @@ Repository structure,
          git-drop-unused.hy depot 120
          git-drop-unused.hy mobile 0
   
-  [/home/nakkaya/annex/old-code]
+  [annex/old-code]
   checkout = git clone 'ssh://nakkaya@base/~/git-bare/old-code.git' 'old-code'
              cd old-code/
              enableCloud
@@ -98,7 +98,7 @@ Repository structure,
          git-drop-unused.hy depot 30
          git-drop-unused.hy mobile 0
   
-  [/home/nakkaya/annex/music]
+  [annex/music]
   checkout = git clone 'ssh://nakkaya@base/~/git-bare/music.git' 'music'
              cd music/
              enableCloud
@@ -107,7 +107,7 @@ Repository structure,
          git-drop-unused.hy depot 15
          git-drop-unused.hy mobile 0
   
-  [/home/nakkaya/annex/notes]
+  [annex/notes]
   checkout = git clone 'ssh://nakkaya@base/~/git-bare/notes.git' 'notes'
              cd notes/
              enableCloud
@@ -120,7 +120,7 @@ Repository structure,
   drop = git-drop-unused.hy here 7
          git-drop-unused.hy depot 180
   
-  [/home/nakkaya/annex/wallet]
+  [annex/wallet]
   checkout = git clone 'git@gitlab.neu.edu.tr:nakkaya/wallet.git' 'wallet'
              cd wallet/
              enableCloud
@@ -451,73 +451,73 @@ Start asistant and webapp,
   git_push = git fast-push
   sync = true
   
-  [/home/nakkaya/source/latte]
+  [source/latte]
   checkout = git clone 'ssh://git@bitbucket.org/nakkaya/latte.git' 'latte'
   skip=lazy
   
-  [/home/nakkaya/source/alter-ego]
+  [source/alter-ego]
   checkout = git clone 'git@github.com:nakkaya/alter-ego.git' 'alter-ego'
   skip=lazy
   
-  [/home/nakkaya/source/ardrone]
+  [source/ardrone]
   checkout = git clone 'git@github.com:nakkaya/ardrone.git' 'ardrone'
   skip=lazy
   
-  [/home/nakkaya/source/clodiuno]
+  [source/clodiuno]
   checkout = git clone 'git@github.com:nakkaya/clodiuno.git' 'clodiuno'
   skip=lazy
   
-  [/home/nakkaya/source/easy-dns]
+  [source/easy-dns]
   checkout = git clone 'git@github.com:nakkaya/easy-dns.git' 'easy-dns'
   skip=lazy
   
-  [/home/nakkaya/source/emacs]
+  [source/emacs]
   checkout = git clone 'git@github.com:nakkaya/emacs.git' 'emacs'
              cd emacs
              git submodule init
              git submodule update
   
-  [/home/nakkaya/source/inbox-feed]
+  [source/inbox-feed]
   checkout = git clone 'git@github.com:nakkaya/inbox-feed.git' 'inbox-feed'
   skip=lazy
   
-  [/home/nakkaya/source/nakkaya.com]
+  [source/nakkaya.com]
   checkout = git clone 'git@github.com:nakkaya/nakkaya.com.git' 'nakkaya.com'
   skip=lazy
   
-  [/home/nakkaya/source/net-eval]
+  [source/net-eval]
   checkout = git clone 'git@github.com:nakkaya/net-eval.git' 'net-eval'
   skip=lazy
   
-  [/home/nakkaya/source/neu-islanders]
+  [source/neu-islanders]
   checkout = git clone 'ssh://git@bitbucket.org/nakkaya/neu-islanders.git' 'neu-islanders'
   skip=lazy
   
-  [/home/nakkaya/source/pid]
+  [source/pid]
   checkout = git clone 'git@github.com:nakkaya/pid.git' 'pid'
   skip=lazy
   
-  [/home/nakkaya/source/static]
+  [source/static]
   checkout = git clone 'git@github.com:nakkaya/static.git' 'static'
   skip=lazy
   
-  [/home/nakkaya/source/vector-2d]
+  [source/vector-2d]
   checkout = git clone 'git@github.com:nakkaya/vector-2d.git' 'vector-2d'
   skip=lazy
   
-  [/home/nakkaya/source/vision]
+  [source/vision]
   checkout = git clone 'git@github.com:nakkaya/vision.git' 'vision'
   skip=lazy
   
-  [/home/nakkaya/source/doganilic.com]
+  [source/doganilic.com]
   checkout = git clone 'ssh://git@bitbucket.org/nakkaya/doganilic.com.git' 'doganilic.com'
   skip=lazy
   
-  [/home/nakkaya/source/coin-trader]
+  [source/coin-trader]
   checkout = git clone 'git@gitlab.neu.edu.tr:nakkaya/coin-trader.git' 'coin-trader'
   skip=lazy
   
-  [/home/nakkaya/source/vehicle-tracking]
+  [source/vehicle-tracking]
   checkout = git clone 'git@gitlab.neu.edu.tr:nakkaya/vehicle-tracking.git' 'vehicle-tracking'
   skip=lazy
 #+END_SRC
