@@ -58,6 +58,10 @@
   then
       source /etc/bash_completion.d/git
   fi
+
+  if [ -f $(brew --prefix)/etc/bash_completion ]; then
+    . $(brew --prefix)/etc/bash_completion
+  fi
 #+END_SRC
 
 #+BEGIN_SRC sh :tangle ~/.bashrc
