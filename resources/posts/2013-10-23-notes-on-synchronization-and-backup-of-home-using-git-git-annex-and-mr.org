@@ -59,15 +59,16 @@ Repository structure,
   git_status = git na-status
   git_drop = git git-drop-unused here 0
   git_dead = git annex dead "$@"
-  git_upload = git annex sync; git annex copy --to cloud --not --in cloud ; git annex sync
+  git_upload = git annex sync; git annex copy --to depot --not --in depot ; git annex sync
   git_download = git annex sync; git annex get --quiet --fast; git annex sync
   git_archive = git annex sync; git annex copy --to mobile --not --in mobile; git annex sync
+  git_missing = git annex find . --not --in depot
   
   lib = 
       enableCloud() {
          git config remote.origin.annex-ignore true
          git annex init "`hostname`"
-         git annex enableremote cloud
+         git annex enableremote depot
       }
   
   [/home/nakkaya/annex/documents]
@@ -76,7 +77,7 @@ Repository structure,
              enableCloud     
   skip = lazy
   drop = git-drop-unused.hy here 7
-         git-drop-unused.hy cloud 30
+         git-drop-unused.hy depot 30
          git-drop-unused.hy mobile 0
   
   [/home/nakkaya/annex/photos]
@@ -85,7 +86,7 @@ Repository structure,
              enableCloud
   skip = lazy
   drop = git-drop-unused.hy here 7
-         git-drop-unused.hy cloud 120
+         git-drop-unused.hy depot 120
          git-drop-unused.hy mobile 0
   
   [/home/nakkaya/annex/old-code]
@@ -94,7 +95,7 @@ Repository structure,
              enableCloud
   skip = lazy
   drop = git-drop-unused.hy here 7
-         git-drop-unused.hy cloud 30
+         git-drop-unused.hy depot 30
          git-drop-unused.hy mobile 0
   
   [/home/nakkaya/annex/music]
@@ -103,7 +104,7 @@ Repository structure,
              enableCloud
   skip = lazy
   drop = git-drop-unused.hy here 7
-         git-drop-unused.hy cloud 15
+         git-drop-unused.hy depot 15
          git-drop-unused.hy mobile 0
   
   [/home/nakkaya/annex/notes]
@@ -112,18 +113,18 @@ Repository structure,
              enableCloud
   sync = git annex sync
          git annex get .
-         git annex copy --to cloud --not --in cloud
+         git annex copy --to depot --not --in depot
          git annex sync
   pull = mr sync
   archive = true
   drop = git-drop-unused.hy here 7
-         git-drop-unused.hy cloud 180
+         git-drop-unused.hy depot 180
   
   [/home/nakkaya/annex/wallet]
   checkout = git clone 'git@gitlab.neu.edu.tr:nakkaya/wallet.git' 'wallet'
              cd wallet/
              enableCloud
-  skip = lazy
+  skip = true
   sync = git annex sync
          git annex get .
          git annex copy --to cloud --not --in cloud
@@ -288,8 +289,8 @@ returns true, for repositories with changes or new files,
       git annex sync
       newHead=`git rev-parse HEAD`
       if [ "$oldHead" != "$newHead" ]; then
-          if git config remote.cloud.annex-uuid; then
-              git annex copy --to cloud --not --in cloud
+          if git config remote.depot.annex-uuid; then
+              git annex copy --to depot --not --in depot
               git annex sync
           else
               git annex copy --to origin --not --in origin
@@ -304,8 +305,8 @@ returns true, for repositories with changes or new files,
       if [ -d '.git/annex/' ]; then    
           git annex add .
           git annex sync
-          if git config remote.cloud.annex-uuid; then
-              git annex copy --to cloud --not --in cloud
+          if git config remote.depot.annex-uuid; then
+              git annex copy --to depot --not --in depot
               git annex sync
           else
               git annex copy --to origin --not --in origin
