@@ -124,7 +124,7 @@ Repository structure,
   checkout = git clone 'git@gitlab.neu.edu.tr:nakkaya/wallet.git' 'wallet'
              cd wallet/
              enableCloud
-  skip = true
+  skip = lazy
   sync = git annex sync
          git annex get .
          git annex copy --to cloud --not --in cloud
