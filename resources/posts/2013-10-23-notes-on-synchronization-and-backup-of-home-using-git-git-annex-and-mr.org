@@ -370,8 +370,8 @@ Start asistant and webapp,
 *** .mrconfig
 
   I have one repository called /kiler/ (means basement in Turkish)
-  which holds around 4.5 TB of data (OS Disks, VM Images, Tech Talks,
-  Movies, TV Shows etc.) spread over 6x2 TB USB drives.
+  which holds around 6 TB of data (OS Disks, VM Images, Tech Talks,
+  Movies, TV Shows etc.) spread over 8x2 TB USB drives.
 
 #+BEGIN_SRC conf :tangle ~/.external-mrconfig
   [DEFAULT]
@@ -389,6 +389,10 @@ Start asistant and webapp,
   [/media/nakkaya/sedef/kiler]
 
   [/media/nakkaya/ebru/kiler]
+
+  [/media/nakkaya/yesim/kiler]
+
+  [/media/nakkaya/buse/kiler]
 #+END_SRC
 
 *** ~/.bin/git-annex-add-sync
@@ -424,7 +428,7 @@ Start asistant and webapp,
   git clone /media/nakkaya/esra/kiler/
   git remote remove origin
   
-  DISKS="ebru damla esra merve ozge sedef"
+  DISKS="ebru damla esra merve ozge sedef yesim"
   
   for i in $DISKS; do 
       git remote add $i /media/nakkaya/$i/kiler/
