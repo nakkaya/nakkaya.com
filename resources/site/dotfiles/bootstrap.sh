@@ -1,7 +1,16 @@
+case "$OSTYPE" in
+    linux-gnu)
+            EMACS=/usr/bin/emacs
+        ;;
+    darwin*)
+            EMACS=/Applications/Emacs.app/Contents/MacOS/Emacs
+        ;;
+esac
+
 function tangleFile(){
     URL="https://raw.github.com/nakkaya/nakkaya.com/master/resources/${1}${2}.org"
     `wget $URL`
-    emacs -Q --batch \
+    $EMACS -Q --batch \
         --eval "(progn
                   (require 'org)
                   (require 'org-exp)
