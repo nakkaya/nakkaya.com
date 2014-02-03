@@ -116,7 +116,7 @@
   alias sjetty="java -jar static-app.jar --jetty"
   alias ssh-x='ssh -c arcfour,blowfish-cbc -XC' 
   
-  alias t-server="transmission-daemon -c /home/nakkaya/Downloads/ --incomplete-dir /home/nakkaya/Downloads/transmission-incomplete/ --download-dir /home/nakkaya/Downloads/ --no-auth"
+  alias t-server="transmission-daemon -c /media/nakkaya/yesim/torrent/ --incomplete-dir /media/nakkaya/yesim/torrent/incomplete/ --download-dir /media/nakkaya/yesim/torrent/ --no-auth"
   alias t-cli="transmission-remote-cli"
   alias s3sync="s3cmd sync --delete --acl-public"
   alias annex-size="s3cmd du -H s3://cloud-`git config remote.cloud.annex-uuid`"
