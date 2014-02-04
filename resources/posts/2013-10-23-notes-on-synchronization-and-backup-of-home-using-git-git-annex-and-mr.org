@@ -136,7 +136,7 @@ Repository structure,
 Drop all unused files by date,
 
 #+BEGIN_SRC hy :tangle ~/.bin/git-drop-unused.hy :padline no
-  #!/usr/local/bin/hy
+  #!/usr/bin/env hy
   
   (import  [sh [grep git grep awk ErrorReturnCode]]
            [re [split]]
