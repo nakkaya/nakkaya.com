@@ -510,7 +510,7 @@ Start asistant and webapp,
   skip=lazy
   
   [source/doganilic.com]
-  checkout = git clone 'ssh://git@bitbucket.org/nakkaya/doganilic.com.git' 'doganilic.com'
+  checkout = git clone 'ssh://rsync/~/git-bare/doganilic.com.git' 'doganilic.com'
   skip=lazy
   
   [source/coin-trader]
