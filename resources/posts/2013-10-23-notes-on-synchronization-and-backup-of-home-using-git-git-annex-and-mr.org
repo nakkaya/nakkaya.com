@@ -34,12 +34,12 @@ Repository structure,
 
    These annexes are shared between 3 computers (one with two full
    copy of all repos and two with partial copies.), all behind NAT so
-   all clients dump data to S3 (GPG encrypted with separate keys.)
-   and sync changes with a bitbucket repo.
+   all clients dump data to rsync.net (GPG encrypted with separate keys.)
+   and sync changes with a repo inside rsync.net.
 
    When ever I make changes to any of the repos, I just run /mr push/.
    It will iterate repositories with changes (new files/deletes/renames)
-   and upload changes to S3 and sync with bitbucket. Then when I
+   and upload changes to and sync with rsync.net. Then when I
    switch machines I just do a /mr pull/ which downloads all changes.
 
 *** ~/.mrconfig
@@ -72,7 +72,7 @@ Repository structure,
       }
   
   [annex/documents]
-  checkout = git clone 'ssh://nakkaya@base/~/git-bare/documents.git' 'documents'
+  checkout = git clone 'ssh://rsync/~/git-bare/documents.git' 'documents'
              cd documents/
              enableCloud     
   skip = lazy
@@ -80,7 +80,7 @@ Repository structure,
          git-drop-unused.hy depot 30
   
   [annex/photos]
-  checkout = git clone 'ssh://nakkaya@base/~/git-bare/photos.git' 'photos'
+  checkout = git clone 'ssh://rsync/~/git-bare/photos.git' 'photos'
              cd photos/
              enableCloud
   skip = lazy
@@ -88,7 +88,7 @@ Repository structure,
          git-drop-unused.hy depot 120
   
   [annex/old-code]
-  checkout = git clone 'ssh://nakkaya@base/~/git-bare/old-code.git' 'old-code'
+  checkout = git clone 'ssh://rsync/~/git-bare/old-code.git' 'old-code'
              cd old-code/
              enableCloud
   skip = lazy
@@ -96,7 +96,7 @@ Repository structure,
          git-drop-unused.hy depot 30
   
   [annex/music]
-  checkout = git clone 'ssh://nakkaya@base/~/git-bare/music.git' 'music'
+  checkout = git clone 'ssh://rsync/~/git-bare/music.git' 'music'
              cd music/
              enableCloud
   skip = lazy
@@ -104,7 +104,7 @@ Repository structure,
          git-drop-unused.hy depot 15
   
   [annex/notes]
-  checkout = git clone 'ssh://nakkaya@base/~/git-bare/notes.git' 'notes'
+  checkout = git clone 'ssh://rsync/~/git-bare/notes.git' 'notes'
              cd notes/
              enableCloud
   sync = git annex sync
@@ -243,8 +243,8 @@ Custom push command. For repositories with no changes it simply
 returns true, for repositories with changes or new files,
 
  - If acting on a regular git repo, pushes changes to origin.
- - If acting on a git annex repo, uploads changes to S3 and syncs with
-   bitbucket.
+ - If acting on a git annex repo, uploads changes and sync with
+   rsync.net.
 
 #+BEGIN_SRC sh :tangle ~/.bin/git-fast-push
   #/bin/bash
