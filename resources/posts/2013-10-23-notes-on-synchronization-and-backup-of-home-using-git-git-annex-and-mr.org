@@ -514,7 +514,7 @@ Start asistant and webapp,
   skip=lazy
   
   [source/coin-trader]
-  checkout = git clone 'git@gitlab.neu.edu.tr:nakkaya/coin-trader.git' 'coin-trader'
+  checkout = git clone 'ssh://rsync/~/git-bare/coin-trader.git' 'coin-trader'
   skip=lazy
   
   [source/vehicle-tracking]
