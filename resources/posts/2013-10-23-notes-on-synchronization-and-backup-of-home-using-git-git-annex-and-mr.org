@@ -424,7 +424,7 @@ Start asistant and webapp,
   git clone /media/nakkaya/esra/kiler/
   git remote remove origin
   
-  DISKS="ebru damla esra merve ozge sedef yesim"
+  DISKS="ebru damla esra merve ozge sedef yesim buse"
   
   for i in $DISKS; do 
       git remote add $i /media/nakkaya/$i/kiler/
