@@ -452,7 +452,7 @@ Start asistant and webapp,
   sync = true
   
   [source/latte]
-  checkout = git clone 'ssh://git@bitbucket.org/nakkaya/latte.git' 'latte'
+  checkout = git clone 'ssh://11837@rsync/~/latte.git' 'latte'
   skip=lazy
   
   [source/alter-ego]
@@ -490,7 +490,7 @@ Start asistant and webapp,
   skip=lazy
   
   [source/neu-islanders]
-  checkout = git clone 'ssh://git@bitbucket.org/nakkaya/neu-islanders.git' 'neu-islanders'
+  checkout = git clone 'ssh://11837@rsync/~/neu-islanders.git' 'neu-islanders'
   skip=lazy
   
   [source/pid]
