@@ -320,15 +320,24 @@ returns true, for repositories with changes or new files,
 
 *** Webapp
 
-Create autostart file,
+Create autostart file relative paths don't work so tangle one file for
+each OS (Linux,OS X) then mv one to correct location,
 
-#+BEGIN_SRC conf :tangle ~/.config/git-annex/autostart :mkdirp yes
+#+BEGIN_SRC conf :tangle ~/.config/git-annex/autostart-linux :mkdirp yes
   /home/nakkaya/annex/notes
   /home/nakkaya/annex/music
   /home/nakkaya/annex/wallet
   /home/nakkaya/annex/photos
   /home/nakkaya/annex/old-code
   /home/nakkaya/annex/documents
+#+END_SRC
+
+#+BEGIN_SRC conf :tangle ~/.config/git-annex/autostart-osx :mkdirp yes
+  /Users/nakkaya/annex/notes
+  /Users/nakkaya/annex/music
+  /Users/nakkaya/annex/wallet
+  /Users/nakkaya/annex/photos
+  /Users/nakkaya/annex/documents
 #+END_SRC
 
 Start asistant and webapp,
