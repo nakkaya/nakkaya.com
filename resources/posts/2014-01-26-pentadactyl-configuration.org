@@ -87,7 +87,7 @@ Shortcuts to frequently used bookmarks,
   command email-url :open gmail-this
   
   " Save to org-mode Read Later Tree
-  command read-later :open org-capture-read-later
+  " command read-later :open org-capture-read-later
 #+END_SRC
 
 Open link in a private tab,
@@ -134,6 +134,17 @@ Custom search commands,
   command search-hackernews -nargs=+ -description "Search news.ycombinator.com" -javascript <<EOF
           dactyl.execute(":tabopen");
           dactyl.open("site:news.ycombinator.com " + args);
+  EOF
+#+END_SRC
+
+Save to org-mode Read Later Tree,
+
+#+BEGIN_SRC fundamental :mkdirp yes :tangle ~/.pentadactylrc
+  command read-later -description "Execute emacsclient" -javascript <<EOF
+          var emacsClient = "/Applications/Emacs.app/Contents/MacOS/bin/emacsclient";
+          var url = "org-protocol://capture://l/"+ encodeURIComponent(content.location) + "/"+ encodeURIComponent(content.document.title) +"/" + encodeURIComponent(content.window.getSelection());
+          var command = emacsClient + " " + url;
+          CommandExMode().open("!" + command);
   EOF
 #+END_SRC
 
