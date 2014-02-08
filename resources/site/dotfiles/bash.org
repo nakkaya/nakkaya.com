@@ -115,6 +115,7 @@
   alias sbuild="java -jar static-app.jar --build"
   alias sjetty="java -jar static-app.jar --jetty"
   alias ssh-x='ssh -c arcfour,blowfish-cbc -XC' 
+  alias du="du -hcs"
   
   alias t-server="transmission-daemon -c /media/nakkaya/yesim/torrent/ --incomplete-dir /media/nakkaya/yesim/torrent/incomplete/ --download-dir /media/nakkaya/yesim/torrent/ --no-auth"
   alias t-cli="transmission-remote-cli"
@@ -211,7 +212,6 @@ Autocomplete for 'g' as well,
           alias open="gnome-open"
           alias ls="ls -aG --color"
           alias df="df -h"
-          alias du="du -hcs"
           alias emacs-nx='emacs &> /dev/null &'
           alias emacs="TERM=xterm-256color emacsclient -t || TERM=xterm-256color emacs -nw"
           ;;
