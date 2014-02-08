@@ -76,7 +76,7 @@ Repository structure,
              cd documents/
              enableCloud     
   skip = lazy
-  drop = git-drop-unused.hy here 7
+  drop = git-drop-unused.hy here 0
          git-drop-unused.hy depot 30
   
   [annex/photos]
@@ -92,7 +92,7 @@ Repository structure,
              cd old-code/
              enableCloud
   skip = lazy
-  drop = git-drop-unused.hy here 7
+  drop = git-drop-unused.hy here 0
          git-drop-unused.hy depot 30
   
   [annex/music]
@@ -100,7 +100,7 @@ Repository structure,
              cd music/
              enableCloud
   skip = lazy
-  drop = git-drop-unused.hy here 7
+  drop = git-drop-unused.hy here 0
          git-drop-unused.hy depot 15
   
   [annex/notes]
@@ -138,7 +138,7 @@ Drop all unused files by date,
 #+BEGIN_SRC hy :tangle ~/.bin/git-drop-unused.hy :padline no
   #!/usr/bin/env hy
   
-  (import  [sh [grep git grep awk ErrorReturnCode]]
+  (import  [sh [grep git perl awk ErrorReturnCode]]
            [re [split]]
            [datetime [datetime date]]
            [sys])
@@ -154,7 +154,7 @@ Drop all unused files by date,
   (defn unused-files []
     (let [[files (try 
                   (-> (.annex git "unused" "--from" remote)
-                      (grep "-o" "-P" "^    [0-9]+      .*")
+                      (perl "-ne" "print if /^    [0-9]+      .*/")
                       str)
                   (catch [e ErrorReturnCode] ""))]]
       (->> files 
