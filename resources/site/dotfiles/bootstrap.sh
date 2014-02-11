@@ -54,9 +54,22 @@ chmod +x ~/.tmux-monitor-scripts/*
 rm -f ~/.emacs
 echo "(load-file \"~/source/emacs/init.el\")" > ~/.emacs
 
+#
+# Linux Apps
+#
+
 #sudo apt-get update;sudo apt-get upgrade;sudo apt-get install emacs24 xmonad trayer vlc cmus git bash-completion feh rxvt-unicode-256color offlineimap gnupg lm-sensors build-essential ubuntu-restricted-extras vilistextum graphviz openjdk-6-jdk keynav tmux sysstat xsel python-pip;sudo pip install hy;sudo pip install sh
 
-# brew install gpg reattach-to-user-namespace wget tmux ssh-copy-id
+#
+# OS X Apps
+#
+
+# Enable Encryption
+# Grab Brew -> ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"
+# brew install gpg reattach-to-user-namespace wget tmux ssh-copy-id cmus
+# Grab Emacs iTerm Moom Witch
+
+# Init System
 
 #wget -qO- http://127.0.0.1:8000/bootstrap.sh | bash
 #wget -qO- https://raw.github.com/nakkaya/nakkaya.com/master/resources/site/dotfiles/bootstrap.sh | bash
