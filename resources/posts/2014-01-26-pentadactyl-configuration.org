@@ -163,6 +163,19 @@ GMail settings,
   autocmd LocationChange mail.google.com set ht+=span.x2
 #+END_SRC
 
+Auto pin mail.google.com,
+
+#+BEGIN_SRC fundamental :mkdirp yes :tangle ~/.pentadactylrc
+  autocmd PageLoad mail.google.com js if(!getBrowser().mCurrentTab.pinned) getBrowser().pinTab(getBrowser().mCurrentTab);
+  autocmd PageLoad gmail.com js if(!getBrowser().mCurrentTab.pinned) getBrowser().pinTab(getBrowser().mCurrentTab);
+#+END_SRC
+
+Auto pin git-annex tab,
+
+#+BEGIN_SRC fundamental :mkdirp yes :tangle ~/.pentadactylrc
+  autocmd PageLoad '127\.0\.0\.1:\d+/\?auth=' js if(!getBrowser().mCurrentTab.pinned) getBrowser().pinTab(getBrowser().mCurrentTab);
+#+END_SRC
+
 Additional hints,
 
 #+BEGIN_SRC fundamental :mkdirp yes :tangle ~/.pentadactylrc
