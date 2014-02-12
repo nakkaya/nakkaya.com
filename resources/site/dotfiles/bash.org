@@ -264,10 +264,18 @@ Autocomplete for 'g' as well,
 #+END_SRC
 
 #+BEGIN_SRC sh :mkdirp yes :tangle ~/.bin/sftpfs
+  case "$OSTYPE" in
+      linux-gnu)
+              mount_point="/media/nakkaya/$2"
+          ;;
+      darwin*)
+              mount_point="/Volumes/$2"            
+          ;;
+  esac
+  echo "Location -> " $mount_point
+  
   case "${1}" in
       mount)
-              echo "Mounting" $2
-              mount_point="/media/nakkaya/$2"
               if [ -d "$mount_point" ]; then
                   echo "Already Mounted"
               fi
@@ -283,17 +291,16 @@ Autocomplete for 'g' as well,
               ;;
       umount)
               echo "Unmounting" $2
-              mount_point="/media/nakkaya/$2"
   
               if [ ! -d "$mount_point" ]; then
                   echo "Not Mounted"
               fi
               
-              if fusermount -u $mount_point; then
+              if umount $mount_point; then
                   rm -rf $mount_point
               fi
               ;;
-      *)
+      ,*)
               ;;
   esac
 #+END_SRC
