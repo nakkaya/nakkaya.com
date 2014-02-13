@@ -66,8 +66,13 @@ echo "(load-file \"~/source/emacs/init.el\")" > ~/.emacs
 
 # Enable Encryption
 # Grab Brew -> ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"
+<<<<<<< HEAD
+# brew install gpg reattach-to-user-namespace wget tmux ssh-copy-id cmus coreutils
+# Grab Emacs iTerm Moom Witch
+=======
 # brew install gpg reattach-to-user-namespace wget tmux ssh-copy-id cmus bash-completion git
 # Grab Emacs iTerm2 Moom Witch Firefox VLC git-annex
+>>>>>>> eedbee8f5c2fa18adc368c6624178c65ac371fa5
 
 # Init System
 
