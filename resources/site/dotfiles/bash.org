@@ -36,6 +36,7 @@
   PATH=$PATH:~/Apps/git-annex.linux/
   PATH=$PATH:~/source/bash
   PATH=$PATH:~/.bin/
+  PATH=$PATH:~/.bin/bin/
   PATH=$PATH:/Applications/git-annex.app/Contents/MacOS
   PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
   export PATH
