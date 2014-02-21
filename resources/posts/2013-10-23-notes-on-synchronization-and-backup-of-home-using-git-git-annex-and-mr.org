@@ -115,20 +115,6 @@ Repository structure,
   archive = true
   drop = git-drop-unused.hy here 7
          git-drop-unused.hy depot 180
-  
-  [annex/wallet]
-  checkout = git clone 'ssh://11837@rsync/~/wallet.git' 'wallet'
-             cd wallet/
-             enableCloud
-  skip = lazy
-  sync = git annex sync
-         git annex get .
-         git annex copy --to depot --not --in depot
-         git annex sync
-  pull = mr sync
-  archive = true
-  drop = git-drop-unused.hy here 0
-         git-drop-unused.hy depot 30
 #+END_SRC
 
 *** ~/.bin/git-drop-unused.hy
