@@ -116,6 +116,7 @@ Repository structure,
   
   [annex/kiler]
   pull = mr sync
+  push = mr sync
   copy = git annex add .
          git commit -m 'Auto Add'
          git annex copy . --to yesim --auto
