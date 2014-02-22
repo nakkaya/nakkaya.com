@@ -61,7 +61,6 @@ Repository structure,
   git_dead = git annex dead "$@"
   git_upload = git annex sync; git annex copy --to depot --not --in depot ; git annex sync
   git_download = git annex sync; git annex get --quiet --fast; git annex sync
-  git_archive = git annex sync; git annex copy --to mobile --not --in mobile; git annex sync
   git_missing = git annex find . --not --in depot
   
   lib = 
@@ -112,9 +111,17 @@ Repository structure,
          git annex copy --to depot --not --in depot
          git annex sync
   pull = mr sync
-  archive = true
   drop = git-drop-unused.hy here 7
          git-drop-unused.hy depot 180
+  
+  [annex/kiler]
+  pull = mr sync
+  copy = git annex add .
+         git commit -m 'Auto Add'
+         git annex copy . --to yesim --auto
+         git annex copy . --to buse --auto
+         git annex sync
+  drop = git-drop-unused.hy here 0
 #+END_SRC
 
 *** ~/.bin/git-drop-unused.hy
