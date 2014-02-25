@@ -62,6 +62,7 @@ Repository structure,
   git_upload = git annex sync; git annex copy --to depot --not --in depot ; git annex sync
   git_download = git annex sync; git annex get --quiet --fast; git annex sync
   git_missing = git annex find . --not --in depot
+  git_ffsck = git annex fsck --fast --from depot
   
   lib = 
       enableCloud() {
