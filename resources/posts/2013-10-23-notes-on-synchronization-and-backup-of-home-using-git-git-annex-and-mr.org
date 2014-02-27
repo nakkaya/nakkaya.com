@@ -119,7 +119,7 @@ Repository structure,
   pull = mr sync
   push = mr sync
   copy = git annex add .
-         git commit -m 'Auto Add'
+         git commit -m 'Auto Add' || true
          git annex copy . --to yesim --auto
          git annex copy . --to buse --auto
          git annex sync
