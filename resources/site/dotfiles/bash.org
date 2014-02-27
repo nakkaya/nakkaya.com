@@ -175,12 +175,22 @@ Autocomplete for 'g' as well,
   
   if [ -d /media/nakkaya ];
   then
+  
+      case "$OSTYPE" in
+          linux-gnu)
+              usb_mount_point="/media/nakkaya"
+              ;;
+          darwin*)
+              usb_mount_point="/Volumes"
+              ;;
+      esac
+  
       usb(){
-          if [ -d "/media/nakkaya/${1}/kiler" ];
+          if [ -d "$usb_mount_point/${1}/kiler" ];
           then
-              cd "/media/nakkaya/${1}/kiler"
+              cd "$usb_mount_point/${1}/kiler"
           else
-              cd "/media/nakkaya/${1}/"
+              cd "$usb_mount_point/${1}/"
           fi
       }
       complete -W "`cd /media/nakkaya/;compgen -A directory`" usb
