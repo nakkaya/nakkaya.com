@@ -71,7 +71,14 @@
 
 #+BEGIN_SRC sh :tangle ~/.bashrc
   function finder (){
-      nautilus --no-desktop --browser "$1" > /dev/null 2>&1 &
+      case "$OSTYPE" in
+          linux-gnu)
+              nautilus --no-desktop --browser "$1" > /dev/null 2>&1 &
+              ;;
+          darwin*)
+              open .
+              ;;
+      esac
   }
   
   alias ta='TERM=xterm-256color tmux attach -t default || TERM=xterm-256color tmux new-session -s default'
@@ -125,7 +132,7 @@
   alias annex-size="s3cmd du -H s3://cloud-`git config remote.cloud.annex-uuid`"
   
   alias tor="~/Apps/tor/App/tor"
-
+  
   alias bootstrap_new_machine="wget -qO- https://raw.github.com/nakkaya/nakkaya.com/master/resources/site/dotfiles/bootstrap.sh | bash"
   
   ga_enc_mount(){
