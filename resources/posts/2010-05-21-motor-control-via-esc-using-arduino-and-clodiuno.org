@@ -51,9 +51,7 @@ Following snippet is what I use for quickly testing various PWM values,
         (.add field-panel BorderLayout/SOUTH))))
   
   (defn esc [pwm]
-    (let [board (arduino :firmata "/dev/tty.usbserial-A600aeCj")]
-      ;;allow board to boot
-      (Thread/sleep 5000)
+    (let [board (arduino :firmata "/dev/tty.usbmodem1d1131")]
       ;;attach ESC
       (pin-mode board esc-pin SERVO)
       (analog-write board esc-pin 90)
@@ -69,5 +67,5 @@ Following snippet is what I use for quickly testing various PWM values,
         (.setSize 250 115)
         (.setVisible true))))
   
-  (frame)
+  ;;(esc-test.core/frame)
 #+end_src
