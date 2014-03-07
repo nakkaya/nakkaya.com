@@ -69,7 +69,7 @@ echo "(load-file \"~/source/emacs/init.el\")" > ~/.emacs
 # brew install gpg reattach-to-user-namespace wget tmux ssh-copy-id cmus coreutils bash-completion git python s3cmd 
 # brew install aspell --with-lang-en
 # brew install osxfuse sshfs encfs -> manually load kernel extension
-# Grab Emacs iTerm2 Moom Witch Firefox VLC git-annex git-remote-gcrypt
+# Grab Emacs iTerm2 Moom Witch Firefox VLC git-annex git-remote-gcrypt awaken flux
 
 # Init System
 
