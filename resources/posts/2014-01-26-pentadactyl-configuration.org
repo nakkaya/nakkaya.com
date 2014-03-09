@@ -185,7 +185,7 @@ Additional hints,
 
 ~/.pentadactyl/user.css,
 
-#+BEGIN_SRC css :mkdirp yes :tangle ~/.pentadactyl/user.css 
+#+BEGIN_SRC fundamental :mkdirp yes :tangle ~/.pentadactyl/user.css 
   /* @-moz-document domain("www.reddit.com") { */
   /*     .side{ display: none !important; } */
   /*     .md { max-width: 100% ! important;} */

@@ -8,11 +8,14 @@
  :blog-as-index false
  :create-archives false
  :atomic-build true
- :emacs "/usr/bin/emacs"
- :emacs-eval ['(add-to-list 'load-path "/usr/share/org-mode/lisp/")
-              '(add-to-list 'load-path "~/.emacs.d/elpa/clojure-mode-2.1.0/")
+ :emacs "/Applications/Emacs.app/Contents/MacOS/Emacs"
+ :emacs-eval ['(add-to-list 'load-path "~/source/emacs/ext/org-mode/lisp/")
+              '(add-to-list 'load-path "~/source/emacs/ext/org-mode/contrib/lisp/")
+              '(add-to-list 'load-path "~/.emacs.d/elpa/clojure-mode-2.1.1/")
               '(require 'htmlize)
               '(require 'org)
+              '(require 'org-macs)
+              '(require 'ox-html)
               '(require 'ob)
               '(global-font-lock-mode 1)
               '(require 'clojure-mode)
