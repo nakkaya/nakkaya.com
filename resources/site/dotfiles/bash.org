@@ -86,6 +86,8 @@
       printf '\033k%s\033\\' $1
       ssh $1 -t "tmux attach"
   }
+
+  alias df="df -h"
   alias g='git'
   alias ga='git annex'
   alias gpush="anx;m push;src;m push"
@@ -230,7 +232,6 @@ Autocomplete for 'g' as well,
       linux-gnu)
           alias open="gnome-open"
           alias ls="ls -aG --color"
-          alias df="df -h"
           alias emacs-nx='emacs &> /dev/null &'
           alias emacs="TERM=xterm-256color emacsclient -t || TERM=xterm-256color emacs -nw"
           ;;
