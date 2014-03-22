@@ -73,6 +73,23 @@ Create a new window, swtich to home directory and type tmux-ssh,
   send-keys -t tmux-ssh "tmux-ssh "
 #+END_SRC
 
+Create/attach a dev session. Start tmux create two windows for two
+emacs instances for for editing one for dired.
+
+#+BEGIN_SRC sh :tangle ~/.bin/ta-dev
+  tmux has-session -t dev 
+  if [ $? != 0 ]
+  then
+      tmux new-session -s dev -n emacs -d
+      tmux send-keys -t dev 'cd ~/' C-m 
+      tmux send-keys -t dev 'emacs' C-m
+      tmux new-window -n dired -t dev
+      tmux send-keys -t dev 'cd ~/' C-m 
+      tmux send-keys -t dev 'emacs' C-m
+  fi
+  tmux attach -t dev
+#+END_SRC
+
 Solarized theme,
 
 #+BEGIN_SRC fundamental :tangle ~/.tmux.conf
