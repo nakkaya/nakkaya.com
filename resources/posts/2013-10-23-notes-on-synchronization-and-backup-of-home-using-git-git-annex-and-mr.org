@@ -116,6 +116,7 @@ Repository structure,
          git-drop-unused.hy depot 180
   
   [annex/kiler]
+  skip = lazy
   pull = mr sync
   push = mr sync
   copy = git annex add .
