@@ -83,7 +83,7 @@ emacs instances for for editing one for dired.
   then
       tmux new-session -s dev -n emacs -d
       tmux send-keys -t dev 'cd ~/' C-m 
-      tmux send-keys -t dev 'emacs' C-m
+      tmux send-keys -t dev 'emacs -main-instance' C-m
       tmux new-window -n dired -t dev
       tmux send-keys -t dev 'cd ~/' C-m 
       tmux send-keys -t dev 'emacs' C-m
