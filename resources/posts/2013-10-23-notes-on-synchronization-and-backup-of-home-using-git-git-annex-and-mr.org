@@ -426,13 +426,13 @@ Start asistant and webapp,
   For my copy/paste pleasure, steps for adding a new disk.
 
 #+BEGIN_SRC sh :tangle no
-  git clone /media/nakkaya/esra/kiler/
-  git remote remove origin
+  git clone ssh://base//home/nakkaya/kiler/
   
-  DISKS="ebru damla esra merve ozge sedef yesim buse"
+  DISKS="ebru damla esra merve yesim buse"
   
   for i in $DISKS; do 
-      git remote add $i /media/nakkaya/$i/kiler/
+      git remote add $i ssh://ai-lab//media/nakkaya/$i/kiler/
+      git config remote.$i.annex-sync false
   done
   
   git annex init "new-disk-name"
