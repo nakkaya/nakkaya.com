@@ -428,7 +428,7 @@ Start asistant and webapp,
 #+BEGIN_SRC sh :tangle no
   git clone ssh://base//home/nakkaya/kiler/
   
-  DISKS="ebru damla esra merve yesim buse"
+  DISKS="ebru damla merve yesim buse"
   
   for i in $DISKS; do 
       git remote add $i ssh://ai-lab//media/nakkaya/$i/kiler/
