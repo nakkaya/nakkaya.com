@@ -78,6 +78,8 @@ Repository structure,
   skip = lazy
   drop = git-drop-unused.hy here 0
          git-drop-unused.hy depot 30
+  git_missing = echo "depot"
+                git annex find . --not --in depot
   
   [annex/photos]
   checkout = git clone 'ssh://rsync/~/git-bare/photos.git' 'photos'
@@ -86,11 +88,18 @@ Repository structure,
   skip = lazy
   drop = git-drop-unused.hy here 7
          git-drop-unused.hy depot 120
+  git_missing = echo "depot"
+                git annex find . --not --in depot
+                echo "here"
+                git annex find . --not --in here
   
   [annex/old-code]
   checkout = git clone 'ssh://rsync/~/git-bare/old-code.git' 'old-code'
              cd old-code/
              enableCloud
+  git_missing = echo "depot"
+                git annex find . --not --in depot
+  
   skip = lazy
   drop = git-drop-unused.hy here 0
          git-drop-unused.hy depot 30
@@ -102,6 +111,12 @@ Repository structure,
   skip = lazy
   drop = git-drop-unused.hy here 0
          git-drop-unused.hy depot 15
+  git_missing = echo "depot"
+                git annex find . --not --in depot
+                echo "base"
+                git annex find . --not --in base
+                echo "tugba"
+                git annex find . --not --in base
   
   [annex/notes]
   checkout = git clone 'ssh://rsync/~/git-bare/notes.git' 'notes'
@@ -114,17 +129,13 @@ Repository structure,
   pull = mr sync
   drop = git-drop-unused.hy here 7
          git-drop-unused.hy depot 180
+  git_missing = echo "depot"
+                git annex find . --not --in depot
   
   [annex/kiler]
   skip = lazy
-  pull = mr sync
-  push = mr sync
-  copy = git annex add .
-         git commit -m 'Auto Add' || true
-         git annex copy . --to yesim --auto
-         git annex copy . --to buse --auto
-         git annex sync
-  drop = git-drop-unused.hy here 0
+  git_missing = echo "depot"
+                git annex find . --not --in depot
 #+END_SRC
 
 *** ~/.bin/git-drop-unused.hy
