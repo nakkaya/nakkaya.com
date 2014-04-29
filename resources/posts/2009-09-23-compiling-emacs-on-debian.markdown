@@ -19,6 +19,10 @@ using apt-get
     texinfo
     libncurses5-dev
 
+Alternativly use,
+
+    apt-get build-dep emacs23
+
 #### Getting Latest Source
 
 Choose your favarite CVS and get the latest source.
@@ -40,6 +44,7 @@ Switch to that directory.
 
 First you need to run the configure script,
 
+    ./autogen.sh
     ./configure --prefix=/path/to/some/directory/
 
 Now you are ready to build.
