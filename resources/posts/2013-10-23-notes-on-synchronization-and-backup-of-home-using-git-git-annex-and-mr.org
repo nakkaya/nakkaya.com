@@ -70,12 +70,14 @@ Repository structure,
          git config remote.origin.annex-ignore true
          git annex init "`hostname`"
          git annex enableremote depot
+         git annex untrust here
       }
   
   [annex/documents]
   checkout = git clone 'ssh://rsync/~/git-bare/documents.git' 'documents'
              cd documents/
-             enableCloud     
+             enableCloud
+             git annex enableremote "rsync-base"
   skip = lazy
   drop = git-drop-unused.hy here 0
          git-drop-unused.hy depot 30
@@ -86,6 +88,7 @@ Repository structure,
   checkout = git clone 'ssh://rsync/~/git-bare/photos.git' 'photos'
              cd photos/
              enableCloud
+             git annex enableremote "rsync-base"
   skip = lazy
   drop = git-drop-unused.hy here 7
          git-drop-unused.hy depot 120
@@ -98,6 +101,7 @@ Repository structure,
   checkout = git clone 'ssh://rsync/~/git-bare/old-code.git' 'old-code'
              cd old-code/
              enableCloud
+             git annex enableremote "rsync-base"
   git_missing = echo "depot"
                 git annex find . --not --in depot
   
@@ -123,6 +127,7 @@ Repository structure,
   checkout = git clone 'ssh://rsync/~/git-bare/notes.git' 'notes'
              cd notes/
              enableCloud
+             git annex enableremote "rsync-base"
   sync = git annex sync
          git annex get .
          git annex copy --to depot --not --in depot
