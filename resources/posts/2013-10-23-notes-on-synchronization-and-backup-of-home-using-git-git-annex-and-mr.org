@@ -96,6 +96,7 @@ Repository structure,
                 git annex find . --not --in depot
                 echo "here"
                 git annex find . --not --in here
+  free = true
   
   [annex/old-code]
   checkout = git clone 'ssh://rsync/~/git-bare/old-code.git' 'old-code'
@@ -137,6 +138,7 @@ Repository structure,
          git-drop-unused.hy depot 180
   git_missing = echo "depot"
                 git annex find . --not --in depot
+  free = true
   
   [annex/kiler]
   skip = lazy
