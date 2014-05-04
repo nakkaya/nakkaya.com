@@ -59,9 +59,7 @@ Repository structure,
   git_status = git na-status
   git_drop = git git-drop-unused here 0
   git_dead = git annex dead "$@"
-  git_upload = git annex sync; git annex copy --to depot --not --in depot ; git annex sync
-  git_download = git annex sync; git annex get --quiet --fast; git annex sync
-  git_missing = git annex find . --not --in depot
+  git_missing = git annex find . --not --copies 2
   git_ffsck = git annex fsck --fast --from depot
   git_free = git annex drop .
   
@@ -178,14 +176,15 @@ Drop all unused files by date,
   (defn unused-files []
     (let [[files (try 
                   (-> (.annex git "unused" "--from" remote)
-                      (perl "-ne" "print if /^    [0-9]+      .*/")
+                      (perl "-ne" "print if /^    [0-9]+.*/")
                       str)
                   (catch [e ErrorReturnCode] ""))]]
+      (print (len files))
       (->> files 
            (split "\n")
            (map (fn [x] 
                   (->> (.strip x)
-                       (split "      ")
+                       (split " +")
                        (take 2)
                        (map (fn [x] (.strip x))))))
            (filter (fn [x] 
@@ -206,16 +205,23 @@ Drop all unused files by date,
   
   (print "Dropping " remote)
   
-  (for [file (unused-files)]
-    (let [[id (first file)]
-          [file-age (age file)]]
-      
-      (if (>= file-age drop-age)
-        (do 
-         (print "Id " id " age " file-age " days...")
-         (if (= remote "here")
-           (.annex git "dropunused" "--force" (str id))
-           (.annex git "dropunused" "--force" "--from" remote (str id)))))))
+  (if (= drop-age 0)
+    (for [file (unused-files)]
+      (let [[id (first file)]]
+        (print "Id " id)
+        (if (= remote "here")
+          (.annex git "dropunused" "--force" (str id))
+          (.annex git "dropunused" "--force" "--from" remote (str id)))))
+    (for [file (unused-files)]
+      (let [[id (first file)]
+            [file-age (age file)]]
+        
+        (if (>= file-age drop-age)
+          (do 
+           (print "Id " id " age " file-age " days...")
+           (if (= remote "here")
+             (.annex git "dropunused" "--force" (str id))
+             (.annex git "dropunused" "--force" "--from" remote (str id))))))))
 #+END_SRC
 
 *** ~/.bin/git-na-status
