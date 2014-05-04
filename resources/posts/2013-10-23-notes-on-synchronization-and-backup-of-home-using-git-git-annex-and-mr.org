@@ -78,7 +78,7 @@ Repository structure,
              git annex enableremote "rsync-base"
   skip = lazy
   drop = git-drop-unused.hy here 0
-         git-drop-unused.hy depot 30
+         git-drop-unused.hy depot 0
   git_missing = echo "depot"
                 git annex find . --not --in depot
   
@@ -88,8 +88,8 @@ Repository structure,
              enableCloud
              git annex enableremote "rsync-base"
   skip = lazy
-  drop = git-drop-unused.hy here 7
-         git-drop-unused.hy depot 120
+  drop = git-drop-unused.hy here 0
+         git-drop-unused.hy depot 0
   git_missing = echo "depot"
                 git annex find . --not --in depot
                 echo "here"
@@ -106,7 +106,7 @@ Repository structure,
   
   skip = lazy
   drop = git-drop-unused.hy here 0
-         git-drop-unused.hy depot 30
+         git-drop-unused.hy depot 0
   
   [annex/music]
   checkout = git clone 'ssh://rsync/~/git-bare/music.git' 'music'
@@ -114,7 +114,7 @@ Repository structure,
              enableCloud
   skip = lazy
   drop = git-drop-unused.hy here 0
-         git-drop-unused.hy depot 15
+         git-drop-unused.hy depot 0
   git_missing = echo "depot"
                 git annex find . --not --in depot
                 echo "base"
@@ -129,11 +129,11 @@ Repository structure,
              git annex enableremote "rsync-base"
   sync = git annex sync
          git annex get .
-         git annex copy --to depot --not --in depot
+         git annex copy --to depot --not --in rsync-base
          git annex sync
   pull = mr sync
-  drop = git-drop-unused.hy here 7
-         git-drop-unused.hy depot 180
+  drop = git-drop-unused.hy here 0
+         git-drop-unused.hy depot 0
   git_missing = echo "depot"
                 git annex find . --not --in depot
   free = true
@@ -178,18 +178,19 @@ Drop all unused files by date,
                   (-> (.annex git "unused" "--from" remote)
                       (perl "-ne" "print if /^    [0-9]+.*/")
                       str)
-                  (catch [e ErrorReturnCode] ""))]]
-      (print (len files))
-      (->> files 
-           (split "\n")
-           (map (fn [x] 
-                  (->> (.strip x)
-                       (split " +")
-                       (take 2)
-                       (map (fn [x] (.strip x))))))
-           (filter (fn [x] 
-                     (= (len x) 2)))
-           list)))
+                  (catch [e ErrorReturnCode] ""))]
+          [unused-files (->> files 
+                             (split "\n")
+                             (map (fn [x] 
+                                    (->> (.strip x)
+                                         (split " +")
+                                         (take 2)
+                                         (map (fn [x] (.strip x))))))
+                             (filter (fn [x] 
+                                       (= (len x) 2)))
+                             list)]]
+      (print "Unused files: " (len unused-files))
+      unused-files))
   
   (defn last-seen [file]
     (let [[key (second file)]]
