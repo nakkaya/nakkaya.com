@@ -148,7 +148,7 @@ Repository structure,
          git annex copy . --to buse --auto
          git annex sync
   drop = git-drop-unused.hy here 0
-         git-drop-unused.hy base 0
+         git-drop-unused.hy origin 0
   git_missing = echo "depot"
                 git annex find . --not --in depot
 #+END_SRC
