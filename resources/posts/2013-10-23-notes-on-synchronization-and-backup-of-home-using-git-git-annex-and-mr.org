@@ -140,15 +140,10 @@ Repository structure,
   skip = lazy
   pull = mr sync
   push = mr sync
-  copy = git annex add .
-         git commit -m 'Auto Add' || true
-         git annex copy . --to yesim --auto
-         git annex copy . --to buse --auto
-         git annex sync
   drop = git-drop-unused.hy here 0
          git-drop-unused.hy origin 0
   git_missing = echo "depot"
-                git annex find . --not --in depot
+                git annex find . --not --in origin
   free = true
 #+END_SRC
 
