@@ -119,8 +119,6 @@ Repository structure,
                 git annex find . --not --in depot
                 echo "base"
                 git annex find . --not --in base
-                echo "tugba"
-                git annex find . --not --in base
   
   [annex/notes]
   checkout = git clone 'ssh://rsync/~/git-bare/notes.git' 'notes'
