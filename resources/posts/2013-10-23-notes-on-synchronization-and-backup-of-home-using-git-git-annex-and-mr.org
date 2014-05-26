@@ -59,8 +59,8 @@ Repository structure,
   git_status = git na-status
   git_drop = git git-drop-unused here 0
   git_dead = git annex dead "$@"
-  git_missing = git annex find . --not --copies 2
-  git_ffsck = git annex fsck --fast --from depot
+  git_missing = echo "Nothing todo.";true
+  git_ffsck = echo "Nothing todo.";true
   git_free = git annex drop .
   
   lib = 
@@ -81,6 +81,8 @@ Repository structure,
          git-drop-unused.hy depot 0
   git_missing = echo "depot"
                 git annex find . --not --in depot
+  ffsck = git annex fsck --fast --from depot
+          git annex fsck --fast --from rsync-base
   
   [annex/photos]
   checkout = git clone 'ssh://rsync/~/git-bare/photos.git' 'photos'
@@ -95,6 +97,8 @@ Repository structure,
                 echo "here"
                 git annex find . --not --in here
   free = true
+  ffsck = git annex fsck --fast --from depot
+          git annex fsck --fast --from rsync-base
   
   [annex/old-code]
   checkout = git clone 'ssh://rsync/~/git-bare/old-code.git' 'old-code'
@@ -103,10 +107,11 @@ Repository structure,
              git annex enableremote "rsync-base"
   git_missing = echo "depot"
                 git annex find . --not --in depot
-  
   skip = lazy
   drop = git-drop-unused.hy here 0
          git-drop-unused.hy depot 0
+  ffsck = git annex fsck --fast --from depot
+          git annex fsck --fast --from rsync-base
   
   [annex/music]
   checkout = git clone 'ssh://rsync/~/git-bare/music.git' 'music'
@@ -119,6 +124,8 @@ Repository structure,
                 git annex find . --not --in depot
                 echo "base"
                 git annex find . --not --in base
+  ffsck = git annex fsck --fast --from depot
+          git annex fsck --fast --from base
   
   [annex/notes]
   checkout = git clone 'ssh://rsync/~/git-bare/notes.git' 'notes'
@@ -135,6 +142,8 @@ Repository structure,
   git_missing = echo "depot"
                 git annex find . --not --in depot
   free = true
+  ffsck = git annex fsck --fast --from depot
+          git annex fsck --fast --from rsync-base
   
   [annex/kiler]
   skip = lazy
@@ -401,28 +410,20 @@ Start asistant and webapp,
 
   I have one repository called /kiler/ (means basement in Turkish)
   which holds around 6 TB of data (OS Disks, VM Images, Tech Talks,
-  Movies, TV Shows etc.) spread over 8x2 TB USB drives.
+  Movies, TV Shows etc.) spread over 3x2 TB USB drives and a dedicated
+  box.
 
 #+BEGIN_SRC conf :tangle ~/.external-mrconfig
   [DEFAULT]
   git_sync = git annex-add-sync "$@"
   git_drop = git git-drop-unused here 0
+  git_copy = git anx-copy-to origin .
   
-  [/media/nakkaya/damla/kiler]
-  
-  [/media/nakkaya/esra/kiler]
-  
-  [/media/nakkaya/merve/kiler]
-  
-  [/media/nakkaya/ozge/kiler]
-  
-  [/media/nakkaya/sedef/kiler]
+  [/Volumes/tugba/kiler]
 
-  [/media/nakkaya/ebru/kiler]
+  [/Volumes/irem/kiler]
 
-  [/media/nakkaya/yesim/kiler]
-
-  [/media/nakkaya/buse/kiler]
+  [/Volumes/imge/kiler]
 #+END_SRC
 
 *** ~/.bin/git-annex-add-sync
