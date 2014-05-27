@@ -81,6 +81,8 @@ Repository structure,
          git-drop-unused.hy depot 0
   git_missing = echo "depot"
                 git annex find . --not --in depot
+                echo "rsync-base"
+                git annex find . --not --in rsync-base
   ffsck = git annex fsck --fast --from depot
           git annex fsck --fast --from rsync-base
   
@@ -94,6 +96,8 @@ Repository structure,
          git-drop-unused.hy depot 0
   git_missing = echo "depot"
                 git annex find . --not --in depot
+                echo "rsync-base"
+                git annex find . --not --in rsync-base
                 echo "here"
                 git annex find . --not --in here
   free = true
@@ -107,6 +111,8 @@ Repository structure,
              git annex enableremote "rsync-base"
   git_missing = echo "depot"
                 git annex find . --not --in depot
+                echo "rsync-base"
+                git annex find . --not --in rsync-base
   skip = lazy
   drop = git-drop-unused.hy here 0
          git-drop-unused.hy depot 0
@@ -141,6 +147,8 @@ Repository structure,
          git-drop-unused.hy depot 0
   git_missing = echo "depot"
                 git annex find . --not --in depot
+                echo "rsync-base"
+                git annex find . --not --in rsync-base
   free = true
   ffsck = git annex fsck --fast --from depot
           git annex fsck --fast --from rsync-base
