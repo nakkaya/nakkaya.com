@@ -86,7 +86,7 @@
       printf '\033k%s\033\\' $1
       ssh $1 -t "tmux attach"
   }
-
+  
   alias df="df -h"
   alias g='git'
   alias ga='git annex'
@@ -142,13 +142,13 @@
       cd "$1"
       DIR=$(basename "$1")
       git annex unlock "${1}"
-      encfs "${1}" "/home/nakkaya/$DIR"
+      encfs "${1}" "/Users/nakkaya/$DIR"
       cd $CUR_DIR
   }
   
   ga_enc_umount(){
       DIR=$(basename "$1")
-      fusermount -u "/home/nakkaya/$DIR"
+      umount "/Users/nakkaya/$DIR"
       git annex add "${1}"
       git commit -m 'Update'
   }
