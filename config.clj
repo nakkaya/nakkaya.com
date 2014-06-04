@@ -19,6 +19,7 @@
               '(require 'ob)
               '(global-font-lock-mode 1)
               '(require 'clojure-mode)
+              '(setq org-export-with-section-numbers nil)
               '(set-face-foreground 'font-lock-string-face "#afafff")
               '(set-face-foreground 'font-lock-keyword-face "#ff5f00")
               '(set-face-foreground 'font-lock-function-name-face "#d7af00")

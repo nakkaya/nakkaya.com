@@ -12,7 +12,7 @@ or interesting.
 You can reach me at [[mailto:nurullah@nakkaya.com][nurullah@nakkaya.com]]
 
 #+BEGIN_HTML
-  <img src="/images/nurullahAkkaya.jpeg" />
+  <p><img src="/images/nurullahAkkaya.jpeg" /></p>
 #+END_HTML
 
 *** Other Places I am At
