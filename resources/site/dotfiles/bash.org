@@ -70,87 +70,93 @@
 #+END_SRC
 
 #+BEGIN_SRC sh :tangle ~/.bashrc
-  function finder (){
-      case "$OSTYPE" in
-          linux-gnu)
-              nautilus --no-desktop --browser "$1" > /dev/null 2>&1 &
-              ;;
-          darwin*)
-              open .
-              ;;
-      esac
-  }
-  
-  alias ta='TERM=xterm-256color tmux attach -t default || TERM=xterm-256color tmux new-session -s default'
-  function tmux-ssh (){
-      printf '\033k%s\033\\' $1
-      ssh $1 -t "tmux attach"
-  }
-  
-  alias df="df -h"
-  alias g='git'
-  alias ga='git annex'
-  alias gpush="anx;m push;src;m push"
-  alias gpull="anx;m pull;src;m pull"
-  alias gst="anx;m st;src;m st"
-  alias m='mr'
-  alias rm='rm -i'
-  alias rcp='rsync -arvL --progress'
-  alias ssl-ref='cd ~/ && /usr/bin/sslrefbox &>/dev/null &'
-  alias ssl-sim='cd ~/Apps/grSim/bin/ && ~/Apps/grSim/bin/grSim &>/dev/null &'
-  alias ssl-vis='cd ~/Apps/ssl-vision/ && ./bin/vision &>/dev/null &'
-  alias ssl-cli='cd ~/Apps/ssl-vision/ && ./bin/client'
-  alias ssl-gra-cli='cd ~/Apps/ssl-vision/ && ./bin/graphicalClient &>/dev/null &' 
-  alias android-sim='cd ~/Apps/adt-bundle-linux-x86_64-20130917/sdk/tools && ./emulator'
-  alias android-logcat='cd ~/Apps/adt-bundle-linux-x86_64-20130917/sdk/platform-tools && ./adb logcat -c && ./adb logcat'
-  alias droid-build='lein do droid build, droid apk'
-  alias droid-install='lein do droid install, droid run'
-  alias droid-deploy='lein do droid build, droid apk && s3cmd put target/latte-debug.apk s3://dropbox.nakkaya.com/latte-debug.apk'
-  alias latte-ports='lein droid forward-port && ~/Apps/adt-bundle-linux-x86_64-20130917/sdk/platform-tools/adb forward tcp:8080 tcp:8080'
-  alias wow='cd ~/wow && wine Wow.exe'
-  alias cljsc='~/Dropbox/kiler/clojurescript/bin/cljsc'
-  alias servedir='python -m SimpleHTTPServer'
-  alias tc='truecrypt'
-  # Get readable list of network IPs
-  alias ips="ifconfig -a | perl -nle'/(\d+\.\d+\.\d+\.\d+)/ && print $1'"
-  alias myip="dig +short myip.opendns.com @resolver1.opendns.com"
-  alias flush="dscacheutil -flushcache" # Flush DNS cache
-  alias pgrep="ps ax | grep -i"
-  alias hgrep="history | grep -i"
-  alias ag="sudo apt-get"
-  alias cls="clear"
-  alias br="sudo service bluetooth restart"
-  alias vpn="cd ~/Dropbox/bash && sudo ./vpn.sh"
-  alias youtube-dl-1080="youtube-dl -f 37"
-  alias youtube-dl-720="youtube-dl -f 22"
-  alias sbuild="java -jar static-app.jar --build"
-  alias sjetty="java -jar static-app.jar --jetty"
-  alias ssh-x='ssh -c arcfour,blowfish-cbc -XC' 
-  alias du="du -hcs"
-  
-  alias t-server="transmission-daemon -c /media/nakkaya/yesim/torrent/ --incomplete-dir /media/nakkaya/yesim/torrent/incomplete/ --download-dir /media/nakkaya/yesim/torrent/ --no-auth"
-  alias t-cli="transmission-remote-cli"
-  alias s3sync="s3cmd sync --delete --acl-public"
-  alias annex-size="s3cmd du -H s3://cloud-`git config remote.cloud.annex-uuid`"
-  
-  alias tor="~/Apps/tor/App/tor"
-  
-  alias bootstrap_new_machine="wget -qO- https://raw.github.com/nakkaya/nakkaya.com/master/resources/site/dotfiles/bootstrap.sh | bash"
-  
+    function finder (){
+        case "$OSTYPE" in
+            linux-gnu)
+                nautilus --no-desktop --browser "$1" > /dev/null 2>&1 &
+                ;;
+            darwin*)
+                open .
+                ;;
+        esac
+    }
+    
+    alias ta='TERM=xterm-256color tmux attach -t default || TERM=xterm-256color tmux new-session -s default'
+    function tmux-ssh (){
+        printf '\033k%s\033\\' $1
+        ssh $1 -t "tmux attach"
+    }
+    
+    alias df="df -h"
+    alias g='git'
+    alias ga='git annex'
+    alias gpush="anx;m push;src;m push"
+    alias gpull="anx;m pull;src;m pull"
+    alias gst="anx;m st;src;m st"
+    alias m='mr'
+    alias rm='rm -i'
+    alias rcp='rsync -arvL --progress'
+    alias ssl-ref='cd ~/ && /usr/bin/sslrefbox &>/dev/null &'
+    alias ssl-sim='cd ~/Apps/grSim/bin/ && ~/Apps/grSim/bin/grSim &>/dev/null &'
+    alias ssl-vis='cd ~/Apps/ssl-vision/ && ./bin/vision &>/dev/null &'
+    alias ssl-cli='cd ~/Apps/ssl-vision/ && ./bin/client'
+    alias ssl-gra-cli='cd ~/Apps/ssl-vision/ && ./bin/graphicalClient &>/dev/null &' 
+    alias android-sim='cd ~/Apps/adt-bundle-linux-x86_64-20130917/sdk/tools && ./emulator'
+    alias android-logcat='cd ~/Apps/adt-bundle-linux-x86_64-20130917/sdk/platform-tools && ./adb logcat -c && ./adb logcat'
+    alias droid-build='lein do droid build, droid apk'
+    alias droid-install='lein do droid install, droid run'
+    alias droid-deploy='lein do droid build, droid apk && s3cmd put target/latte-debug.apk s3://dropbox.nakkaya.com/latte-debug.apk'
+    alias latte-ports='lein droid forward-port && ~/Apps/adt-bundle-linux-x86_64-20130917/sdk/platform-tools/adb forward tcp:8080 tcp:8080'
+    alias wow='cd ~/wow && wine Wow.exe'
+    alias cljsc='~/Dropbox/kiler/clojurescript/bin/cljsc'
+    alias servedir='python -m SimpleHTTPServer'
+    alias tc='truecrypt'
+    # Get readable list of network IPs
+    alias ips="ifconfig -a | perl -nle'/(\d+\.\d+\.\d+\.\d+)/ && print $1'"
+    alias myip="dig +short myip.opendns.com @resolver1.opendns.com"
+    alias flush="dscacheutil -flushcache" # Flush DNS cache
+    alias pgrep="ps ax | grep -i"
+    alias hgrep="history | grep -i"
+    alias ag="sudo apt-get"
+    alias cls="clear"
+    alias br="sudo service bluetooth restart"
+    alias vpn="cd ~/Dropbox/bash && sudo ./vpn.sh"
+    alias youtube-dl-1080="youtube-dl -f 37"
+    alias youtube-dl-720="youtube-dl -f 22"
+    alias sbuild="java -jar static-app.jar --build"
+    alias sjetty="java -jar static-app.jar --jetty"
+    alias ssh-x='ssh -c arcfour,blowfish-cbc -XC' 
+    alias du="du -hcs"
+    
+    alias t-server="transmission-daemon -c /media/nakkaya/yesim/torrent/ --incomplete-dir /media/nakkaya/yesim/torrent/incomplete/ --download-dir /media/nakkaya/yesim/torrent/ --no-auth"
+    alias t-cli="transmission-remote-cli"
+    alias s3sync="s3cmd sync --delete --acl-public"
+    alias annex-size="s3cmd du -H s3://cloud-`git config remote.cloud.annex-uuid`"
+    
+    alias tor="~/Apps/tor/App/tor"
+    
+    alias bootstrap_new_machine="wget -qO- https://raw.github.com/nakkaya/nakkaya.com/master/resources/site/dotfiles/bootstrap.sh | bash"
+    
   ga_enc_mount(){
       CUR_DIR=`pwd`
       cd "$1"
       DIR=$(basename "$1")
-      git annex unlock "${1}"
-      encfs "${1}" "/Users/nakkaya/$DIR"
+      mkdir "/Volumes/$DIR"
+      git annex unlock "."
+      encfs "$CUR_DIR/${1}" "/Volumes/$DIR"
       cd $CUR_DIR
   }
   
   ga_enc_umount(){
+      CUR_DIR=`pwd`
       DIR=$(basename "$1")
-      umount "/Users/nakkaya/$DIR"
-      git annex add "${1}"
+      if umount "/Volumes/$DIR"; then
+          rm -rf "/Volumes/$DIR"
+      fi
+      cd "$1"
+      git annex add .
       git commit -m 'Update'
+      cd $CUR_DIR
   }
 #+END_SRC
 
