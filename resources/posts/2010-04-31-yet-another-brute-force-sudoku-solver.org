@@ -8,8 +8,7 @@ following snippet to brute force it for me.
 
 #+begin_src clojure
   (ns sudoku.core
-    (:use clojure.set)
-    (:use clojure.contrib.seq-utils))
+    (:use clojure.set))
   
   (defn constraints [s i]
     (let [s (partition 9 s) r (/ i 9) c (mod i 9) gc (/ c 3) gr (/ r 3)
