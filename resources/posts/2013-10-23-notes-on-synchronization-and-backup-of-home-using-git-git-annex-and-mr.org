@@ -161,7 +161,9 @@ Repository structure,
          git-drop-unused.hy origin 0
   git_missing = echo "depot"
                 git annex find . --not --in origin
-  free = true
+  sync = git annex add .
+         git annex move . --to origin --not --in origin
+         git annex sync
 #+END_SRC
 
 *** ~/.bin/git-drop-unused.hy
