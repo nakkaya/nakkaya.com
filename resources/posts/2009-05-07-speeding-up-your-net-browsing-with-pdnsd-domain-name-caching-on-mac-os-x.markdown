@@ -1,6 +1,6 @@
 ---
-title: Speeding Up Your Net Browsing with PDNSD Domain Name Caching on Mac OS X
-tags: dns apple
+title: Speeding Up Your Net Browsing with PDNSD Domain Name Caching on Mac OS X / Debian
+tags: dns apple debian osx
 ---
 
 DNS is the Domain Name System. DNS converts machine names to the IP
@@ -24,28 +24,7 @@ to get it to install pdnsd.
 Create a file named, pdnsd.conf under /opt/local/etc/pdnsd/ with the
 following content.
 
-
-    global {
-            perm_cache=2048;
-            cache_dir="/var/pdnsd";
-            max_ttl=604800;
-            run_as="pdnsd";
-            paranoid=on;
-            server_port=53;
-            server_ip="127.0.0.1";
-            run_as = nobody;
-    }
-
-    server {
-            label=OpenDNS;
-            ip=208.67.222.222;
-            ip=208.67.220.220;
-            timeout=30;
-            interval=30;
-            uptest=ping;
-            ping_timeout=50;
-            purge_cache=off;
-    }
+include conf from base
 
 Change the owner of the file to root,
 
@@ -97,3 +76,15 @@ response back check,
 
 for errors. Make sure all the files are owned by root and has correct
 permissions.
+
+Debian setup add to,
+
+    /etc/resolvconf/resolv.conf.d/head
+
+a new entry,
+
+    nameserver 127.0.0.7
+
+rebuild resolve.conf
+
+    resolvconf -u
