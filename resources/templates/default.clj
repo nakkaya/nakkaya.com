@@ -87,7 +87,7 @@
    [:div
     {:id "footer"}
     [:a {:href "/rss-feed"} " RSS Feed"]
-    [:p "&copy; 2013" 
+    [:p "&copy; 2014" 
      [:a {:href "http://nakkaya.com"} " Nurullah Akkaya"]]]]
   ;;
   ;;
