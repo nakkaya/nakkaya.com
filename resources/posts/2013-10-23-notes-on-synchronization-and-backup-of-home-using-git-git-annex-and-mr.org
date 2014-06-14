@@ -138,9 +138,10 @@ Repository structure,
              cd notes/
              enableCloud
              git annex enableremote "rsync-base"
-  sync = git annex sync
+  sync = git annex add .
+         git annex sync
          git annex get .
-         git annex copy --to depot --not --in rsync-base
+         git annex copy --to rsync-base --not --in rsync-base
          git annex sync
   pull = mr sync
   drop = git-drop-unused.hy here 0
