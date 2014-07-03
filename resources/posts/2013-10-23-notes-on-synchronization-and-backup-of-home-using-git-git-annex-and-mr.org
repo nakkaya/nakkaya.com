@@ -163,7 +163,7 @@ Repository structure,
   git_missing = echo "depot"
                 git annex find . --not --in origin
   sync = git annex add .
-         git annex move . --to origin --not --in origin
+         git annex move . --to base --not --in base
          git annex sync
 #+END_SRC
 
