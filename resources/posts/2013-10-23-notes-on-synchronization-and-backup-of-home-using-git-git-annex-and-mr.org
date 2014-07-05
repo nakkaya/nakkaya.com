@@ -86,53 +86,6 @@ Repository structure,
   ffsck = git annex fsck --fast --from depot
           git annex fsck --fast --from rsync-base
   
-  [annex/photos]
-  checkout = git clone 'ssh://rsync/~/git-bare/photos.git' 'photos'
-             cd photos/
-             enableCloud
-             git annex enableremote "rsync-base"
-  skip = lazy
-  drop = git-drop-unused.hy here 0
-         git-drop-unused.hy depot 0
-  git_missing = echo "depot"
-                git annex find . --not --in depot
-                echo "rsync-base"
-                git annex find . --not --in rsync-base
-                echo "here"
-                git annex find . --not --in here
-  free = true
-  ffsck = git annex fsck --fast --from depot
-          git annex fsck --fast --from rsync-base
-  
-  [annex/old-code]
-  checkout = git clone 'ssh://rsync/~/git-bare/old-code.git' 'old-code'
-             cd old-code/
-             enableCloud
-             git annex enableremote "rsync-base"
-  git_missing = echo "depot"
-                git annex find . --not --in depot
-                echo "rsync-base"
-                git annex find . --not --in rsync-base
-  skip = lazy
-  drop = git-drop-unused.hy here 0
-         git-drop-unused.hy depot 0
-  ffsck = git annex fsck --fast --from depot
-          git annex fsck --fast --from rsync-base
-  
-  [annex/music]
-  checkout = git clone 'ssh://rsync/~/git-bare/music.git' 'music'
-             cd music/
-             enableCloud
-  skip = lazy
-  drop = git-drop-unused.hy here 0
-         git-drop-unused.hy depot 0
-  git_missing = echo "depot"
-                git annex find . --not --in depot
-                echo "base"
-                git annex find . --not --in base
-  ffsck = git annex fsck --fast --from depot
-          git annex fsck --fast --from base
-  
   [annex/notes]
   checkout = git clone 'ssh://rsync/~/git-bare/notes.git' 'notes'
              cd notes/
@@ -161,7 +114,7 @@ Repository structure,
   drop = git-drop-unused.hy here 0
          git-drop-unused.hy origin 0
   git_missing = echo "depot"
-                git annex find . --not --in origin
+                git annex find . --not --in base
   sync = git annex add .
          git annex move . --to base --not --in base
          git annex sync
