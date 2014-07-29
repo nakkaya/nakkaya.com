@@ -85,6 +85,8 @@ Repository structure,
                 git annex find . --not --in rsync-base
   ffsck = git annex fsck --fast --from depot
           git annex fsck --fast --from rsync-base
+  free = git annex drop Binary Books Mail Papers Personal Source VMs
+  
   
   [annex/notes]
   checkout = git clone 'ssh://rsync/~/git-bare/notes.git' 'notes'
@@ -115,7 +117,7 @@ Repository structure,
          git-drop-unused.hy origin 0
   git_missing = echo "depot"
                 git annex find . --not --in base
-  sync = git annex add .
+  move = git annex add .
          git annex move . --to base --not --in base
          git annex sync
 #+END_SRC
