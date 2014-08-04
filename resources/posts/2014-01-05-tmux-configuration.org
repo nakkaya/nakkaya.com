@@ -30,6 +30,7 @@ Setup key bindings,
 
 #+BEGIN_SRC fundamental :tangle ~/.tmux.conf
   bind t source-file ~/.tmux-over-ssh.conf
+  bind g source-file ~/.tmux-annex-sync.conf
   bind k confirm kill-window
   bind K confirm kill-server
 
@@ -71,6 +72,13 @@ Create a new window, swtich to home directory and type tmux-ssh,
   neww -n tmux-ssh
   send-keys -t tmux-ssh "cd ~/" C-m
   send-keys -t tmux-ssh "tmux-ssh "
+#+END_SRC
+
+#+BEGIN_SRC fundamental :tangle ~/.tmux-annex-sync.conf
+  neww -n annex-sync
+  send-keys -t annex-sync "cd ~/annex/" C-m
+  send-keys -t annex-sync "tmux rename-window -t annex-sync \" `date +'%D %H:%M'` \"" C-m
+  send-keys -t annex-sync "mr sync && exit" C-m
 #+END_SRC
 
 Create/attach a dev session. Start tmux create two windows for two
