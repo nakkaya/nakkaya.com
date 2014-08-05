@@ -25,3 +25,19 @@ It is a good starting point to customize it to your needs.
   #log activity (uncomment if needed)
   #/sbin/iptables -A INPUT -j LOG -m limit    
 #+end_src
+
+Same idea but only reject/allow on eth0, (used on the beagleboard
+reject all on eth0 but do not mess with usb0). Accept all traffic
+by default, allow incoming traffic on eth0 that is a part of a
+connection we already allowed and allow incoming ssh, drop the rest.
+
+#+begin_src sh
+  #!/bin/sh
+  /sbin/iptables -P INPUT ACCEPT
+  /sbin/iptables -P OUTPUT ACCEPT
+  /sbin/iptables -P FORWARD ACCEPT
+  
+  /sbin/iptables -A INPUT -i eth0 -m state --state ESTABLISHED,RELATED -j ACCEPT
+  /sbin/iptables -A INPUT -i eth0 -p tcp --dport 22 -j ACCEPT
+  /sbin/iptables -A INPUT -i eth0 -j DROP
+#+end_src
