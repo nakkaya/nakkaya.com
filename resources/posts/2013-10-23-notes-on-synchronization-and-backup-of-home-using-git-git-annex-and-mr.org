@@ -91,7 +91,9 @@ Repository structure,
   [annex/notes]
   checkout = git clone 'ssh://rsync/~/git-bare/notes.git' 'notes'
              cd notes/
-             enableCloud
+             git config remote.origin.annex-ignore true
+             git annex init "`hostname`"
+             git annex untrust here
              git annex enableremote "rsync-base"
   sync = git annex add .
          git annex sync
@@ -100,14 +102,10 @@ Repository structure,
          git annex sync
   pull = mr sync
   drop = git-drop-unused.hy here 0
-         git-drop-unused.hy depot 0
-  git_missing = echo "depot"
-                git annex find . --not --in depot
-                echo "rsync-base"
+  git_missing = echo "rsync-base"
                 git annex find . --not --in rsync-base
   free = true
-  ffsck = git annex fsck --fast --from depot
-          git annex fsck --fast --from rsync-base
+  ffsck = git annex fsck --fast --from rsync-base
   
   [annex/kiler]
   skip = lazy
