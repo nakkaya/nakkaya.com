@@ -59,6 +59,7 @@ Repository structure,
   git_dead = git annex dead "$@"
   git_missing = echo "Nothing todo.";true
   git_ffsck = echo "Nothing todo.";true
+  git_move = echo "Nothing todo.";true
   git_free = git annex drop .
   
   lib = 
@@ -84,7 +85,10 @@ Repository structure,
   ffsck = git annex fsck --fast --from depot
           git annex fsck --fast --from rsync-base
   free = git annex drop Binary Books Mail Papers Personal Source VMs
-  
+  move = git annex add .
+         git annex copy . --to rsync-base --not --in rsync-base
+         git annex move . --to depot --not --in depot
+         git annex sync
   
   [annex/notes]
   checkout = git clone 'ssh://rsync/~/git-bare/notes.git' 'notes'
