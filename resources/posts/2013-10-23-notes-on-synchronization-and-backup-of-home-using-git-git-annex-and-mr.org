@@ -337,6 +337,7 @@ Start asistant and webapp,
   [DEFAULT]
   git_pull = git pull origin master
   git_push = git fast-push
+  git_status = git status --short
   sync = true
   
   [source/latte]
