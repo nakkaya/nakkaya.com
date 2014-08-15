@@ -112,7 +112,7 @@ Repository structure,
   pull = mr sync
   push = mr sync
   drop = git-drop-unused.hy here 0
-         git-drop-unused.hy origin 0
+         git-drop-unused.hy base 0
   git_missing = echo "depot"
                 git annex find . --not --in base
   move = git annex add .
@@ -190,49 +190,6 @@ Drop all unused files by date,
            (if (= remote "here")
              (.annex git "dropunused" "--force" (str id))
              (.annex git "dropunused" "--force" "--from" remote (str id))))))))
-#+END_SRC
-
-*** ~/.bin/git-na-status
-
-When running /mr status/ avoid running /git status/ on direct mode annex
-repos otherwise you get a bunch of type change changes.
-
-#+BEGIN_SRC sh :tangle ~/.bin/git-na-status
-  #/bin/bash
-  
-  if [ -d ".git/annex/" ]; then
-      if `git config --get annex.direct`; then
-          git annex status
-      else
-          git status --short
-      fi
-  else
-      git status --short
-  fi
-#+END_SRC
-
-*** ~/.bin/git-pull-changes
-
-Try to avoid running /git annex get ./ (which takes a while on large
-repos) by comparing HEAD, before and after sync only try to get
-files when there are changes.
-
-#+BEGIN_SRC sh :tangle ~/.bin/git-pull-changes
-  #/bin/bash
-  
-  if [ -d '.git/annex/' ]; then
-      oldHead=`git rev-parse HEAD`
-      git annex sync;
-      newHead=`git rev-parse HEAD`
-      if [ "$oldHead" != "$newHead" ]; then
-          git annex get . --fast  --quiet
-          git annex sync
-      else
-          echo "No Change to Get..."
-      fi
-  else
-      git pull origin master
-  fi
 #+END_SRC
 
 *** ~/.bin/git-fast-push
@@ -367,76 +324,6 @@ Start asistant and webapp,
     #+BEGIN_SRC sh
       git annex initremote depot type=rsync encryption=hybrid rsyncurl=rsync:annex/repo/ keyid=ID
     #+END_SRC
-
-* /external
-
-*** .mrconfig
-
-  I have one repository called /kiler/ (means basement in Turkish)
-  which holds around 6 TB of data (OS Disks, VM Images, Tech Talks,
-  Movies, TV Shows etc.) spread over 3x2 TB USB drives and a dedicated
-  box.
-
-#+BEGIN_SRC conf :tangle ~/.external-mrconfig
-  [DEFAULT]
-  git_sync = git annex-add-sync "$@"
-  git_drop = git git-drop-unused here 0
-  git_copy = git anx-copy-to origin .
-  
-  [/Volumes/tugba/kiler]
-
-  [/Volumes/irem/kiler]
-
-  [/Volumes/imge/kiler]
-#+END_SRC
-
-*** ~/.bin/git-annex-add-sync
-
-  I just dump files into the repo on one of the disks and run /mr
-  sync/ which will add the file and sync with other drives,
-
-#+BEGIN_SRC sh :tangle ~/.bin/git-annex-add-sync
-  #/bin/bash
-  
-  if [ -d '.git/annex/' ]; then
-      oldHead=`git rev-parse HEAD`
-      git annex add .;
-      git annex sync
-      newHead=`git rev-parse HEAD`
-      if [ "$oldHead" != "$newHead" ]; then
-          for remote in ` git config --get-regexp remote.*.url | awk '{print $2}'`; do
-              (cd $remote && git annex sync)
-          done
-      else
-          true
-      fi
-  else
-      true
-  fi
-#+END_SRC
-
-*** Misc
-
-  For my copy/paste pleasure, steps for adding a new disk.
-
-#+BEGIN_SRC sh :tangle no
-  git clone ssh://base//home/nakkaya/kiler/
-  
-  DISKS="ebru damla merve yesim buse"
-  
-  for i in $DISKS; do 
-      git remote add $i ssh://ai-lab//media/nakkaya/$i/kiler/
-      git config remote.$i.annex-sync false
-  done
-  
-  git annex init "new-disk-name"
-  git annex sync
-  
-  for i in $DISKS; do 
-      cd /media/nakkaya/$i/kiler/
-      git remote add "new-disk-name" /media/nakkaya/new-disk-name/kiler/
-  done
-#+END_SRC
 
 * ~/source/
 
