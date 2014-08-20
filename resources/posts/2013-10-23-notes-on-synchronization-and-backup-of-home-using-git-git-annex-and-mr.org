@@ -89,6 +89,10 @@ Repository structure,
          git annex copy . --to rsync-base --not --in rsync-base
          git annex move . --to depot --not --in depot
          git annex sync
+  copy = git annex add .
+         git annex copy . --to rsync-base --not --in rsync-base
+         git annex copy . --to depot --not --in depot
+         git annex sync
   
   [annex/notes]
   checkout = git clone 'ssh://rsync/~/git-bare/notes.git' 'notes'
@@ -273,6 +277,37 @@ returns true, for repositories with changes or new files,
   else
       true
   fi
+#+END_SRC
+
+*** Mount / Unmount EncFS Volumes
+
+    Scripts for mounting and unmounting EncFS Volumes.
+
+#+BEGIN_SRC sh :tangle ~/.bin/git-anx-enc-mount
+  #/bin/bash
+  
+  CUR_DIR=`pwd`
+  cd "$1"
+  DIR=$(basename "$1")
+  mkdir "/Volumes/$DIR"
+  git annex unlock "."
+  encfs "$CUR_DIR/${1}" "/Volumes/$DIR"
+  cd $CUR_DIR
+#+END_SRC
+
+#+BEGIN_SRC sh :tangle ~/.bin/git-anx-enc-umount
+  #/bin/bash
+  
+  CUR_DIR=`pwd`
+  DIR=$(basename "$1")
+  if umount "/Volumes/$DIR"; then
+      rm -rf "/Volumes/$DIR"
+  fi
+  cd "$1"
+  git annex add .
+  git annex add .encfs6.xml
+  git commit -m 'Update'
+  cd $CUR_DIR
 #+END_SRC
 
 *** Webapp

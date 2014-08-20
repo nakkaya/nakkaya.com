@@ -136,28 +136,6 @@
     alias tor="~/Apps/tor/App/tor"
     
     alias bootstrap_new_machine="wget -qO- https://raw.github.com/nakkaya/nakkaya.com/master/resources/site/dotfiles/bootstrap.sh | bash"
-    
-  ga_enc_mount(){
-      CUR_DIR=`pwd`
-      cd "$1"
-      DIR=$(basename "$1")
-      mkdir "/Volumes/$DIR"
-      git annex unlock "."
-      encfs "$CUR_DIR/${1}" "/Volumes/$DIR"
-      cd $CUR_DIR
-  }
-  
-  ga_enc_umount(){
-      CUR_DIR=`pwd`
-      DIR=$(basename "$1")
-      if umount "/Volumes/$DIR"; then
-          rm -rf "/Volumes/$DIR"
-      fi
-      cd "$1"
-      git annex add .
-      git commit -m 'Update'
-      cd $CUR_DIR
-  }
 #+END_SRC
 
 Autocomplete for 'g' as well,
