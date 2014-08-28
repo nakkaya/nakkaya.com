@@ -290,6 +290,7 @@ returns true, for repositories with changes or new files,
   cd "$1"
   DIR=$(basename "$1")
   mkdir "/Volumes/$DIR"
+  git annex get .
   git annex unlock "."
   encfs "$CUR_DIR/${1}" "/Volumes/$DIR"
   cd $CUR_DIR
