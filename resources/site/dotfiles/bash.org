@@ -33,7 +33,7 @@
   PATH=$PATH:/opt/local/bin
   PATH=$PATH:/opt/local/sbin
   PATH=$PATH:/opt/local/sbin
-  PATH=$PATH:~/Apps/git-annex.linux/
+  PATH=$PATH:~/apps/git-annex.linux/
   PATH=$PATH:~/source/bash
   PATH=$PATH:~/.bin/
   PATH=$PATH:~/.bin/bin/
