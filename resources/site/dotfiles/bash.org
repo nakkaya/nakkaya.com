@@ -30,14 +30,11 @@
 #+END_SRC
 
 #+BEGIN_SRC sh :tangle ~/.bashrc
-  PATH=$PATH:/opt/local/bin
   PATH=$PATH:/usr/local/bin
-  PATH=$PATH:/opt/local/sbin
-  PATH=$PATH:/opt/local/sbin
-  PATH=$PATH:~/apps/git-annex.linux/
+  PATH=$PATH:/usr/local/sbin
+  PATH=$PATH:~/apps/git-annex.linux
   PATH=$PATH:~/source/bash
-  PATH=$PATH:~/.bin/
-  PATH=$PATH:~/.bin/bin/
+  PATH=$PATH:~/.bin
   PATH=$PATH:/Applications/git-annex.app/Contents/MacOS
   PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
   export PATH
@@ -399,6 +396,6 @@ Autocomplete for 'g' as well,
   fi
   
   if [ -d "$HOME/.bin/" ] ; then
-      PATH="$HOME/.bin/:$PATH"
+      PATH="$HOME/.bin:$PATH"
   fi
 #+END_SRC
