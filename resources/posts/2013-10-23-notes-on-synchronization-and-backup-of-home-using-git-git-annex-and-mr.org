@@ -124,6 +124,9 @@ Repository structure,
   move = git annex add .
          git annex move . --to base --not --in base
          git annex sync
+  copy = git annex add .
+         git annex copy . --to base --not --in base
+         git annex sync
 #+END_SRC
 
 *** ~/.bin/git-drop-unused.hy
