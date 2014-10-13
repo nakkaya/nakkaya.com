@@ -55,7 +55,7 @@ Repository structure,
   [DEFAULT]
   git_sync = git annex sync "$@"
   git_status = git annex status
-  git_drop = git git-drop-unused here 0
+  git_drop = git-drop-unused here 0
   git_dead = git annex dead "$@"
   git_missing = echo "Nothing todo.";true
   git_ffsck = echo "Nothing todo.";true
@@ -69,6 +69,25 @@ Repository structure,
          git annex enableremote depot
          git annex untrust here
       }
+      checkMissingFiles() {
+        echo "$1"
+        git annex find . --not --in "$1"
+      }
+      fastFsChck() {
+        git annex fsck --fast --from "$1"
+      }
+      moveTo() {
+        git annex add .
+        git annex copy . --to "$1" --not --in "$1"
+        git annex move . --to "$2" --not --in "$2"
+        git annex sync
+      }
+      copyTo() {
+        git annex add .
+        git annex copy . --to "$1" --not --in "$1"
+        git annex copy . --to "$2" --not --in "$2"
+        git annex sync
+      }
   
   [annex/documents]
   checkout = git clone 'ssh://rsync/~/git-bare/documents.git' 'documents'
@@ -76,23 +95,15 @@ Repository structure,
              enableCloud
              git annex enableremote "rsync-base"
   skip = lazy
-  drop = git-drop-unused.hy here 0
-         git-drop-unused.hy depot 0
-  git_missing = echo "depot"
-                git annex find . --not --in depot
-                echo "rsync-base"
-                git annex find . --not --in rsync-base
-  ffsck = git annex fsck --fast --from depot
-          git annex fsck --fast --from rsync-base
+  drop = git-anx-drop-unused here 0
+         git-anx-drop-unused depot 0
+  missing = checkMissingFiles depot
+            checkMissingFiles rsync-base
+  ffsck = fastFsChck depot
+          fastFsChck rsync-base
   free = git annex drop Binary Books Mail Papers Personal Source VMs
-  move = git annex add .
-         git annex copy . --to rsync-base --not --in rsync-base
-         git annex move . --to depot --not --in depot
-         git annex sync
-  copy = git annex add .
-         git annex copy . --to rsync-base --not --in rsync-base
-         git annex copy . --to depot --not --in depot
-         git annex sync
+  move = moveTo "rsync-base" "depot"
+  copy = copyTo "rsync-base" "depot"
   
   [annex/notes]
   checkout = git clone 'ssh://rsync/~/git-bare/notes.git' 'notes'
@@ -107,20 +118,18 @@ Repository structure,
          git annex copy --to rsync-base --not --in rsync-base
          git annex sync
   pull = mr sync
-  drop = git-drop-unused.hy here 0
-  git_missing = echo "rsync-base"
-                git annex find . --not --in rsync-base
+  drop = git-anx-drop-unused here 0
+  missing = checkMissingFiles "rsync-base"
   free = true
-  ffsck = git annex fsck --fast --from rsync-base
+  ffsck = fastFsChck "rsync-base"
   
   [annex/kiler]
   skip = lazy
   pull = mr sync
   push = mr sync
-  drop = git-drop-unused.hy here 0
-         git-drop-unused.hy base 0
-  git_missing = echo "depot"
-                git annex find . --not --in base
+  drop = git-anx-drop-unused here 0
+         git-anx-drop-unused base 30
+  missing = checkMissingFiles base
   move = git annex add .
          git annex move . --to base --not --in base
          git annex sync
@@ -129,11 +138,11 @@ Repository structure,
          git annex sync
 #+END_SRC
 
-*** ~/.bin/git-drop-unused.hy
+*** ~/.bin/git-anx-drop-unused
 
 Drop all unused files by date,
 
-#+BEGIN_SRC hy :tangle ~/.bin/git-drop-unused.hy :padline no
+#+BEGIN_SRC hy :tangle ~/.bin/git-anx-drop-unused :padline no
   #!/usr/bin/env hy
   
   (import  [sh [grep git perl awk ErrorReturnCode]]

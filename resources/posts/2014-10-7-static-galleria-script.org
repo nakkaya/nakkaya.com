@@ -1,0 +1,196 @@
+#+title: Static Galleria Script
+#+tags: static galleria bash
+#+EXPORT_EXCLUDE_TAGS: noexport
+
+Following is a Clojure shell script that piggy backs on the
+[[http://nakkaya.com/static.html][static.jar]] to create static image galleries using galleria and upload
+them to S3.
+
+Either tangle this file (it will tangle to ~/.bin/static-galleria) or
+copy/paste the snippets into a file on your path and make it
+executable, and update path to static.jar. This script depends on
+ImageMagick command line tools.
+
+#+BEGIN_EXAMPLE
+  bash ~/.bin/static-galleria "Photo Folder"
+#+END_EXAMPLE
+
+See [[http://nakkaya.com/photos.html][Photos]] page for example static galleries hosted on S3.
+
+#+name: header
+#+BEGIN_SRC sh
+  #^:shebang '[
+               exec java -cp "static-app.jar" clojure.main "$0" -- "$@"
+                 ]
+#+END_SRC
+
+#+name: script
+#+BEGIN_SRC clojure
+  (ns album-builder
+    (:use clojure.java.shell)
+    (:use [static io core config]))
+  
+  (defn images [in-dir]
+    (->> (map #(java.io.File. in-dir %) (.list in-dir))
+         (filter #(let [ext (org.apache.commons.io.FilenameUtils/getExtension (.toString %))]
+                    (and (.isFile %)
+                         (contains? #{"JPG" "jpg" 
+                                      "JPEG" "jpeg" 
+                                      "png" "gif"} ext))))))
+  
+  (defn prep-images [in-dir out-dir]
+    (println "Prepping Images")
+    (doall
+     (pmap (fn [f]
+             (org.apache.commons.io.FileUtils/copyFileToDirectory f out-dir)
+  
+             ;;fix orientation
+             (let [file (str out-dir "/"
+                             (->> (.toString f)
+                                  (org.apache.commons.io.FilenameUtils/getName)))] 
+               (clojure.java.shell/sh 
+                "convert" "-auto-orient" file file))) 
+           (images in-dir)))
+    
+    ;;scale originals
+    (sh "mogrify" "-geometry" "1024x" (str out-dir "/*"))
+    ;; generate thumbs
+    (sh "mkdir" (str out-dir "/thumbs"))
+    (sh "mogrify" "-thumbnail" "256x"
+        "-path" (str (str out-dir "/") "thumbs")  (str out-dir "/*")))
+  
+  (defn galleria-img-json [idx files]
+    (str
+     "
+      var data" idx " = ["
+     (reduce (fn[h v] 
+               (let [name (->> (.toString v)
+                               (org.apache.commons.io.FilenameUtils/getName)
+                               (str "./"))
+                     thumb (->> (.toString v)
+                                (org.apache.commons.io.FilenameUtils/getName)
+                                (str "./thumbs/"))]
+                 (str h 
+                      "{thumb: '" thumb "',"
+                      "image: '" name "',},")))
+             "" files)
+     "];"))
+  
+  (defn album-html [name in-dir]
+    (let [images (partition 20 20 nil (images in-dir))]
+      (list
+       [:script
+        (map-indexed (fn [idx val] (galleria-img-json idx val)) images)]
+  
+       [:div {:id "pagination"}]
+       [:div {:id "galleria"}]
+       
+       [:script "document.body.style.backgroundColor = \"#333\";
+  
+               var gallery;
+               var currentPage = 0;
+  
+               jQuery(window).load(function () {
+                  var anchor = window.location.hash.substring(6);
+                  if(anchor){
+                     $(\"#pagination\").pagination('selectPage', parseInt(anchor));
+                  }
+               });
+  
+               $( document ).ready(function() {
+                 $(function() {
+  
+               if (\"onhashchange\" in window)
+                   window.onhashchange = function () {
+                     var anchor = window.location.hash.substring(6);
+                     if(anchor)
+                        $(\"#pagination\").pagination('selectPage', parseInt(anchor));
+                     else
+                        $(\"#pagination\").pagination('selectPage', 1);
+               }
+  
+               $(\"#pagination\").pagination({
+                   items: " (count images) ",
+                   itemsOnPage: 1,
+                   cssStyle: 'dark-theme',
+                   onPageClick:function(pageNumber, event){
+                     pageNumber = pageNumber - 1;
+                     if(gallery && (currentPage != pageNumber)){
+                       gallery.load(eval(\"data\" + pageNumber));
+                       currentPage = pageNumber;
+                     }
+                   }
+               });
+           });
+         });
+    
+               Galleria.loadTheme('http://photos.nakkaya.com/galleria/themes/folio/galleria.folio.min.js');
+  
+               var dataSource = data0;
+               var anchor = window.location.hash.substring(6);
+               if(anchor){
+                 currentPage = (parseInt(anchor) - 1);
+                 dataSource = eval(\"data\" + currentPage);
+               }
+  
+               Galleria.configure({
+                   variation: 'dark',
+                   dataSource:dataSource
+               });
+  
+               Galleria.ready(function(){
+                   gallery = this;
+                   this.lazyLoadChunks(3);
+               });
+  
+               Galleria.run('#galleria',{
+                 responsive:true,
+                 height:1,
+                 debug:true,
+                 preload:2
+               });"])))
+  
+  (defn dump-album [album-name in-dir out-dir]
+    (prep-images in-dir out-dir)
+    (static.io/write-out-dir 
+     (str album-name "/index.html")
+     (hiccup.core/html
+      [:html
+       [:head
+        [:title (org.apache.commons.io.FilenameUtils/getName (str in-dir))]
+        ;;(org.apache.commons.io.FilenameUtils/getFullPathNoEndSeparator in-dir)
+        [:script {:src "http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.js"}]
+        [:script {:src "http://photos.nakkaya.com/galleria/galleria-1.3.5.min.js"}]
+        [:script {:src "http://photos.nakkaya.com/simplepagination/js/jquery.simplePagination.js"}]
+        [:link {:href "http://photos.nakkaya.com/simplepagination/css/simplePagination.css"
+                :type "text/css"
+                :rel "stylesheet"}]]
+       [:body
+        [:div
+         (album-html album-name in-dir)]]])))
+  
+  (def in-dir (second *command-line-args*))
+  (def album-name (.toString (java.util.UUID/randomUUID)))
+  
+  (set!-config :out-dir "./")
+  (println "Building " album-name)
+  (println "In Dir:" in-dir)
+  (dump-album album-name (java.io.File. in-dir) (java.io.File. album-name))
+  
+  (when (> (count *command-line-args*) 2)
+    (println "Uploading...")
+    (clojure.java.shell/sh 
+     "s3cmd" "sync" "--delete" "--acl-public" 
+     (str album-name "/") (str (nth *command-line-args* 2) "/" album-name "/")))
+  
+  (shutdown-agents)
+  
+  ;;$('.galleria-container').height($('#galleria').height());
+#+END_SRC
+
+* File                                                             :noexport:
+
+#+BEGIN_SRC sh :noweb yes :mkdirp yes :tangle ~/.bin/static-galleria
+  <<header>>
+  <<script>>
+#+END_SRC
