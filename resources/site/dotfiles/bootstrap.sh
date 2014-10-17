@@ -1,6 +1,9 @@
 case "$OSTYPE" in
     linux-gnu)
-            EMACS=/usr/bin/emacs
+            case $HOSTNAME in
+                (base) EMACS=/home/nakkaya/apps/emacs/bin/emacs;;
+                (*)   EMACS=/usr/bin/emacs;;
+            esac
         ;;
     darwin*)
             EMACS=/Applications/Emacs.app/Contents/MacOS/Emacs
