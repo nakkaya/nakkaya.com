@@ -148,6 +148,12 @@ Save to org-mode Read Later Tree,
   EOF
 #+END_SRC
 
+Rename tab,
+
+#+BEGIN_SRC fundamental :mkdirp yes :tangle ~/.pentadactylrc
+  :com tabrename -nargs=1 -literal=0 -js content.document.title = args[0];
+#+END_SRC
+
 GMail settings,
 
 #+BEGIN_SRC fundamental :mkdirp yes :tangle ~/.pentadactylrc  
