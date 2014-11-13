@@ -90,7 +90,7 @@ myLayutHook = smartBorders $ lessBorders OnlyFloat $  avoidStruts $ layoutHook d
                   , ((mod4Mask, xK_F11 ), spawn "amixer -D pulse set Master 3%-")
                   , ((mod4Mask, xK_F12 ), spawn "amixer -D pulse set Master 3%+")
                   , ((mod4Mask, xK_s), goToSelected defaultGSConfig)
-                  , ((mod4Mask, xK_g), spawnSelected defaultGSConfig ["emacs","firefox","rhythmbox","gnome-control-center sound","gnome-control-center","virtualbox","google-chrome --incognito"])
+                  , ((mod4Mask, xK_g), spawnSelected defaultGSConfig ["emacs","iceweasel","virtualbox"])
                   , ((mod4Mask, xK_z), warpToWindow (1/2) (1/2)) -- @@ Move pointer to currently focused window
                   , ((mod4Mask, xK_a),     toggleWS)
                   ]
@@ -148,13 +148,13 @@ xmobarrc File,
   }
   
   killAll xmobar
-  killAll trayer
+  #killAll trayer
   killAll nm-applet
   killAll bluetooth-applet
   killAll keynav
   
   #/usr/bin/xmobar ~/.xmobarrc &
-  /usr/bin/trayer --edge top --align right --SetDockType true --widthtype percent --width 5 --transparent true --tint 0x000000 --height 20 &
+  #/usr/bin/trayer --edge top --align right --SetDockType true --widthtype percent --width 5 --transparent true --tint 0x000000 --height 20 &
   ~/.bin/caps-setup &
   ~/.bin/disable-touch-tap &
   nm-applet &
