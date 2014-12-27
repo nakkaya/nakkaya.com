@@ -282,7 +282,7 @@ Autocomplete for 'g' as well,
                   echo "Already Mounted"
               fi
               mkdir $mount_point
-              mount_command="sshfs $2:/ $mount_point -oauto_cache,reconnect,compression=no,follow_symlinks,Ciphers=arcfour"
+              mount_command="sshfs $2:/ $mount_point -oauto_cache,reconnect,compression=no,Ciphers=arcfour"
               if [ ! -z $3 ]
               then
                   echo "Port $3"
