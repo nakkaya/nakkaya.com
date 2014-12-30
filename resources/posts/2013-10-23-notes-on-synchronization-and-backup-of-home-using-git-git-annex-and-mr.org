@@ -144,20 +144,20 @@ Drop all unused files by date,
 
 #+BEGIN_SRC hy :tangle ~/.bin/git-anx-drop-unused :padline no
   #!/usr/bin/env hy
-  
+
   (import  [sh [grep git perl awk ErrorReturnCode]]
            [re [split]]
            [datetime [datetime date]]
            [sys])
-  
+
   (def remote (if (>= (len sys.argv) 2)
                 (second sys.argv)
                 "here"))
-  
+
   (def drop-age (if (= (len sys.argv) 3)
                   (int (nth sys.argv 2))
                   180))
-  
+
   (defn unused-files []
     (let [[files (try 
                   (-> (.annex git "unused" "--from" remote)
@@ -176,7 +176,7 @@ Drop all unused files by date,
                              list)]]
       (print "Unused files: " (len unused-files))
       unused-files))
-  
+
   (defn last-seen [file]
     (let [[key (second file)]]
       (->> (git "--no-pager" "log" "-1" "-S" key "--pretty=format:%at")
@@ -184,13 +184,13 @@ Drop all unused files by date,
            (split "\n")
            (map (fn [x] (.fromtimestamp datetime (float x))))
            first)))
-  
+
   (defn age [file]
     (let [[delta (- (.today datetime) (last-seen file))]]
       delta.days))
-  
+
   (print "Dropping " remote)
-  
+
   (if (= drop-age 0)
     (for [file (unused-files)]
       (let [[id (first file)]]
@@ -200,7 +200,9 @@ Drop all unused files by date,
           (.annex git "dropunused" "--force" "--from" remote (str id)))))
     (for [file (unused-files)]
       (let [[id (first file)]
-            [file-age (age file)]]
+            [file-age (try 
+                       (age file)
+                       (catch [e Exception] -1))]]
         
         (if (>= file-age drop-age)
           (do 
