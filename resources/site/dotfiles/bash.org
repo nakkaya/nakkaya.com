@@ -33,9 +33,8 @@
   PATH=$PATH:/usr/local/bin
   PATH=$PATH:/usr/local/sbin
   PATH=$PATH:~/apps/git-annex.linux
-  PATH=$PATH:~/source/bash
-  PATH=$PATH:~/.bin
   PATH=$PATH:/Applications/git-annex.app/Contents/MacOS
+  PATH=$PATH:~/.bin
   PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
   export PATH
   
@@ -379,10 +378,6 @@ Autocomplete for 'g' as well,
       *)
               ;;
   esac
-#+END_SRC
-
-#+BEGIN_SRC sh :mkdirp yes :tangle ~/.bin/base
-  /usr/bin/chromium-browser --app=https://base.nakkaya.com/
 #+END_SRC
 
 #+BEGIN_SRC sh :tangle ~/.profile
