@@ -218,13 +218,12 @@ Autocomplete for 'g' as well,
           alias emacs="TERM=xterm-256color emacsclient -t || TERM=xterm-256color emacs -nw"
           ;;
       darwin*)
-          alias ls="ls -aG"
+          alias ls="ls -aG --color"
           alias emacs="env TERM=xterm-256color /Applications/Emacs.app/Contents/MacOS/Emacs -nw"
-          export CLOJURESCRIPT_HOME=/Users/nakkaya/Dropbox/kiler/clojurescript/
-          alias open="open"
+          export EDITOR=/Applications/Emacs.app/Contents/MacOS/bin/emacsclient
           ;;
   esac
-  
+
   HOST=$(hostname)
    
   if [ "${HOST}" == "kocatepe" ]; then
