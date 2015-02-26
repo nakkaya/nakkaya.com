@@ -55,18 +55,15 @@ Repository structure,
   [DEFAULT]
   git_sync = git annex sync "$@"
   git_status = git annex status
-  git_drop = git-drop-unused here 0
-  git_dead = git annex dead "$@"
   git_missing = echo "Nothing todo.";true
   git_ffsck = echo "Nothing todo.";true
-  git_move = echo "Nothing todo.";true
-  git_free = git annex drop .
+  git_free = git annex unused; git annex move --unused --to cloud
   
   lib = 
       enableCloud() {
          git config remote.origin.annex-ignore true
          git annex init "`hostname`"
-         git annex enableremote depot
+         git annex enableremote cloud
          git annex untrust here
       }
       checkMissingFiles() {
@@ -76,66 +73,24 @@ Repository structure,
       fastFsChck() {
         git annex fsck --fast --from "$1"
       }
-      moveTo() {
-        git annex add .
-        git annex copy . --to "$1" --not --in "$1"
-        git annex move . --to "$2" --not --in "$2"
-        git annex sync
-      }
-      copyTo() {
-        git annex add .
-        git annex copy . --to "$1" --not --in "$1"
-        git annex copy . --to "$2" --not --in "$2"
-        git annex sync
-      }
   
   [annex/documents]
   checkout = git clone 'ssh://rsync/~/git-bare/documents.git' 'documents'
              cd documents/
              enableCloud
-             git annex enableremote "rsync-base"
   skip = lazy
-  drop = git-anx-drop-unused here 0
-         git-anx-drop-unused depot 0
-  missing = checkMissingFiles depot
-            checkMissingFiles rsync-base
-  ffsck = fastFsChck depot
-          fastFsChck rsync-base
-  free = git annex drop Binary Books Mail Papers Personal Source VMs
-  move = moveTo "rsync-base" "depot"
-  copy = copyTo "rsync-base" "depot"
+  missing = checkMissingFiles cloud
+  ffsck = fastFsChck here
+          fastFsChck cloud
   
   [annex/notes]
   checkout = git clone 'ssh://rsync/~/git-bare/notes.git' 'notes'
              cd notes/
-             git config remote.origin.annex-ignore true
-             git annex init "`hostname`"
-             git annex untrust here
-             git annex enableremote "rsync-base"
-  sync = git annex add .
-         git annex sync
-         git annex get .
-         git annex copy --to rsync-base --not --in rsync-base
-         git annex sync
-  pull = mr sync
-  drop = git-anx-drop-unused here 0
-  missing = checkMissingFiles "rsync-base"
-  free = true
-  ffsck = fastFsChck "rsync-base"
-  
-  [annex/kiler]
-  skip = lazy
-  pull = mr sync
-  push = mr sync
-  drop = git-anx-drop-unused here 0
-         git-anx-drop-unused base 30
-  missing = checkMissingFiles base
-  move = git annex add .
-         git annex move . --to base --not --in base
-         git annex sync
-  copy = git annex add .
-         git annex copy . --to base --not --in base
-         git annex sync
+             enableCloud
+
+  missing = checkMissingFiles cloud
+  ffsck = fastFsChck here
+          fastFsChck cloud
 #+END_SRC
 
 *** ~/.bin/git-anx-drop-unused
@@ -332,18 +287,11 @@ each OS (Linux,OS X) then mv one to correct location,
 
 #+BEGIN_SRC conf :tangle ~/.config/git-annex/autostart-linux :mkdirp yes
   /home/nakkaya/annex/notes
-  /home/nakkaya/annex/music
-  /home/nakkaya/annex/wallet
-  /home/nakkaya/annex/photos
-  /home/nakkaya/annex/old-code
   /home/nakkaya/annex/documents
 #+END_SRC
 
 #+BEGIN_SRC conf :tangle ~/.config/git-annex/autostart-osx :mkdirp yes
   /Users/nakkaya/annex/notes
-  /Users/nakkaya/annex/music
-  /Users/nakkaya/annex/wallet
-  /Users/nakkaya/annex/photos
   /Users/nakkaya/annex/documents
 #+END_SRC
 
@@ -361,12 +309,12 @@ Start asistant and webapp,
       git annex initremote mobile type=directory directory=/path/to/annex/repo/ encryption=hybrid keyid=ID embedcreds=yes
     #+END_SRC
 
-    Setup encrypted annex S3 remote,
+    Setup encrypted annex S3 remote in EU (Ireland) (eu-west-1),
 
     #+BEGIN_SRC sh
       export AWS_ACCESS_KEY_ID="KID"
       export AWS_SECRET_ACCESS_KEY="SKEY"
-      git annex initremote cloud type=S3 encryption=hybrid keyid=ID embedcreds=yes
+      git annex initremote cloud type=S3 encryption=hybrid keyid=ID embedcreds=yes datacenter=eu-west-1 chunk=250MiB
       git setup-bitbucket
       git config remote.origin.annex-ignore true
     #+END_SRC
