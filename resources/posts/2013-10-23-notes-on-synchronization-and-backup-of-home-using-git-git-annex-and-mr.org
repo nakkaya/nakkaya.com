@@ -353,6 +353,10 @@ Start asistant and webapp,
   [source/clodiuno]
   checkout = git clone 'git@github.com:nakkaya/clodiuno.git' 'clodiuno'
   skip=lazy
+
+  [source/windowCleaner]
+  checkout = git clone 'git@bitbucket.org:nakkaya/windowcleaner.git' 'windowCleaner'
+  skip=lazy
   
   [source/easy-dns]
   checkout = git clone 'git@github.com:nakkaya/easy-dns.git' 'easy-dns'
