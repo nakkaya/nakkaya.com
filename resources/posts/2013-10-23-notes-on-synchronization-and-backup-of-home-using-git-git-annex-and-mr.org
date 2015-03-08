@@ -53,12 +53,13 @@ Repository structure,
 
 #+BEGIN_SRC conf :tangle ~/annex/.mrconfig-annex
   [DEFAULT]
-  git_sync = git annex sync "$@"
+  #git_sync = git annex sync "$@"
+  git_sync = git annex add .;git annex sync --content
   git_status = git annex status
   git_missing = echo "Nothing todo.";true
   git_ffsck = echo "Nothing todo.";true
   git_free = git annex unused; git annex move --unused --to cloud
-  
+
   lib = 
       enableCloud() {
          git config remote.origin.annex-ignore true
@@ -73,7 +74,7 @@ Repository structure,
       fastFsChck() {
         git annex fsck --fast --from "$1"
       }
-  
+
   [annex/documents]
   checkout = git clone 'ssh://rsync/~/git-bare/documents.git' 'documents'
              cd documents/
@@ -82,7 +83,7 @@ Repository structure,
   missing = checkMissingFiles cloud
   ffsck = fastFsChck here
           fastFsChck cloud
-  
+
   [annex/notes]
   checkout = git clone 'ssh://rsync/~/git-bare/notes.git' 'notes'
              cd notes/
