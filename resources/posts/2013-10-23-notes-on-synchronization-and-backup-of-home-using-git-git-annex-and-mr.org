@@ -320,6 +320,12 @@ Start asistant and webapp,
       git config remote.origin.annex-ignore true
     #+END_SRC
 
+    Setup encrypted annex S3 remote in Google Cloud Storage,
+
+    #+BEGIN_SRC sh
+      git annex initremote cloud type=S3 encryption=hybrid keyid=ID embedcreds=yes host=storage.googleapis.com port=80 chunk=250MiB
+    #+END_SRC
+
     Setup encrypted annex rsync remote,
 
     #+BEGIN_SRC sh
