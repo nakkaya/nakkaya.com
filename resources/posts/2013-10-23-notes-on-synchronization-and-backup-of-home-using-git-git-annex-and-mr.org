@@ -79,6 +79,9 @@ Repository structure,
              enableCloud
   skip = lazy
   missing = checkMissingFiles cloud
+            cd Photos
+            checkMissingFiles mini
+            checkMissingFiles "bizdik.local"
   ffsck = fastFsChck here
           fastFsChck cloud
 
