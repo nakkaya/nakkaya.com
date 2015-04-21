@@ -57,6 +57,7 @@ Repository structure,
   git_missing = echo "Nothing todo.";true
   git_ffsck = echo "Nothing todo.";true
   git_free = git annex unused; git annex move --unused --to cloud
+  git_gc = git repack -ad; git gc
 
   lib = 
       enableCloud() {
