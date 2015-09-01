@@ -196,11 +196,16 @@ Additional hints,
   /*     .side{ display: none !important; } */
   /*     .md { max-width: 100% ! important;} */
   /* } */
-  
+
+  @-moz-document domain("10.1.2.50") {
+      #jwplayer_wrapper,#media_control{width:100% !important;}
+      #jwplayer_wrapper{height:75% !important;}
+  }
+
   @-moz-document domain("youtube.com") {
       #confirmBox.yt-alert-default.yt-alert-warn{ display: none !important; }
   }
-  
+
   @-moz-document domain("google.com.tr"), domain("google.com"), domain("google.de"){
       #gbzw,       /* links */
       #gbx3, #gbx4, /* background */
@@ -208,53 +213,53 @@ Additional hints,
       {
           display: none !important;
       }
-  
+
       #gbq, #gbu,  /* controls */
       #gbx1, #gbx2 /* background */
       {
           top: 0 !important;
       }
-  
+
       /* remove google plus  */
       ol.gbtc { display: none ! important;}
       /* remove safe search button */
       a#abar_button_ss.ab_button { display: none ! important;}
   }
-  
+
   @-moz-document url-prefix("https://mail.google.com/"){
       #gbzw,       /* links */
       #gbx3, #gbx4 /* background */
       {
           display: none;
       }
-  
+
       #gbq, #gbu,  /* controls */
       #gbx1, #gbx2 /* background */
       {
           top: 0 !important;
       }
-  
+
       /* Bar container */
       #gb {
           height: 72px !important;
       }
-  
+
       /* Share pop-up content */
       #gbwc.gbmwca {
           top: -29px;
       }
-  
+
       /* remove google plus shit  */
       ol.gbtc { display: none ! important;}
-  
+
       /* get rid of copy right */
       div.wIFnie { display: none !important; }
-  
+
       /* Remove people widget completely */
       .nH.adC {
           display: none ! important;
       }
-  
+
       .yPPMxf, .nH.adC, .qHcrae, .y3, .y4 {
           width: 0 ! important;
       }
@@ -265,20 +270,20 @@ Additional hints,
           font-size: 14px ! important;
           font-family: monospace ! important;
       }
-  
+
       td.Bu.y3
       {
           display: none !important;
       }
   }
-  
+
   @-moz-document domain("www.facebook.com") {
       #rightCol{ display: none !important; }
       #appsNav{ display: none !important; }
       #pagesNav{ display: none !important; }
       .fbChatSidebar,#fbDockChatBuddylistNub{ display: none !important; }
   }
-  
+
   @-moz-document domain("twitter.com") {
       div.module.trends{ display: none !important; }
       div.module.site-footer{ display: none !important; }
@@ -286,16 +291,16 @@ Additional hints,
       div.global-nav{ display: none !important; }
       .wrapper.white { background: none !important;}
   }
-  
+
   @-moz-document domain("facebook.com") {
       /** Set Background color for page **/
       .fbIndex { background-color: #3B5998 !important }
-  
+
       /** Hide Crap **/
       .fbIndex #globalContainer #dropmenu_container,
       .fbIndex #globalContainer #content,
       .fbIndex #globalContainer #pageFooter { display: none !important }
-  
+
       /** Center Login Bar **/
       .fbIndex .loggedout_menubar_container {
           position: fixed !important;
@@ -308,7 +313,7 @@ Additional hints,
           margin-left: -210px !important;
           z-index: -1 !important;
       }
-  
+
       /** Center Login form **/
       .fbIndex .loggedout_menubar { width: auto !important }
       .fbIndex .loggedout_menubar_container .lfloat,
@@ -317,12 +322,12 @@ Additional hints,
       .fbIndex .loggedout_menubar_container .rfloat #login_form table { display: block !important; margin: 0 auto !important }
       .fbIndex .loggedout_menubar_container .lfloat i { display: block !important; margin: -70px auto 20px !important; }
       .fbIndex .loggedout_menubar_container .sp_69c1xs { display: block !important; }
-  
+
       /** Hide Homepage Box **/
       #SetAsHomepage_Callout {
           display: none;
       }
-  
+
       /** Reset bluBar z-index **/
       .fbIndex div#blueBar {
           z-index: 0 !important;
@@ -330,71 +335,71 @@ Additional hints,
           box-shadow: none !important;
       }
   }
-  
+
   @-moz-document domain(news.ycombinator.com) {
     p { word-break: break-all; }
     
     #non-existent-id {}
-  
+
     #csres { display: none; }
-  
+
     .title {
       font-size: 120% !important;
     }
-  
+
     .subtext {
       font-size: 90% !important;
     }
-  
+
     ,* {
       font-family: Helvetica !important;
       line-height: 1.4 !important;
     }
-  
+
     body {
       padding: 10px !important;
       background: #F6F6EF;
     }
-  
+
     body > center > table {
       width: 100% !important;
     }
-  
+
     body > center > table > tbody > tr:first-child > td {
       font-size: 120%;
       -moz-border-radius: 5px;
       -moz-box-shadow: 0 0 10px rgba(0,0,0,0.5);
     }
-  
+
     .title a {
       font-family: Museo !important;
     }
-  
+
     .title a:visited {
       color: #666 !important;
     }
-  
+
     .comment,
     .comhead {
       font-size: 120% !important;
     }
-  
+
     .title .comhead {
       font-size: 85% !important;
     }
-  
+
     .pagetop {
       display: block;
       padding: 6px 0 4px;
       font-size: 110% !important;
     }
-  
+
     .pagetop a {
       font-family: Helvetica !important;
       color: rgba(0,0,0,0.6) !important;
       font-size: 110% !important;
     }
-  
+
     img[src=http\:\/\/ycombinator\.com\/images\/y18\.gif] {
       margin: 0 2px 0 5px;
     }
