@@ -197,9 +197,12 @@ Additional hints,
   /*     .md { max-width: 100% ! important;} */
   /* } */
 
-  @-moz-document domain("10.1.2.50") {
+  @-moz-document domain("10.1.2.50"), domain("127.0.0.1") {
       #jwplayer_wrapper,#media_control{width:100% !important;}
       #jwplayer_wrapper{height:75% !important;}
+      #progress_slider{width:99% !important;
+                       height: 10px !important;}
+      .ui-slider .ui-slider-handle {height: 15px !important;}
   }
 
   @-moz-document domain("youtube.com") {
