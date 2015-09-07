@@ -409,11 +409,7 @@ Start asistant and webapp,
   checkout = git clone 'ssh://rsync/~/git-bare/doganilic.com.git' 'doganilic.com'
   skip=lazy
   
-  [source/coin-trader]
-  checkout = git clone 'ssh://rsync/~/git-bare/coin-trader.git' 'coin-trader'
-  skip=lazy
-  
-  [source/vehicle-tracking]
-  checkout = git clone 'git@gitlab.neu.edu.tr:nakkaya/vehicle-tracking.git' 'vehicle-tracking'
+  [source/ansible-storage]
+  checkout = git clone 'git@bitbucket.org:nakkaya/ansible-storage.git' 'ansible-storage'
   skip=lazy
 #+END_SRC
