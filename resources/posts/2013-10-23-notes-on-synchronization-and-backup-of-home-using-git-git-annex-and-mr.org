@@ -75,7 +75,7 @@ Repository structure,
       }
 
   [annex/documents]
-  checkout = git clone 'ssh://rsync/~/git-bare/documents.git' 'documents'
+  checkout = git clone 'https://git.nakkaya.com/git/nakkaya/annex-documents.git' 'documents'
              cd documents/
              enableCloud
   skip = lazy
@@ -87,7 +87,7 @@ Repository structure,
           fastFsChck cloud
 
   [annex/notes]
-  checkout = git clone 'ssh://rsync/~/git-bare/notes.git' 'notes'
+  checkout = git clone 'https://git.nakkaya.com/git/nakkaya/annex-notes.git' 'notes'
              cd notes/
              enableCloud
 
@@ -348,7 +348,7 @@ Start asistant and webapp,
   sync = true
   
   [source/latte]
-  checkout = git clone 'ssh://11837@rsync/~/latte.git' 'latte'
+  checkout = git clone 'https://git.nakkaya.com/git/nakkaya/latte.git' 'latte'
   skip=lazy
   
   [source/alter-ego]
@@ -364,7 +364,7 @@ Start asistant and webapp,
   skip=lazy
 
   [source/windowCleaner]
-  checkout = git clone 'git@bitbucket.org:nakkaya/windowcleaner.git' 'windowCleaner'
+  checkout = git clone 'https://git.nakkaya.com/git/nakkaya/windowCleaner.git' 'windowCleaner'
   skip=lazy
   
   [source/easy-dns]
@@ -390,7 +390,7 @@ Start asistant and webapp,
   skip=lazy
   
   [source/neu-islanders]
-  checkout = git clone 'ssh://11837@rsync/~/neu-islanders.git' 'neu-islanders'
+  checkout = git clone 'https://git.nakkaya.com/git/nakkaya/neu-islanders.git' 'neu-islanders'
   skip=lazy
   
   [source/pid]
@@ -406,10 +406,22 @@ Start asistant and webapp,
   skip=lazy
   
   [source/doganilic.com]
-  checkout = git clone 'ssh://rsync/~/git-bare/doganilic.com.git' 'doganilic.com'
+  checkout = git clone 'https://git.nakkaya.com/git/nakkaya/doganilic.com.git' 'doganilic.com'
+  skip=lazy
+
+  [source/ansible-docker-build]
+  checkout = git clone 'https://git.nakkaya.com/git/nakkaya/ansible-docker-build.git' 'ansible-docker-build'
   skip=lazy
   
   [source/ansible-storage]
-  checkout = git clone 'git@bitbucket.org:nakkaya/ansible-storage.git' 'ansible-storage'
+  checkout = git clone 'https://git.nakkaya.com/git/nakkaya/ansible-storage.git' 'ansible-storage'
+  skip=lazy
+
+  [source/ansible-base]
+  checkout = git clone 'https://git.nakkaya.com/git/nakkaya/ansible-base.git' 'ansible-base'
+  skip=lazy
+
+  [source/ansible-backup]
+  checkout = git clone 'https://git.nakkaya.com/git/nakkaya/ansible-backup.git' 'ansible-backup'
   skip=lazy
 #+END_SRC
