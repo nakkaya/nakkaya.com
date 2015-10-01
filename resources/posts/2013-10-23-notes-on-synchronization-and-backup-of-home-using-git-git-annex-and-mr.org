@@ -75,7 +75,7 @@ Repository structure,
       }
 
   [annex/documents]
-  checkout = git clone 'https://git.nakkaya.com/git/nakkaya/annex-documents.git' 'documents'
+  checkout = git clone 'ssh://git.nakkaya.com/nakkaya/annex-documents.git' 'documents'
              cd documents/
              enableCloud
   skip = lazy
@@ -87,7 +87,7 @@ Repository structure,
           fastFsChck cloud
 
   [annex/notes]
-  checkout = git clone 'https://git.nakkaya.com/git/nakkaya/annex-notes.git' 'notes'
+  checkout = git clone 'ssh://git.nakkaya.com/nakkaya/annex-notes.git' 'notes'
              cd notes/
              enableCloud
 
