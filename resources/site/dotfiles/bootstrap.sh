@@ -16,7 +16,6 @@ function tangleFile(){
     $EMACS -Q --batch \
         --eval "(progn
                   (require 'org)
-                  (require 'org-exp)
                   (require 'ob)
                   (require 'ob-tangle)
                   (find-file \"${2}.org\")
