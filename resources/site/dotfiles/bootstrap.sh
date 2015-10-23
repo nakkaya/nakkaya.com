@@ -60,7 +60,7 @@ echo "(load-file \"~/source/emacs/init.el\")" > ~/.emacs
 # Linux Apps
 #
 
-#sudo apt-get update;sudo apt-get upgrade;sudo apt-get install emacs24 xmonad trayer vlc cmus git bash-completion feh rxvt-unicode-256color offlineimap gnupg lm-sensors build-essential ubuntu-restricted-extras vilistextum graphviz openjdk-6-jdk keynav tmux sysstat xsel python-pip;sudo pip install hy;sudo pip install sh
+#sudo apt-get update;sudo apt-get upgrade;sudo apt-get install emacs24 org-mode vlc cmus git bash-completion rxvt-unicode-256color gnupg build-essential ubuntu-restricted-extras openjdk-7-jdk tmux xsel python-pip;sudo pip install hy;sudo pip install sh
 
 #
 # OS X Apps
