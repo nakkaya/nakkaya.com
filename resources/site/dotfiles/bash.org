@@ -33,6 +33,8 @@
   PATH=$PATH:/usr/local/bin
   PATH=$PATH:/usr/local/sbin
   PATH=$PATH:~/apps/git-annex.linux
+  PATH=$PATH:~/apps/dust
+  PATH=$PATH:~/apps/pixie
   PATH=$PATH:/Applications/git-annex.app/Contents/MacOS
   PATH=$PATH:~/.bin
   PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
