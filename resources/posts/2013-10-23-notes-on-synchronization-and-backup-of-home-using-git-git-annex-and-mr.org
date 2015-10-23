@@ -63,7 +63,6 @@ Repository structure,
       enableCloud() {
          git config remote.origin.annex-ignore true
          git annex init "`hostname`"
-         git annex enableremote cloud
          git annex untrust here
       }
       checkMissingFiles() {
@@ -78,6 +77,7 @@ Repository structure,
   checkout = git clone 'ssh://git.nakkaya.com/nakkaya/annex-documents.git' 'documents'
              cd documents/
              enableCloud
+             git annex enableremote cloud
   skip = lazy
   missing = checkMissingFiles cloud
             cd Photos
@@ -90,6 +90,7 @@ Repository structure,
   checkout = git clone 'ssh://git.nakkaya.com/nakkaya/annex-notes.git' 'notes'
              cd notes/
              enableCloud
+             git annex enableremote cloud-s3-ia
 
   missing = checkMissingFiles cloud
   ffsck = fastFsChck here
