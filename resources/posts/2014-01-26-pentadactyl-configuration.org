@@ -142,6 +142,12 @@ Save to org-mode Read Later Tree,
 #+BEGIN_SRC fundamental :mkdirp yes :tangle ~/.pentadactylrc
   command read-later -description "Execute emacsclient" -javascript <<EOF
           var emacsClient = "/Applications/Emacs.app/Contents/MacOS/bin/emacsclient";
+          var osString = Components.classes["@mozilla.org/xre/app-info;1"]  
+                         .getService(Components.interfaces.nsIXULRuntime).OS;
+
+          if(osString == "Linux")
+            emacsClient = "/home/nakkaya/apps/emacs/bin/emacsclient"
+
           var url = "\"org-protocol://capture://l/"+ encodeURIComponent(content.location) + "/"+ encodeURIComponent(content.document.title) +"/" + encodeURIComponent(content.window.getSelection()) + "\"";
           var command = emacsClient + " " + url;
           CommandExMode().open("!" + command);
