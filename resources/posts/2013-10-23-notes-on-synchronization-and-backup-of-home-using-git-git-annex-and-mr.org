@@ -60,7 +60,7 @@ Repository structure,
   git_gc = git repack -ad; git gc
 
   lib = 
-      enableCloud() {
+      initAnnex() {
          git config remote.origin.annex-ignore true
          git annex init "`hostname`"
          git annex untrust here
@@ -76,7 +76,7 @@ Repository structure,
   [annex/documents]
   checkout = git clone 'ssh://git.nakkaya.com/nakkaya/annex-documents.git' 'documents'
              cd documents/
-             enableCloud
+             initAnnex
              git annex enableremote cloud
   skip = lazy
   missing = checkMissingFiles cloud
@@ -89,8 +89,8 @@ Repository structure,
   [annex/notes]
   checkout = git clone 'ssh://git.nakkaya.com/nakkaya/annex-notes.git' 'notes'
              cd notes/
-             enableCloud
-             git annex enableremote cloud-s3-ia
+             initAnnex
+             git annex enableremote base-transfer
 
   missing = checkMissingFiles cloud
   ffsck = fastFsChck here
