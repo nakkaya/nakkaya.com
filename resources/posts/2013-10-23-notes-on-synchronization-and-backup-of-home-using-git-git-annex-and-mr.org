@@ -56,7 +56,7 @@ Repository structure,
   git_status = git annex status
   git_missing = echo "Nothing todo.";true
   git_ffsck = echo "Nothing todo.";true
-  git_free = git annex unused; git annex move --unused --to cloud
+  git_free = git annex unused; git annex move --unused --to storage-box
   git_gc = git repack -ad; git gc
 
   lib = 
@@ -80,21 +80,24 @@ Repository structure,
              git annex enableremote cloud
   skip = lazy
   missing = checkMissingFiles cloud
-            cd Photos
-            checkMissingFiles mini
-            checkMissingFiles "bizdik.local"
+            checkMissingFiles storage-box
+
   ffsck = fastFsChck here
           fastFsChck cloud
+          fastFsChck storage-box
 
   [annex/notes]
   checkout = git clone 'ssh://git.nakkaya.com/nakkaya/annex-notes.git' 'notes'
              cd notes/
              initAnnex
              git annex enableremote base-transfer
+             git annex enableremote storage-box
+             git annex direct
+             git annex get .
 
-  missing = checkMissingFiles cloud
+  missing = checkMissingFiles storage-box
   ffsck = fastFsChck here
-          fastFsChck cloud
+          fastFsChck storage-box
 #+END_SRC
 
 *** ~/.bin/git-anx-drop-unused
