@@ -357,10 +357,6 @@ Start asistant and webapp,
   [source/clodiuno]
   checkout = git clone 'git@github.com:nakkaya/clodiuno.git' 'clodiuno'
   skip=lazy
-
-  [source/windowCleaner]
-  checkout = git clone 'https://git.nakkaya.com/git/nakkaya/windowCleaner.git' 'windowCleaner'
-  skip=lazy
   
   [source/easy-dns]
   checkout = git clone 'git@github.com:nakkaya/easy-dns.git' 'easy-dns'
@@ -386,10 +382,6 @@ Start asistant and webapp,
   
   [source/neu-islanders]
   checkout = git clone 'https://git.nakkaya.com/git/nakkaya/neu-islanders.git' 'neu-islanders'
-  skip=lazy
-  
-  [source/pid]
-  checkout = git clone 'git@github.com:nakkaya/pid.git' 'pid'
   skip=lazy
   
   [source/static]
@@ -418,5 +410,9 @@ Start asistant and webapp,
 
   [source/ansible-backup]
   checkout = git clone 'https://git.nakkaya.com/git/nakkaya/ansible-backup.git' 'ansible-backup'
+  skip=lazy
+
+  [source/control-toolbox]
+  checkout = git clone 'https://git.nakkaya.com/git/nakkaya/control-toolbox.git' 'control-toolbox'
   skip=lazy
 #+END_SRC
