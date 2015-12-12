@@ -30,7 +30,6 @@ Setup key bindings,
 
 #+BEGIN_SRC fundamental :tangle ~/.tmux.conf
   bind t source-file ~/.tmux-over-ssh.conf
-  bind g source-file ~/.tmux-annex-sync.conf
   bind k confirm kill-window
   bind K confirm kill-server
 
@@ -61,9 +60,9 @@ scroll back the tmux scrollback buffer.
 Status bar,
 
 #+BEGIN_SRC fundamental :tangle ~/.tmux.conf
-  set-option -g  status-interval 1
+  set-option -g status-interval 60
   set-option -g status-right-length 120
-  set -g status-right '#(~/.tmux-monitor-scripts/cpu.sh)#(~/.tmux-monitor-scripts/cpu_avg_temp.sh)#(~/.tmux-monitor-scripts/disk.sh)#(~/.tmux-monitor-scripts/netspeed eth0)#(~/.tmux-monitor-scripts/battery.sh)#(date +"%a %b %_d %H:%M") | #(hostname)'
+  set -g status-right '#(date +"%a %b %_d %H:%M") | #(hostname)'
 #+END_SRC
 
 Create a new window, swtich to home directory and type tmux-ssh,
@@ -72,13 +71,6 @@ Create a new window, swtich to home directory and type tmux-ssh,
   neww -n tmux-ssh
   send-keys -t tmux-ssh "cd ~/" C-m
   send-keys -t tmux-ssh "tmux-ssh "
-#+END_SRC
-
-#+BEGIN_SRC fundamental :tangle ~/.tmux-annex-sync.conf
-  neww -n annex-sync
-  send-keys -t annex-sync "cd ~/annex/" C-m
-  send-keys -t annex-sync "tmux rename-window -t annex-sync \" `date +'%D %H:%M'` \"" C-m
-  send-keys -t annex-sync "mr sync && exit" C-m
 #+END_SRC
 
 Create/attach a dev session. Start tmux create two windows for two
@@ -131,95 +123,4 @@ Solarized theme,
   
   # clock
   set-window-option -g clock-mode-colour colour64 #green
-#+END_SRC
-
-* System Activity Scripts
-
-Battery status,
-
-#+BEGIN_SRC sh :mkdirp yes :tangle ~/.tmux-monitor-scripts/battery.sh
-  if [ -d /sys/class/power_supply/BAT0 ];
-  then    
-      now=`cat /sys/class/power_supply/BAT0/energy_now`
-      full=`cat /sys/class/power_supply/BAT0/energy_full`
-      out=`echo $now/$full*100 | bc -l | cut -c 1-5`
-      printf "%.f%% | " $out
-  else
-      echo ""
-  fi
-#+END_SRC
-
-CPU temperature,
-
-#+BEGIN_SRC sh :mkdirp yes :tangle ~/.tmux-monitor-scripts/cpu_avg_temp.sh
-  case "$OSTYPE" in
-      linux-gnu)
-              if which sensors > /dev/null; then
-                  sensors | grep Core | awk '{print $3;}' | grep -oEi '[0-9]+.[0-9]+' | awk '{total+=$1; count+=1} END {print total/count,"C"}'
-              else
-                  ""
-              fi
-          ;;
-  esac
-#+END_SRC
-
-CPU load and free memory,
-
-#+BEGIN_SRC sh :mkdirp yes :tangle ~/.tmux-monitor-scripts/cpu.sh
-  #!/bin/bash     
-  
-  case "$OSTYPE" in
-      linux-gnu)
-          CPU=`eval $(awk '/^cpu /{print "previdle=" $5 "; prevtotal=" $2+$3+$4+$5 }' /proc/stat); sleep 0.4; eval $(awk '/^cpu /{print "idle=" $5 "; total=" $2+$3+$4+$5 }' /proc/stat); intervaltotal=$((total-${prevtotal:-0})); echo "$((100*( (intervaltotal) - ($idle-${previdle:-0}) ) / (intervaltotal) ))"`
-  
-          FREE_MEM=`free | awk '/buffers\/cache/{print (100 - ($4/($3+$4) * 100.0));}'`
-  
-          printf "C: %.f%% M: %.f%% | " $CPU $FREE_MEM
-          ;;
-  esac
-#+END_SRC
-
-DISK I/O
-
-#+BEGIN_SRC sh :mkdirp yes :tangle ~/.tmux-monitor-scripts/disk.sh
-  #!/bin/bash
-  
-  case "$OSTYPE" in
-      linux-gnu)
-          io_line_count=`iostat -d -x -m | wc -l` ; 
-          iostat -d -x -m 1 2 -z | tail -n +$io_line_count | grep -e "^sd[a-z].*" | awk 'BEGIN{rsum=0; wsum=0}{ rsum+=$6; wsum+=$7} END {print "IO: " rsum " " wsum " | "}'
-          ;;
-  esac
-#+END_SRC
-
-Network I/O
-
-#+BEGIN_SRC sh :mkdirp yes :mkdirp yes :tangle ~/.tmux-monitor-scripts/netspeed
-  #!/bin/bash
-  
-  case "$OSTYPE" in
-      linux-gnu)
-          if [ -z "$1" ]; then
-              echo
-              echo usage: $0 network-interface
-              echo
-              echo e.g. $0 eth0
-              echo
-              exit
-          fi
-  
-          IF=$1
-  
-          R1=`cat /sys/class/net/$1/statistics/rx_bytes`
-          T1=`cat /sys/class/net/$1/statistics/tx_bytes`
-          sleep 1
-          R2=`cat /sys/class/net/$1/statistics/rx_bytes`
-          T2=`cat /sys/class/net/$1/statistics/tx_bytes`
-          TBPS=`expr $T2 - $T1`
-          RBPS=`expr $R2 - $R1`
-          TKBPS=`expr $TBPS / 1024`
-          RKBPS=`expr $RBPS / 1024`
-          printf "%s: %d %d | " $1 $RKBPS $TKBPS
-          ;;
-  esac
 #+END_SRC
