@@ -36,7 +36,6 @@ function tangle(){
     tangleFile posts/ 2014-01-26-pentadactyl-configuration
 
     rm -f ~/.tmux.conf
-    rm -rf ~/.tmux-monitor-scripts/
     tangleFile posts/ 2014-01-05-tmux-configuration
 
     rm -f ~/.bashrc
@@ -51,7 +50,6 @@ function tangle(){
 tangle
 
 chmod +x ~/.bin/*
-chmod +x ~/.tmux-monitor-scripts/*
 
 rm -f ~/.emacs
 echo "(load-file \"~/source/emacs/init.el\")" > ~/.emacs
