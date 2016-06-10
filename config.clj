@@ -9,9 +9,18 @@
  :create-archives false
  :atomic-build true
  :emacs "/Applications/Emacs.app/Contents/MacOS/Emacs"
- :emacs-eval ['(add-to-list 'load-path "~/source/emacs/ext/org-mode/lisp/")
-              '(add-to-list 'load-path "~/source/emacs/ext/org-mode/contrib/lisp/")
-              '(add-to-list 'load-path "~/.emacs.d/elpa/clojure-mode-2.1.1/")
+ :emacs-eval ['(require 'package)
+              '(package-initialize)
+              '(setq package-list '(htmlize clojure-mode clojure-mode-extra-font-locking))
+              '(setq package-archives '(("elpa" . "http://tromey.com/elpa/")
+                                        ("gnu" . "http://elpa.gnu.org/packages/")
+                                        ("marmalade" . "http://marmalade-repo.org/packages/")))
+              '(package-initialize)
+              '(unless package-archive-contents
+                       (package-refresh-contents))
+              '(dolist (package package-list)
+                       (unless (package-installed-p package)
+                               (package-install package)))
               '(require 'htmlize)
               '(require 'org)
               '(require 'org-macs)
@@ -24,4 +33,9 @@
               '(set-face-foreground 'font-lock-keyword-face "#ff5f00")
               '(set-face-foreground 'font-lock-function-name-face "#d7af00")
               '(set-face-foreground 'font-lock-builtin-face "#afd700")
-              '(set-face-foreground 'font-lock-comment-face "#008787")]]
+              '(set-face-foreground 'font-lock-comment-face "#008787")]
+
+ :host "188.166.95.143"
+ :user "root"
+ :deploy-dir "/var/nakkaya.com"
+ :rsync "/usr/bin/rsync"]
