@@ -54,41 +54,34 @@ Repository structure,
   [DEFAULT]
   git_sync = git annex add .;git annex sync --content
   git_status = git annex status
-  git_gc = git repack -ad; git gc; mr gcaux
+  git_gc = git repack -ad; git gc
 
   lib = 
       initAnnex() {
          git config remote.origin.annex-ignore true
          git annex init "`hostname`"
          git annex untrust here
+         git annex enableremote cloud
       }
       fastFsChck() {
         git annex fsck --fast --from "$1"
       }
 
   [annex/documents]
-  checkout = git clone 'ssh://git.nakkaya.com/nakkaya/annex-documents.git' 'documents'
+  checkout = git clone 'https://git.nakkaya.com/git/nakkaya/annex-documents.git' 'documents'
              cd documents/
              initAnnex
-             git annex enableremote cloud
   skip = lazy
   fsck = fastFsChck cloud
          fastFsChck storage-box
 
   [annex/notes]
-  checkout = git clone 'ssh://git.nakkaya.com/nakkaya/annex-notes.git' 'notes'
+  checkout = git clone 'https://git.nakkaya.com/git/nakkaya/annex-notes.git' 'notes'
              cd notes/
              initAnnex
-             git annex enableremote base-transfer
-             git annex enableremote storage-box
              git annex direct
              git annex get .
-  fsck = fastFsChck storage-box
-         fastFsChck base-transfer
-  gcaux = git annex unused --from base-transfer
-          git annex move --unused --from base-transfer
-          git annex unused
-          git annex move --unused --to storage-box
+  fsck = fastFsChck cloud
 #+END_SRC
 
 *** ~/.bin/git-anx-drop-unused
