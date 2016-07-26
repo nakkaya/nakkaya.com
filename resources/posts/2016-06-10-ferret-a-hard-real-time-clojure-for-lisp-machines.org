@@ -93,10 +93,10 @@ libraries using an Arduino Due and a [[https://www.pololu.com/product/2510][Zumo
 
   ;; Inlucde Third Party Headers
   ;; https://github.com/pololu/zumo-shield
-  (native-header QTRSensors
-                 ZumoReflectanceSensorArray
-                 ZumoMotors
-                 Pushbutton)
+  (native-header "QTRSensors.h"
+                 "ZumoReflectanceSensorArray.h"
+                 "ZumoMotors.h"
+                 "Pushbutton.h")
 
   ;; Initialize Hardware
   (native-declare "unsigned int line_buffer[6];
