@@ -333,58 +333,58 @@ Start asistant and webapp,
   git_pull = git pull origin master
   git_push = git fast-push
   git_status = git status --short
-  sync = true
-  
+  sync = git pull && git push
+
   [source/latte]
   checkout = git clone 'https://git.nakkaya.com/git/nakkaya/latte.git' 'latte'
   skip=lazy
-  
+
   [source/alter-ego]
   checkout = git clone 'git@github.com:nakkaya/alter-ego.git' 'alter-ego'
   skip=lazy
-  
+
   [source/ardrone]
   checkout = git clone 'git@github.com:nakkaya/ardrone.git' 'ardrone'
   skip=lazy
-  
+
   [source/clodiuno]
   checkout = git clone 'git@github.com:nakkaya/clodiuno.git' 'clodiuno'
   skip=lazy
-  
+
   [source/easy-dns]
   checkout = git clone 'git@github.com:nakkaya/easy-dns.git' 'easy-dns'
   skip=lazy
-  
+
   [source/emacs]
   checkout = git clone 'git@github.com:nakkaya/emacs.git' 'emacs'
              cd emacs
              git submodule init
              git submodule update
-  
+
   [source/inbox-feed]
   checkout = git clone 'git@github.com:nakkaya/inbox-feed.git' 'inbox-feed'
   skip=lazy
-  
+
   [source/nakkaya.com]
   checkout = git clone 'git@github.com:nakkaya/nakkaya.com.git' 'nakkaya.com'
   skip=lazy
-  
+
   [source/net-eval]
   checkout = git clone 'git@github.com:nakkaya/net-eval.git' 'net-eval'
   skip=lazy
-  
+
   [source/neu-islanders]
   checkout = git clone 'https://git.nakkaya.com/git/nakkaya/neu-islanders.git' 'neu-islanders'
   skip=lazy
-  
+
   [source/static]
   checkout = git clone 'git@github.com:nakkaya/static.git' 'static'
   skip=lazy
-  
+
   [source/vector-2d]
   checkout = git clone 'git@github.com:nakkaya/vector-2d.git' 'vector-2d'
   skip=lazy
-  
+
   [source/doganilic.com]
   checkout = git clone 'https://git.nakkaya.com/git/nakkaya/doganilic.com.git' 'doganilic.com'
   skip=lazy
@@ -392,7 +392,7 @@ Start asistant and webapp,
   [source/ansible-docker-build]
   checkout = git clone 'https://git.nakkaya.com/git/nakkaya/ansible-docker-build.git' 'ansible-docker-build'
   skip=lazy
-  
+
   [source/ansible-storage]
   checkout = git clone 'https://git.nakkaya.com/git/nakkaya/ansible-storage.git' 'ansible-storage'
   skip=lazy
@@ -407,5 +407,17 @@ Start asistant and webapp,
 
   [source/control-toolbox]
   checkout = git clone 'https://git.nakkaya.com/git/nakkaya/control-toolbox.git' 'control-toolbox'
+  skip=lazy
+
+  [source/solarcar-tracker]
+  checkout = git clone 'https://git.nakkaya.com/git/nakkaya/solarcar-tracker.git' 'solarcar-tracker'
+  skip=lazy
+
+  [source/solarcar-turn-indicator]
+  checkout = git clone 'https://git.nakkaya.com/git/nakkaya/solarcar-turn-indicator.git' 'solarcar-turn-indicator'
+  skip=lazy
+
+  [source/ferret]
+  checkout = git clone 'https://git.nakkaya.com/git/nakkaya/ferret.git' 'ferret'
   skip=lazy
 #+END_SRC
