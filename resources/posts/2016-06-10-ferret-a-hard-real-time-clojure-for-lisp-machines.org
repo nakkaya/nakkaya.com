@@ -32,7 +32,7 @@ example to generate a Sawtooth wave,
 
 #+begin_src clojure
   ;; saw.clj
-  (configure-runtime! FERRET_DISABLE_OUTPUT_STREAM true ;; Disable Serial
+  (configure-runtime! FERRET_DISABLE_STD_OUT true ;; Disable Serial
                       FERRET_PROGRAM_MAIN "signal()" ;; Main Entry for the application
                                                      ;; Ferret functions are C++ functors
                       FERRET_MEMORY_POOL_SIZE 512) ;; Allocate 512 Bytes of static memory
@@ -87,7 +87,7 @@ libraries using an Arduino Due and a [[https://www.pololu.com/product/2510][Zumo
 #+end_html
 
 #+begin_src clojure
-  (configure-runtime! FERRET_DISABLE_OUTPUT_STREAM true ;;save memory
+  (configure-runtime! FERRET_DISABLE_STD_OUT true ;;save memory
                       FERRET_PROGRAM_MAIN program ;; Default function to run.
                       FERRET_MEMORY_POOL_SIZE 1024) ;; Allocate 1kb Heap
 
@@ -148,7 +148,7 @@ macro is a convenience macro for calling native code in place. It will
 define a *fn* and call it in place so,
 
 #+begin_src clojure
-  (cxx "line_sensors.init();")
+
 #+end_src
 
 is equivalent to,
