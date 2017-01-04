@@ -9,9 +9,9 @@ systems. It has been verified to run on architectures ranging from
 embedded systems with as little as 2KB of RAM to general purpose
 computers running Linux/Mac OS X/Windows.
 
- - [[http://dropbox.nakkaya.com/builds/ferret-manual.html][Project Home Page]]
- - [[http://dropbox.nakkaya.com/builds/ferret][Executable]] (Requires Bash and JVM)
- - [[http://dropbox.nakkaya.com/builds/ferret.jar][Standalone Jar]] (Requires JVM)
+ - [[http://ferret-lang.org][Project Home Page]]
+ - [[http://ferret-lang.org/builds/ferret][Executable]] (Requires Bash and JVM)
+ - [[http://ferret-lang.org/builds/ferret.jar][Standalone Jar]] (Requires JVM)
 
 Unlike other Lisp implementations Ferret is specifically tailored for
 real time control applications, provides deterministic execution and
