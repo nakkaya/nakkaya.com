@@ -34,11 +34,11 @@ example to generate a Sawtooth wave,
   ;; saw.clj
   (configure-runtime! FERRET_DISABLE_STD_OUT true ;; Disable Serial
                       FERRET_PROGRAM_MAIN "signal()" ;; Main Entry for the application
-                                                     ;; Ferret functions are C++ functors
+                      ;; Ferret functions are C++ functors
                       FERRET_MEMORY_POOL_SIZE 512) ;; Allocate 512 Bytes of static memory
 
   (defn dac-1 []
-    "__result = obj<Number>(DAC1);")
+    "__result = obj<number>(DAC1);")
 
   (defn signal []
     (doseq [sample (range 255)]
@@ -107,22 +107,22 @@ libraries using an Arduino Due and a [[https://www.pololu.com/product/2510][Zumo
   (defn wait-button []
     "button.waitForButton();
      button.waitForRelease();
-     __result = obj<Boolean>(true)")
+     __result = obj<boolean>(true)")
 
   (defn button-pressed? []
-    "__result = obj<Boolean>(button.isPressed())")
+    "__result = obj<boolean>(button.isPressed())")
 
   (defn motors
     ([]
      "zumo_motors.setSpeeds(0,0);")
     ([c]
-     "int corr = c.to<int>();
+     "int corr = number::to<int>(c);
       zumo_motors.setSpeeds(400 + (-1 * corr), 400 + corr);")
     ([m1 m2]
-     "zumo_motors.setSpeeds(m1.to<int>(), m2.to<int>());"))
+     "zumo_motors.setSpeeds(number::to<int>(m1), number::to<int>(m2));"))
 
   (defn read-line []
-    "__result = obj<Number>(line_sensors.readLine(line_buffer,QTR_EMITTERS_ON,1));")
+    "__result = obj<number>(line_sensors.readLine(line_buffer,QTR_EMITTERS_ON,1));")
 #+end_src
 
 Wrappers for Zumo Libraries needed to interface with the shield. All
