@@ -54,7 +54,7 @@ Makes using the scroll wheel automatically switch to copy mode and
 scroll back the tmux scrollback buffer.
 
 #+BEGIN_SRC fundamental :tangle ~/.tmux.conf
-  setw -g mode-mouse on
+  set -g mouse on
 #+END_SRC
 
 Status bar,
