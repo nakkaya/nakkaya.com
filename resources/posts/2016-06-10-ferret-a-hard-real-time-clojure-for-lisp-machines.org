@@ -185,11 +185,11 @@ transition states.
             (wait-button)
             (calibrate))
       
-      (follow-line (digital-write 53 :high)
+      (follow-line (digital-write 53 1)
                    (->> (read-line)
                         (motor-controller)
                         (motors))
-                   (digital-write 53 :low))
+                   (digital-write 53 0))
       
       (stop (motors)
             (cxx "button.waitForRelease();")))
