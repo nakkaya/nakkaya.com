@@ -1,0 +1,113 @@
+#+title: Bare Metal Lisp - RC Control using Ferret
+#+tags: ferret c++ clojure real-time lisp embedded microcontroller arduino atmega
+#+EXPORT_EXCLUDE_TAGS: noexport
+
+Some sample code to demonstrate FFI capabilities of Ferret on embedded
+systems. Ferret is a free software Clojure implementation, it compiles
+a restricted subset of the Clojure language to self contained ISO
+C++11 which allows for the use of Clojure in real time embedded
+control systems. See [[http://ferret-lang.org][Project Home Page]]. Mobile platform used in this
+post is a [[https://www.pololu.com/product/2506][Zumo Robot]] (required [[https://github.com/pololu/zumo-shield][third party libraries]]) and the
+microcontroller is a Arduino Uno / Atmega328.
+
+#+BEGIN_HTML
+  <p> <img width="60%" src="/images/post/bare-metal-lisp-rc-control-using-ferret.jpg" /> </p>
+#+END_HTML
+
+#+name: header
+#+BEGIN_SRC clojure
+  (configure-ferret! :command "mv ferret-rc-control.cpp ferret-rc-control.ino")
+#+END_SRC
+
+Ferret outputs a /cpp/ file however Arduino IDE expects a /ino/
+file. We override build command to rename the /cpp/ file to a /ino/
+file.
+
+#+name: header
+#+BEGIN_SRC clojure
+  (configure-runtime! FERRET_MEMORY_POOL_SIZE 1024)
+#+END_SRC
+
+On embedded systems Ferret can be configured to avoid calling
+malloc/free. Enabling memory pooling will allocate (1 kb in this case)
+memory to be used as heap. 
+
+Ferret's FFI is modeled after Gambit scheme. Whereas Gambit scheme
+lets you embed C into Scheme, Ferret lets you embed C or C++ into
+Clojure.
+
+#+name: ffi
+#+BEGIN_SRC clojure
+  (native-header "ZumoMotors.h")
+
+  (defn new-motor []
+    "__result = obj<value<ZumoMotors>>();")
+#+END_SRC
+
+A /value/ object is useful when dealing with C++ objects. It acts as
+a container for native object. It can wrap any type /T/, once wrapped
+it can be used just like any other Ferret variable. (Any arguments
+passed to /obj/ will be forwarded to /T/ constructor.)
+
+#+name: ffi
+#+BEGIN_SRC clojure
+  (defn speeds [m s1 s2]
+    "ZumoMotors motor = value<ZumoMotors>::to_value(m);
+     motor.setSpeeds(number::to<int>(s1), number::to<int>(s2));")
+
+  (defn pulse-in [pin]
+    "__result = obj<number>(pulseIn(number::to<int>(pin), HIGH,25000));")
+#+END_SRC
+
+Calling C++ functions with Ferret variables is just as easy, every
+Ferret object type has a corresponding /to/ / /from/ function/s. These
+can be used to convert native types to ferret types and vice
+versa. (Ferret is a strongly, dynamically typed language. If you try
+to convert a ferret number to a value you will get a segmentation
+fault.)
+
+#+name: control
+#+BEGIN_SRC clojure
+  ;; throttle - ch 1
+  ;; steering - ch 2
+  (defn read-control []
+    (let [throttle (scale (pulse-in 4) 981 1998  0   254)
+          steering (scale (pulse-in 5) 981 1998 -254 254)]
+      (list (if (< throttle 5) ;; setup dead zone
+              0
+              throttle)
+            (if (< -5 steering 5) ;; setup dead zone
+              0
+              steering))))
+
+  (let [motor (new-motor)]
+    (forever
+     (let [[throttle steering] (read-control)]
+       (speeds motor (+ throttle steering) (- throttle steering)))))
+#+END_SRC
+
+Radio-control transmitters and receivers are used to drive model cars
+or planes. They typically have a bunch of control surfaces like
+joysticks. Each degree of freedom that the controller gives is
+assigned a channel. They are typically used to control servos so each
+channel outputs a signal called PWM (Pulse Width Modulation). i.e
+Width of the signal changes as control input changes. Arduino
+platform has a function called /pulseIn/ which we wrapped in a Ferret
+function that returns the length of the pulse, this pulse is then
+converted to a PWM value which is used to drive the motors on the 
+robot. 
+
+Forward motion is controlled by mapping the current pulse width on
+channel 1 to a value between 0 and 254. No throttle 0 PWM full
+throttle 254 PWM. Steering is controlled in a similar manner but
+instead of mapping from 0 to 254 it is mapped to -254 to 254. Final
+motor speed is calculated by adding throttle and steering controls
+together and apply the resulting PWM to motors.
+
+* File                                                             :noexport:
+
+#+BEGIN_SRC clojure :noweb yes :mkdirp yes :tangle ./ferret-rc-control.clj
+  <<header>>
+  <<ffi>>
+  <<control>>
+#+END_SRC
