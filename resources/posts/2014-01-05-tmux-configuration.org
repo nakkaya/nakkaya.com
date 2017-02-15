@@ -29,6 +29,7 @@ Replace C-b with \,
 Setup key bindings,
 
 #+BEGIN_SRC fundamental :tangle ~/.tmux.conf
+  bind-key r command-prompt -p "rename window to:"  "rename-window '%%'"
   bind t source-file ~/.tmux-over-ssh.conf
   bind k confirm kill-window
   bind K confirm kill-server
@@ -54,7 +55,7 @@ Makes using the scroll wheel automatically switch to copy mode and
 scroll back the tmux scrollback buffer.
 
 #+BEGIN_SRC fundamental :tangle ~/.tmux.conf
-  setw -g mode-mouse on
+  set -g mouse on
 #+END_SRC
 
 Status bar,

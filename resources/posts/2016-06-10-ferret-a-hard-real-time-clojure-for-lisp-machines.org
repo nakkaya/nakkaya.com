@@ -34,7 +34,7 @@ example to generate a Sawtooth wave,
   ;; saw.clj
   (configure-runtime! FERRET_DISABLE_STD_OUT true ;; Disable Serial
                       FERRET_PROGRAM_MAIN "signal()" ;; Main Entry for the application
-                      ;; Ferret functions are C++ functors
+                                                     ;; Ferret functions are C++ functors
                       FERRET_MEMORY_POOL_SIZE 512) ;; Allocate 512 Bytes of static memory
 
   (defn dac-1 []
@@ -185,11 +185,11 @@ transition states.
             (wait-button)
             (calibrate))
       
-      (follow-line (digital-write 53 :high)
+      (follow-line (digital-write 53 1)
                    (->> (read-line)
                         (motor-controller)
                         (motors))
-                   (digital-write 53 :low))
+                   (digital-write 53 0))
       
       (stop (motors)
             (cxx "button.waitForRelease();")))
