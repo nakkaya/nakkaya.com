@@ -74,6 +74,7 @@ Repository structure,
   skip = lazy
   fsck = fastFsChck cloud
          fastFsChck storage-box
+         fastFsChck rclone_drive
 
   [annex/notes]
   checkout = git clone 'https://git.nakkaya.com/git/nakkaya/annex-notes.git' 'notes'
@@ -320,6 +321,12 @@ Start asistant and webapp,
 
     #+BEGIN_SRC sh
       git annex initremote depot type=rsync encryption=hybrid rsyncurl=rsync:annex/repo/ keyid=ID
+    #+END_SRC
+
+    Setup encrypted annex rclone gdrive remote,
+
+    #+BEGIN_SRC sh
+      git annex initremote rclone_drive type=external externaltype=rclone target=drive_robotics prefix=git-annex chunk=100MiB encryption=shared mac=HMACSHA512 rclone_layout=lower
     #+END_SRC
 
 * ~/source/
