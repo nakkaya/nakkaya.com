@@ -3,7 +3,7 @@
 #+OPTIONS: toc:nil
 
 *** Applications
- - [[http://dropbox.nakkaya.com/builds/ferret-manual.html][ferret]] - A free software Clojure implementation for real time
+ - [[http://ferret-lang.org/][Ferret]] - A free software Clojure implementation for real time
    embedded control systems.
  - [[http://nakkaya.com/inbox-feed.html][inbox-feed]] - A tool for retrieving content from RSS/ATOM feeds and
    mailing it.
