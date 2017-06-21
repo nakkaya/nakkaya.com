@@ -83,7 +83,7 @@
 
     [:div {:id "disqus"} 
      (if (= (:type metadata) :post) 
-       "<div id=\"disqus_thread\"></div><script type=\"text/javascript\" src=\"http://disqus.com/forums/nakkaya/embed.js\"></script><noscript><a href=\"http://disqus.com/forums/nakkaya/?url=ref\">View the discussion thread.</a></noscript><a href=\"http://disqus.com\" class=\"dsq-brlink\">blog comments powered by <span class=\"logo-disqus\">Disqus</span></a>")]]
+       "<div id=\"disqus_thread\"></div><script type=\"text/javascript\" src=\"//disqus.com/forums/nakkaya/embed.js\"></script><noscript><a href=\"//disqus.com/forums/nakkaya/?url=ref\">View the discussion thread.</a></noscript><a href=\"//disqus.com\" class=\"dsq-brlink\">blog comments powered by <span class=\"logo-disqus\">Disqus</span></a>")]]
    [:div
     {:id "footer"}
     [:a {:href "/rss-feed"} " RSS Feed"]
@@ -102,7 +102,7 @@
 								       query += 'url' + i + '=' + encodeURIComponent(links[i].href) + '&';
 								       }
 		     }
-	     document.write('<script charset=\"utf-8\" type=\"text/javascript\" src=\"http://disqus.com/forums/nakkaya/get_num_replies.js' + query + '\"></' + 'script>');
+	     document.write('<script charset=\"utf-8\" type=\"text/javascript\" src=\"//disqus.com/forums/nakkaya/get_num_replies.js' + query + '\"></' + 'script>');
 	     })();
 //]]>
 </script>")]]
