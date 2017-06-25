@@ -1,0 +1,290 @@
+#+title: Ferret Lisp FFI Notes
+#+tags: ferret c++ clojure real-time lisp embedded microcontroller
+#+EXPORT_EXCLUDE_TAGS: noexport
+
+This posts serves as documentation on how to interact with third
+party C,C++ libraries when using Ferret Lisp, a free software Clojure
+implementation, it compiles a restricted subset of the Clojure
+language to self contained ISO C++11 which allows for the use of
+Clojure in real time embedded control systems. It has been verified to
+run on architectures ranging from microcontrollers with as little as
+2KB of RAM to general purpose computers running Linux/Mac OS
+X/Windows.
+
+Following Clojure's design philosophy of embracing the host. Ferret
+provides multiple ways of interacting with the host
+language. Currently there are 4 methods that can be used to pass data
+back and forth between Ferret and C,C++,
+
+  - [[Value]]
+  - [[Extending Ferret Objects]]
+  - [[Pointer]]
+  - [[Macros for C++ Code Generation]]
+
+* Value
+
+A =value= Ferret object can used to capture any C++ type =T=. This is
+useful when interacting with modern C++ libraries where instead of
+using pointers they use smart pointers. One example for these types of
+libraries is the OpenCV computer vision library. Following is the
+Hello World of OpenCV, a simple app to open the first attach camera,
+grab a frame from it and show that frame on a GUI element.
+
+#+begin_src c++
+  #include "opencv2/opencv.hpp"
+
+  using namespace cv;
+
+  int main(int argc, char** argv){
+    
+    VideoCapture cap;
+
+    if(!cap.open(0))
+      return 0;
+      
+    for(;;){
+      Mat frame;
+      cap >> frame;
+            
+      imshow("Cam 0", frame);
+      waitKey(1);
+    }
+
+    return 0;
+  }
+#+end_src
+
+For converting the above program we need to create 4 functions,
+
+  - A function to return a handle to a =VideoCapture= object.
+  - A function to grab a frame from the capture.
+  - A function to show the grabbed frame on a OpenCV window.
+  - A function to tell OpenCV to update GUI.
+
+#+begin_src clojure
+  (defnative video-capture [n]
+    (on "defined FERRET_STD_LIB"
+        ("opencv2/opencv.hpp")
+        "using namespace cv;
+         VideoCapture cap;
+
+         cap.open(number::to<number_t>(n));
+
+         if (!cap.isOpened())
+           return nil();
+
+         __result = obj<value<VideoCapture>>(cap);"))
+#+end_src
+
+Converting Ferret types to C++ types are handled by =::to==
+functions. Every built in type has a static =::to== function to
+convert the type to its native counter part. Above function takes the
+camera id as a parameter and can be used in the following way,
+
+#+begin_src clojure
+  (def capture (video-capture 0))
+#+end_src
+
+In order to convert camera id to a native number one can use the
+=number= objects =::to== method.
+
+#+begin_src c++
+  int cam_id = number::to<int>(n);
+#+end_src
+
+Once we have the camera id we can open the attached camera, check if it
+is correctly initialized using =isOpened()= method, if not return =nil=
+otherwise we use a =value= Ferret object to return the OpenCV
+=VideoCapture= object back to Ferret side. A =value= Ferret object can
+hold any type =T=.
+
+#+begin_src c++
+  var dev = obj<value<VideoCapture>>(0);
+#+end_src
+
+Any arguments passed to =value= constructor will be forwarded to the
+type =T='s constructor. A =value= object acts just like any other
+Ferret object type, and its lifetime is handled by the active
+GC. (Ferret supports various schemes for garbage collection.)
+
+#+begin_src clojure
+  (defn query-capture [c]
+    "using namespace cv;
+     Mat frame;
+     value<VideoCapture>::to_value(c) >> frame;
+     __result = obj<value<Mat>>(frame);")
+#+end_src
+
+Type =T= contined within a =value= type can be accessed using the
+=::to_value= static function of the =value= class.
+
+#+begin_src clojure
+  VideoCapture dev = value<VideoCapture>::to_value(c);
+#+end_src
+
+A =value= object is used to return the latest frame from the camera
+back to Ferret.
+
+#+begin_src clojure
+  (def frame (query-capture capture))
+#+end_src
+
+Two other function needs to be wrapped to convert the above C++
+program in to a Ferret program.
+
+#+begin_src clojure
+  (defnative imshow [n f]
+    (on "defined FERRET_STD_LIB"
+        ("opencv2/highgui/highgui.hpp")
+        "using namespace cv;
+         imshow(string::to<std::string>(n), value<Mat>::to_value(f));"))
+
+  (defn wait-key [n]
+    "__result = obj<number>(cv::waitKey(number::to<number_t>(n)));")
+#+end_src
+
+Once all the required API functions are wrapped above C++ program can
+be represented using the following Ferret program.
+
+#+begin_src clojure
+  (def capture (video-capture 0))
+
+  (forever
+   (->> capture
+        query-capture
+        (imshow "Cam 0"))
+   (wait-key 1))
+#+end_src
+
+* Extending Ferret Objects
+
+For tighter integration with Ferret, users can define their own
+types. While a =value= object is just a container holding a type =T=
+user defined objects can implement built in interfaces making them
+seekable and/or callable. i.e, instead of using the built in D-List
+based maps, one can use any map implementation from any C,C++ library
+and it will behave just like the built in type. In order to create a
+user defined object you have to define a class that extends =object_t=
+and implement some methods required by Ferret.(=stream_console=,
+=equals=, =type=). When using this method garbage collection is also
+automatically handled by the active GC scheme. No manual allocation
+deallocation is necessary other than what is required by the native
+library.
+
+Lets assume you are doing embedded work using an Arduino, want to
+interface with a humidity and temperature sensor (HIH6130) and you
+want your sensor object to be callable. Giving you a Ferret API that
+can be used like the following,
+
+#+begin_src clojure
+  (def sensor (new-hih 0x27))
+
+  (let [[temprature humidity] (sensor)]
+    (println temprature humidity))
+#+end_src
+
+First we need to define a class that contains the implementation for
+the object. You can make any user defined object callable by
+implementing the =lambda_i= and overriding =invoke= method.
+
+#+begin_src c++
+  #include <HIH61XX.h>
+
+  class hih : public lambda_i {
+    HIH61XX hih;
+    
+  public:
+
+    size_t type() const { return runtime::type::hih; }
+
+    bool equals(var const & o) const { return (this == o.get()); }
+
+  #if !defined(FERRET_DISABLE_STD_OUT)
+    void stream_console() const {
+      runtime::print("HIH Temrature Sensor");
+    }
+  #endif
+
+    explicit hih() : hih(0x27) { }
+
+    ~hih(){ }
+
+    var invoke(var const & args) const {
+      char status;
+      double T,P,p0,a;
+    
+      status = pressure.startTemperature();
+      if (status != 0){
+        delay(status);
+        status = pressure.getTemperature(T);
+        if (status != 0){
+          status = pressure.startPressure(3);
+          if (status != 0){
+            delay(status);
+            status = pressure.getPressure(P,T);
+            if (status != 0){
+              p0 = pressure.sealevel(P, default_altitude);
+              __result = runtime::list(obj<number>(T), obj<number>(P));
+            }
+          }
+        }
+      }
+      
+      return nil();
+    }
+  };
+#+end_src
+
+And somewhere in your program tell Ferret where the implementation for
+the object is,
+
+#+begin_src clojure
+  (defobject hih "/path/to/hih_implementation.h")
+
+  (defn new-hih [id]
+    "__result = obj<hih>(number::to<int>(id));")
+#+end_src
+
+* Pointer
+
+For interacting with legacy C++ libraries or C libraries Ferret
+provides a =pointer= type. It holds a pointer to a type =T=. Unlike a
+=value= type or user defined object, user is responsible for garbage
+collection.
+
+#+begin_src clojure
+  (defn new-int [i]
+    "__result = obj<pointer>(new int(number::to<int>(i)));")
+
+  (defn print-int [i]
+    "std::cout << pointer::to_pointer<int>(i) << std::endl;")
+#+end_src
+
+* Macros for C++ Code Generation
+
+Once in a while you may come across a library that does not play well
+with any of the above methods and custom C++ code should be generated
+for each invocation. i.e You want to register a Ferret function as a
+interrupt service routine on a Raspberry PI via WiringPi
+library. =wiringPiISR= function expects a C style callback
+function, a Ferret function can not be passed as is. What we can do is
+for every Ferret function we want to register as callback, define a
+native function that in turn invokes the Ferret function.
+
+#+begin_src clojure
+  (defmacro attach-isr [pin callback]
+    (let [fn (gensym)]
+      `(~'do
+        (~'def ~fn ~callback)
+        (~'cxx ~(str "wiringPiISR (" pin ", INT_EDGE_FALLING, [](){ run(" fn ");})")))))
+#+end_src
+
+=wiringPiISR= expects a function with the signature =void
+(*function)(void))= so C++ lambdas can not capture the Ferret function
+variable passed. What the above macro does is define a unique variable
+for the function passed and using a non capturing lambda execute the
+function pointed by the unique variable.
+
+#+begin_src clojure
+  (attach-isr 0 #(println "Interrupted!")) ;; attach interrupt in WiringPI pin 0
+#+end_src
