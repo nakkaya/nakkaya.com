@@ -164,7 +164,7 @@ user defined objects can implement built in interfaces making them
 seekable and/or callable. i.e, instead of using the built in D-List
 based maps, one can use any map implementation from any C,C++ library
 and it will behave just like the built in type. In order to create a
-user defined object you have to define a class that extends =object_t=
+user defined object you have to define a class that extends =object=
 and implement some methods required by Ferret.(=stream_console=,
 =equals=, =type=). When using this method garbage collection is also
 automatically handled by the active GC scheme. No manual allocation
