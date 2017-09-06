@@ -60,6 +60,11 @@
   then
       source /etc/bash_completion.d/git
   fi
+
+  if [ -f /etc/bash_completion ];
+  then
+      source /etc/bash_completion
+  fi
   
   if which brew >/dev/null; then
       if [ -f $(brew --prefix)/etc/bash_completion ]; then
@@ -119,12 +124,12 @@ Autocomplete for 'g' as well,
       complete -W "$(_mr_completion)" m
   fi
   
-  if [ -d /media/nakkaya ];
+  if [ -d /media/$USER ];
   then
   
       case "$OSTYPE" in
           linux-gnu)
-              usb_mount_point="/media/nakkaya"
+              usb_mount_point="/media/$USER"
               ;;
           darwin*)
               usb_mount_point="/Volumes"
@@ -139,7 +144,7 @@ Autocomplete for 'g' as well,
               cd "$usb_mount_point/${1}/"
           fi
       }
-      complete -W "`cd /media/nakkaya/;compgen -A directory`" usb
+      complete -W "`cd /media/$USER/;compgen -A directory`" usb
   fi
   
   src() {
@@ -198,7 +203,7 @@ Autocomplete for 'g' as well,
               return 0
               ;;
           umount)
-              local running=$(ls --color=none /media/nakkaya/ | grep -v '\.')
+              local running=$(ls --color=none /media/$USER/ | grep -v '\.')
               COMPREPLY=( $(compgen -W "${running}" -- ${cur}) )
               return 0
               ;;
@@ -215,7 +220,7 @@ Autocomplete for 'g' as well,
 #+BEGIN_SRC sh :mkdirp yes :tangle ~/.bin/sftpfs
   case "$OSTYPE" in
       linux-gnu)
-              mount_point="/media/nakkaya/$2"
+              mount_point="/media/$USER/$2"
           ;;
       darwin*)
               mount_point="/Volumes/$2"            

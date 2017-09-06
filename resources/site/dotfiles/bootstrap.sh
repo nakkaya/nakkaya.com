@@ -1,12 +1,12 @@
 case "$OSTYPE" in
     linux-gnu)
-            case $HOSTNAME in
-                (base) EMACS=/home/nakkaya/apps/emacs/bin/emacs;;
-                (*)   EMACS=/usr/bin/emacs;;
-            esac
+        case $HOSTNAME in
+            (base) EMACS=/home/nakkaya/apps/emacs/bin/emacs;;
+            (*)   EMACS=/usr/bin/emacs;;
+        esac
         ;;
     darwin*)
-            EMACS=/Applications/Emacs.app/Contents/MacOS/Emacs
+        EMACS=/Applications/Emacs.app/Contents/MacOS/Emacs
         ;;
 esac
 
@@ -14,7 +14,7 @@ function tangleFile(){
     URL="https://raw.github.com/nakkaya/nakkaya.com/master/resources/${1}${2}.org"
     `wget $URL`
     $EMACS -Q --batch \
-        --eval "(progn
+           --eval "(progn
                   (require 'org)
                   (require 'ob)
                   (require 'ob-tangle)
@@ -49,16 +49,22 @@ function tangle(){
 
 tangle
 
+wget https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein
+mv lein ~/.bin 
+
 chmod +x ~/.bin/*
 
+~/.bin/lein 
+
 rm -f ~/.emacs
+
 echo "(load-file \"~/source/emacs/init.el\")" > ~/.emacs
 
 #
 # Linux Apps
 #
 
-#sudo apt-get update;sudo apt-get upgrade;sudo apt-get install emacs24 org-mode vlc cmus git bash-completion rxvt-unicode-256color gnupg build-essential ubuntu-restricted-extras openjdk-7-jdk tmux xsel python-pip;sudo pip install hy;sudo pip install sh
+#sudo apt-get update;sudo apt-get upgrade;sudo apt-get install emacs24 org-mode vlc cmus git bash-completion rxvt-unicode-256color gnupg build-essential ubuntu-restricted-extras openjdk-8-jdk tmux xsel cmake libboost-all-dev openssh-server
 
 #
 # OS X Apps
@@ -75,4 +81,3 @@ echo "(load-file \"~/source/emacs/init.el\")" > ~/.emacs
 
 #wget -qO- http://127.0.0.1:8000/bootstrap.sh | bash
 #wget -qO- https://raw.github.com/nakkaya/nakkaya.com/master/resources/site/dotfiles/bootstrap.sh | bash
-
