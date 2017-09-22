@@ -37,12 +37,14 @@ example to generate a Sawtooth wave,
                                                      ;; Ferret functions are C++ functors
                       FERRET_MEMORY_POOL_SIZE 512) ;; Allocate 512 Bytes of static memory
 
+  (require '[ferret.arduino :as gpio])
+
   (defn dac-1 []
     "__result = obj<number>(DAC1);")
 
   (defn signal []
     (doseq [sample (range 255)]
-      (analog-write (dac-1) sample)
+      (gpio/analog-write (dac-1) sample)
       (sleep 10)))
 #+end_src
 
@@ -90,6 +92,8 @@ libraries using an Arduino Due and a [[https://www.pololu.com/product/2510][Zumo
   (configure-runtime! FERRET_DISABLE_STD_OUT true ;;save memory
                       FERRET_PROGRAM_MAIN program ;; Default function to run.
                       FERRET_MEMORY_POOL_SIZE 1024) ;; Allocate 1kb Heap
+
+  (require '[ferret.arduino :as gpio])
 
   ;; Inlucde Third Party Headers
   ;; https://github.com/pololu/zumo-shield
@@ -181,15 +185,15 @@ transition states.
     (state-machine
      (states
       (boot (motors)
-            (pin-mode 53 :output)
+            (gpio/pin-mode 53 :output)
             (wait-button)
             (calibrate))
       
-      (follow-line (digital-write 53 1)
+      (follow-line (gpio/digital-write 53 1)
                    (->> (read-line)
                         (motor-controller)
                         (motors))
-                   (digital-write 53 0))
+                   (gpio/digital-write 53 0))
       
       (stop (motors)
             (cxx "button.waitForRelease();")))
