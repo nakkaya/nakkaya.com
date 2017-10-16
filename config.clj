@@ -8,7 +8,7 @@
  :blog-as-index false
  :create-archives false
  :atomic-build true
- :emacs "/Applications/Emacs.app/Contents/MacOS/Emacs"
+ :emacs "/usr/bin/emacs"
  :emacs-eval ['(require 'package)
               '(package-initialize)
               '(setq package-list '(htmlize clojure-mode clojure-mode-extra-font-locking))
