@@ -227,13 +227,13 @@ Autocomplete for 'g' as well,
           ;;
   esac
   echo "Location -> " $mount_point
-  
+
   case "${1}" in
       mount)
               if [ -d "$mount_point" ]; then
                   echo "Already Mounted"
               fi
-              mkdir $mount_point
+              mkdir -p $mount_point
               mount_command="sshfs $2:/ $mount_point -oauto_cache,reconnect,compression=no,Ciphers=arcfour"
               if [ ! -z $3 ]
               then
@@ -245,12 +245,12 @@ Autocomplete for 'g' as well,
               ;;
       umount)
               echo "Unmounting" $2
-  
+
               if [ ! -d "$mount_point" ]; then
                   echo "Not Mounted"
               fi
               
-              if umount $mount_point; then
+              if sudo umount $mount_point; then
                   rm -rf $mount_point
               fi
               ;;
