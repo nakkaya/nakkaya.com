@@ -1,14 +1,7 @@
-case "$OSTYPE" in
-    linux-gnu)
-        case $HOSTNAME in
-            (base) EMACS=/home/nakkaya/apps/emacs/bin/emacs;;
-            (*)   EMACS=/usr/bin/emacs;;
-        esac
-        ;;
-    darwin*)
-        EMACS=/Applications/Emacs.app/Contents/MacOS/Emacs
-        ;;
-esac
+#!/bin/bash
+set -e
+
+EMACS=/usr/bin/emacs
 
 function tangleFile(){
     URL="https://raw.github.com/nakkaya/nakkaya.com/master/resources/${1}${2}.org"
@@ -47,37 +40,36 @@ function tangle(){
     tangleFile posts/ 2013-10-23-notes-on-synchronization-and-backup-of-home-using-git-git-annex-and-mr
 }
 
-tangle
+case "$1" in
+   "") 
+      echo "Usage: $0 [--init] [--tangle]"
+      RETVAL=1
+      ;;
+   --tangle)
+        tangle
+      ;;
+   --init)
+       sudo apt-get update
+       sudo apt-get upgrade
+       sudo apt-get install                                \
+            emacs24 org-mode tmux xsel                     \
+            bash-completion gnupg ubuntu-restricted-extras \
+            openssh-server sshfs                           \
+            firefox chromium-browser libgnome2-bin         \
+            git build-essential default-jdk                \
+            cmake valgrind cppcheck automake libboost-all-dev
 
-wget https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein
-mv lein ~/.bin 
+       rm -f ~/.emacs
+       echo "(load-file \"~/source/emacs/init.el\")" > ~/.emacs
+       
+       wget https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein
+       mv lein ~/.bin/
+       chmod +x ~/.bin/lein
 
-chmod +x ~/.bin/*
+       gsettings set org.gnome.desktop.input-sources xkb-options "['ctrl:nocaps']"
+       gsettings set com.canonical.Unity.Lenses remote-content-search none
+      ;;
+esac
 
-~/.bin/lein 
+exit $RETVAL
 
-rm -f ~/.emacs
-
-echo "(load-file \"~/source/emacs/init.el\")" > ~/.emacs
-
-#
-# Linux Apps
-#
-
-#sudo apt-get update;sudo apt-get upgrade;sudo apt-get install emacs24 org-mode vlc cmus git bash-completion rxvt-unicode-256color gnupg build-essential ubuntu-restricted-extras openjdk-8-jdk tmux xsel cmake libboost-all-dev openssh-server
-
-#
-# OS X Apps
-#
-
-# Enable Encryption
-# Grab Brew -> ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"
-# brew install gpg reattach-to-user-namespace wget tmux ssh-copy-id cmus coreutils bash-completion git python s3cmd 
-# brew install aspell --with-lang-en
-# brew install osxfuse sshfs encfs -> manually load kernel extension
-# Grab Emacs iTerm2 Moom Witch Firefox VLC git-annex git-remote-gcrypt awaken flux
-
-# Init System
-
-#wget -qO- http://127.0.0.1:8000/bootstrap.sh | bash
-#wget -qO- https://raw.github.com/nakkaya/nakkaya.com/master/resources/site/dotfiles/bootstrap.sh | bash
