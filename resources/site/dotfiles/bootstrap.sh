@@ -65,6 +65,7 @@ case "$1" in
        wget https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein
        mv lein ~/.bin/
        chmod +x ~/.bin/lein
+       chmod +x ~/.bin/ta-dev
 
        gsettings set org.gnome.desktop.input-sources xkb-options "['ctrl:nocaps']"
        gsettings set com.canonical.Unity.Lenses remote-content-search none
