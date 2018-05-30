@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Name=SSLRefbox
+Path=/home/nakkaya/Documents/ssl-refbox/
+Exec=/home/nakkaya/Documents/ssl-refbox/sslrefbox
+Comment=SSL Refbox
+Icon=application-default-icon

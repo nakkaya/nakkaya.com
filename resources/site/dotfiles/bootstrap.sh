@@ -52,7 +52,7 @@ case "$1" in
        sudo apt-get update
        sudo apt-get upgrade
        sudo apt-get install                                \
-            emacs24 org-mode tmux xsel                     \
+            emacs24 org-mode tmux xsel caffeine            \
             bash-completion gnupg ubuntu-restricted-extras \
             openssh-server sshfs                           \
             firefox chromium-browser libgnome2-bin         \
@@ -66,6 +66,10 @@ case "$1" in
        mv lein ~/.bin/
        chmod +x ~/.bin/lein
 
+       wget https://raw.githubusercontent.com/nakkaya/nakkaya.com/master/resources/site/dotfiles/desktop-files/arduino.desktop -P ~/.local/share/applications
+       wget https://raw.githubusercontent.com/nakkaya/nakkaya.com/master/resources/site/dotfiles/desktop-files/refbox.desktop -P ~/.local/share/applications
+       wget https://raw.githubusercontent.com/nakkaya/nakkaya.com/master/resources/site/dotfiles/desktop-files/grsim.desktop -P ~/.local/share/applications
+       
        gsettings set org.gnome.desktop.input-sources xkb-options "['ctrl:nocaps']"
        gsettings set com.canonical.Unity.Lenses remote-content-search none
       ;;
