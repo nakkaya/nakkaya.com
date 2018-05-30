@@ -65,6 +65,7 @@ case "$1" in
        wget https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein
        mv lein ~/.bin/
        chmod +x ~/.bin/lein
+       chmod +x ~/.bin/ta-dev
 
        wget https://raw.githubusercontent.com/nakkaya/nakkaya.com/master/resources/site/dotfiles/desktop-files/arduino.desktop -P ~/.local/share/applications
        wget https://raw.githubusercontent.com/nakkaya/nakkaya.com/master/resources/site/dotfiles/desktop-files/refbox.desktop -P ~/.local/share/applications
