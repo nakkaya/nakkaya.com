@@ -9,7 +9,8 @@
  :create-archives false
  :atomic-build true
  :emacs "/usr/bin/emacs"
- :emacs-eval ['(require 'package)
+ :emacs-eval ['(add-to-list 'load-path "/resources/org-mode/lisp/")
+              '(require 'package)
               '(package-initialize)
               '(setq package-list '(htmlize clojure-mode clojure-mode-extra-font-locking))
               '(setq package-archives '(("elpa" . "http://tromey.com/elpa/")
