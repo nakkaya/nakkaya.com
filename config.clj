@@ -34,9 +34,4 @@
               '(set-face-foreground 'font-lock-keyword-face "#ff5f00")
               '(set-face-foreground 'font-lock-function-name-face "#d7af00")
               '(set-face-foreground 'font-lock-builtin-face "#afd700")
-              '(set-face-foreground 'font-lock-comment-face "#008787")]
-
- :host "188.166.95.143"
- :user "root"
- :deploy-dir "/var/nakkaya.com"
- :rsync "/usr/bin/rsync"]
+              '(set-face-foreground 'font-lock-comment-face "#008787")]]

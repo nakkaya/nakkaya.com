@@ -7,7 +7,7 @@ view: clean build
 	java -jar  static-app.jar --jetty
 
 deploy:
-	rsync --progress -az html/ base:/var/nakkaya.com/
+	s3cmd sync --delete-removed --guess-mime-type --acl-public html/ s3://nakkaya.com/
 
 clean:
 	rm -rf html/
