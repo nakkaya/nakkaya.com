@@ -30,6 +30,7 @@ function tangle(){
 
     rm -f ~/.tmux.conf
     tangleFile posts/ 2014-01-05-tmux-configuration
+    chmod +x ~/.bin/ta-dev
 
     rm -f ~/.bashrc
     rm -f ~/.profile
@@ -52,20 +53,20 @@ case "$1" in
        sudo apt-get update
        sudo apt-get upgrade
        sudo apt-get install                                \
-            emacs24 org-mode tmux xsel caffeine            \
+            emacs org-mode tmux xsel caffeine              \
             bash-completion gnupg ubuntu-restricted-extras \
             openssh-server sshfs                           \
             firefox chromium-browser libgnome2-bin         \
-            git build-essential default-jdk                \
+            git build-essential openjdk-8-jdk              \
             cmake valgrind cppcheck automake libboost-all-dev
 
        rm -f ~/.emacs
        echo "(load-file \"~/source/emacs/init.el\")" > ~/.emacs
-       
+
+       mkdir -p ~/.bin/
        wget https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein
        mv lein ~/.bin/
        chmod +x ~/.bin/lein
-       chmod +x ~/.bin/ta-dev
 
        wget https://raw.githubusercontent.com/nakkaya/nakkaya.com/master/resources/site/dotfiles/desktop-files/arduino.desktop -P ~/.local/share/applications
        wget https://raw.githubusercontent.com/nakkaya/nakkaya.com/master/resources/site/dotfiles/desktop-files/refbox.desktop -P ~/.local/share/applications
