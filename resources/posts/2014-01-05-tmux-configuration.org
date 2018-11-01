@@ -40,13 +40,6 @@ Setup key bindings,
   bind-key m command-prompt -p "move window to:"  "swap-window -t '%%'"
 #+END_SRC
 
-Enable UTF-8,
-
-#+BEGIN_SRC fundamental :tangle ~/.tmux.conf
-  setw -g utf8 on
-  set -g status-utf8 on
-#+END_SRC
-
 #+BEGIN_SRC fundamental :tangle ~/.tmux.conf
   setw -g window-status-current-format "|#I:#W|"
 #+END_SRC
