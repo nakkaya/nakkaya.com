@@ -60,6 +60,8 @@ case "$1" in
             git build-essential openjdk-8-jdk              \
             cmake valgrind cppcheck automake libboost-all-dev
 
+       sudo adduser $USER dialout
+
        rm -f ~/.emacs
        echo "(load-file \"~/source/emacs/init.el\")" > ~/.emacs
 
