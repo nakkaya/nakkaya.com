@@ -39,9 +39,6 @@
   export LC_ALL=en_US.UTF-8  
   export LANG=en_US.UTF-8
   
-  source ~/.bin/sftpfs_comp
-  source ~/.bin/vm_comp
-  
   if [ -f /etc/bash_completion.d/git-prompt ];
   then
       source /etc/bash_completion.d/git-prompt
@@ -77,19 +74,15 @@
     
     alias df="df -h"
     alias g='git'
+    alias gst='git status'
+    alias gct='git commit -a -m'
+    alias gpl='git pull --all'
+    alias gph='git push --all'
     alias ga='git annex'
     alias rm='rm -i'
-    alias servedir='python -m SimpleHTTPServer'
-    # Get readable list of network IPs
     alias pgrep="ps ax | grep -i"
     alias cls="clear"
-    alias youtube-dl-1080="youtube-dl -f 37"
-    alias youtube-dl-720="youtube-dl -f 22"
-    alias sbuild="java -jar static-app.jar --build"
-    alias sjetty="java -jar static-app.jar --jetty"
     alias du="du -hcs"
-    
-    alias bootstrap_new_machine="wget -qO- https://raw.github.com/nakkaya/nakkaya.com/master/resources/site/dotfiles/bootstrap.sh | bash"
 #+END_SRC
 
 Autocomplete for 'g' as well,
@@ -111,15 +104,6 @@ Autocomplete for 'g' as well,
 #+END_SRC
 
 #+BEGIN_SRC sh :tangle ~/.bashrc
-  if [ -f ~/.mrconfig ];
-  then
-      function _mr_completion() {
-          perl -ne 'print "$1 " if /^git_(.+)\s+=/' ~/.mrconfig
-      }
-      complete -W "$(_mr_completion)" mr
-      complete -W "$(_mr_completion)" m
-  fi
-  
   if [ -d /media/$USER ];
   then
   
@@ -147,26 +131,10 @@ Autocomplete for 'g' as well,
       eval "cd ~/source/${1}"
   }
   complete -W "`cd ~/source/;compgen -A directory`" src
-  
-  anx() {
-      eval "cd ~/annex/${1}"
-  }
-  complete -W "`cd ~/annex/;compgen -A directory`" anx
-  
-  runx () {
-      DISPLAY=:0.0 ${1} &
-  }
 #+END_SRC
 
 #+BEGIN_SRC sh :tangle ~/.bashrc
   case "$OSTYPE" in
-      cygwin)
-          alias open="cmd /c start"
-          alias ls="ls -aG --color"
-          export PATH="$PATH:/cygdrive/c/Dropbox/bash"
-          clear () { command.COM /c cls;}
-          export -f clear
-          ;;
       linux-gnu)
           alias open="gnome-open"
           alias ls="ls -aG --color"
@@ -181,155 +149,6 @@ Autocomplete for 'g' as well,
   esac
 #+END_SRC
 
-#+BEGIN_SRC sh :mkdirp yes :tangle ~/.bin/sftpfs_comp
-  _sftpfs(){
-      local cur prev opts base
-      COMPREPLY=()
-      cur="${COMP_WORDS[COMP_CWORD]}"
-      prev="${COMP_WORDS[COMP_CWORD-1]}"
-  
-      #  The basic options we'll complete.
-      opts="mount umount"
-  
-      #  Complete the arguments to some of the basic commands.
-      case "${prev}" in
-          mount)
-              local running=$(grep ^Host $HOME/.ssh/config | awk '{print $2}' | grep -v \*)
-              COMPREPLY=( $(compgen -W "${running}" -- ${cur}) )
-              return 0
-              ;;
-          umount)
-              local running=$(ls --color=none /media/$USER/ | grep -v '\.')
-              COMPREPLY=( $(compgen -W "${running}" -- ${cur}) )
-              return 0
-              ;;
-          ,*)
-              ;;
-      esac
-  
-      COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
-      return 0
-  }
-  complete -F _sftpfs sftpfs
-#+END_SRC
-
-#+BEGIN_SRC sh :mkdirp yes :tangle ~/.bin/sftpfs
-  case "$OSTYPE" in
-      linux-gnu)
-              mount_point="/media/$USER/$2"
-          ;;
-      darwin*)
-              mount_point="/Volumes/$2"            
-          ;;
-  esac
-  echo "Location -> " $mount_point
-
-  case "${1}" in
-      mount)
-              if [ -d "$mount_point" ]; then
-                  echo "Already Mounted"
-              fi
-              mkdir -p $mount_point
-              mount_command="sshfs $2:/ $mount_point -oauto_cache,reconnect,compression=no,Ciphers=arcfour"
-              if [ ! -z $3 ]
-              then
-                  echo "Port $3"
-                  mount_command="$mount_command,port=$3"
-                  echo $mount_command
-              fi 
-              eval $mount_command
-              ;;
-      umount)
-              echo "Unmounting" $2
-
-              if [ ! -d "$mount_point" ]; then
-                  echo "Not Mounted"
-              fi
-              
-              if sudo umount $mount_point; then
-                  rm -rf $mount_point
-              fi
-              ;;
-      ,*)
-              ;;
-  esac
-#+END_SRC
-
-#+BEGIN_SRC sh :mkdirp yes :tangle ~/.bin/vm_comp
-  _vm() {
-      local cur prev opts base
-      COMPREPLY=()
-      cur="${COMP_WORDS[COMP_CWORD]}"
-      prev="${COMP_WORDS[COMP_CWORD-1]}"
-  
-      #  The basic options we'll complete.
-      opts="start start-head stop unplug running"
-  
-      #  Complete the arguments to some of the basic commands.
-      case "${prev}" in
-          start)
-              local running=$(for x in `VBoxManage list vms | awk '{print $1}'`; do echo ${x} ; done )
-              COMPREPLY=( $(compgen -W "${running}" -- ${cur}) )
-              return 0
-              ;;
-          start-head)
-              local running=$(for x in `VBoxManage list vms | awk '{print $1}'`; do echo ${x} ; done )
-              COMPREPLY=( $(compgen -W "${running}" -- ${cur}) )
-              return 0
-              ;;
-          stop)
-              local names=$(for x in `VBoxManage list runningvms | awk '{print $1}'`; do echo ${x} ; done )
-              COMPREPLY=( $(compgen -W "${names}" -- ${cur}) )
-              return 0
-              ;;
-          unplug)
-              local names=$(for x in `VBoxManage list runningvms | awk '{print $1}'`; do echo ${x} ; done )
-              COMPREPLY=( $(compgen -W "${names}" -- ${cur}) )
-              return 0
-              ;;
-          *)
-              ;;
-      esac
-  
-      COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
-      return 0
-  }
-  complete -F _vm vm
-#+END_SRC
-
-#+BEGIN_SRC sh :mkdirp yes :tangle ~/.bin/vm
-  case "${1}" in
-      start)
-              echo "Starting" $2
-              VBoxHeadless --startvm $2 --vrde off &
-              disown
-              return 0
-              ;;
-      start-head)
-              echo "Starting" $2
-              VBoxManage startvm $2 &
-              disown
-              return 0
-              ;;
-      stop)
-              echo "Stopping" $2
-              VBoxManage controlvm $2 acpipowerbutton
-              return 0
-              ;;
-      unplug)
-              echo "Unplugging" $2
-              VBoxManage controlvm $2 poweroff
-              return 0
-              ;;
-      running)
-              VBoxManage list runningvms
-              return 0
-              ;;
-      *)
-              ;;
-  esac
-#+END_SRC
-
 #+BEGIN_SRC sh :tangle ~/.profile
   # if running bash
   if [ -n "$BASH_VERSION" ]; then
@@ -337,9 +156,5 @@ Autocomplete for 'g' as well,
       if [ -f "$HOME/.bashrc" ]; then
           . "$HOME/.bashrc"
       fi
-  fi
-  
-  if [ -d "$HOME/.bin/" ] ; then
-      PATH="$HOME/.bin:$PATH"
   fi
 #+END_SRC
