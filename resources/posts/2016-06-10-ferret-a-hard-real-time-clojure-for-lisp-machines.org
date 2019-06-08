@@ -176,13 +176,13 @@ means the line is in the middle of the robot.
                                         :continuous false))
 #+end_src
 
-A state machine glues all of the above together. *state-machine* macro
+A state machine glues all of the above together. *fsm* macro
 compiles a function, which when called will iterate through its
 transition states.
 
 #+begin_src clojure
   (def program
-    (state-machine
+    (fsm
      (states
       (boot (motors)
             (gpio/pin-mode 53 :output)

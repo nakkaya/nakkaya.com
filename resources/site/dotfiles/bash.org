@@ -74,6 +74,10 @@
     
     alias df="df -h"
     alias g='git'
+    alias gst='git status'
+    alias gct='git commit -a -m'
+    alias gpl='git pull --all'
+    alias gph='git push --all'
     alias ga='git annex'
     alias rm='rm -i'
     alias pgrep="ps ax | grep -i"
@@ -129,9 +133,5 @@ Autocomplete for 'g' as well,
       if [ -f "$HOME/.bashrc" ]; then
           . "$HOME/.bashrc"
       fi
-  fi
-  
-  if [ -d "$HOME/.bin/" ] ; then
-      PATH="$HOME/.bin:$PATH"
   fi
 #+END_SRC

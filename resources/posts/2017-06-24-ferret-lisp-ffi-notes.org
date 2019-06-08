@@ -195,7 +195,7 @@ implementing the =lambda_i= and overriding =invoke= method.
     
   public:
 
-    size_t type() const { return runtime::type::hih; }
+    type_t type() const final { return type_id<hih>; }
 
     bool equals(var const & o) const { return (this == o.get()); }
 
