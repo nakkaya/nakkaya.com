@@ -2,16 +2,16 @@
 #+description: Nurullah Akkaya's Public Photosets
 #+OPTIONS: toc:nil
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <h4>Solar Racing</h4>
-#+END_HTML
+#+END_EXPORT
 
  - [[http://photos.nakkaya.com/2c932014-5ab8-447c-8667-d7caf34b204e][Sasol 2014 - South Africa - Set 1]]
  - [[http://photos.nakkaya.com/fd8cc176-9af2-432c-89e9-022007f47b9d][Sasol 2014 - South Africa - Set 2]]
  - [[http://photos.nakkaya.com/4dfde55f-93b0-485c-97ae-c4f622f66b09][Sasol 2014 - South Africa - Set 3]]
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <h4>Robocup</h4>
-#+END_HTML
+#+END_EXPORT
 
  - [[http://photos.nakkaya.com/205c4c28-7571-499e-a361-56211d724d38/][NEU International Robotic Tournament North Cyprus 2014]]

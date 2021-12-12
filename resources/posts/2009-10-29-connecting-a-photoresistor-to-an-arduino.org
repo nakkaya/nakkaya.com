@@ -5,9 +5,9 @@ A photoresistor is a resistor whose resistance decreases with increasing
 incident light intensity, using a photoresistor we can make arduino
 sense the intensity of light around it.
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/photoresistor.png" alt="arduino photoresistor" /></p>
-#+end_html
+#+END_EXPORT
 
 Using the [[http://www.arduino.cc/playground/Learning/PhotoResistor][playground]] article as reference, resistor (100K) and
 photoresistor are connected in series. +5V goes to resistor, ground
@@ -47,11 +47,11 @@ So I picked a number in between and used it as threshold, if the reading
 is above the threshold it turns the LED on when its below threshold it
 turns the LED off.
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <p>
     <video src="/video/arduino-photoresistor.mp4" width="80%" controls>
       Looks like HTML5 Video tag did not work you can download
       the video <a href="/video/arduino-photoresistor.mp4">here</a>.
     </video>
   </p>
-#+END_HTML
+#+END_EXPORT

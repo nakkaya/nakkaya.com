@@ -16,9 +16,9 @@ kept switching targets, using decorators we can create loops in the tree
 that way we don't switch targets unless the robot we are going after
 dies.
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p> <img src="/images/post/behavior-tree-decorator.png" alt="behavior tree decorator"/> </p>
-#+end_html
+#+END_EXPORT
 
 *Kill All* sequence demonstrates two decorators used for looping, since 
 at the beginning of the match we don't have any enemies to fight we scan
@@ -36,14 +36,14 @@ composite nodes exists which shuffle their children prior to execution
 such as the one used in the *Strafe* branch which gives us some degree
 of non determinism.
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <p>
     <video src="/video/alter-ego-robocode-2.mp4" width="80%" controls>
       Looks like HTML5 Video tag did not work you can download
       the video <a href="/video/alter-ego-robocode-2.mp4">here</a>.
     </video>
   </p>
-#+END_HTML
+#+END_EXPORT
 
 #+begin_src clojure :mkdirp yes :tangle source/src/gez.clj
   (ns gez

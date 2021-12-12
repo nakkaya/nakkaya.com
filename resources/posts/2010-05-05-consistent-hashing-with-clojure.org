@@ -24,9 +24,9 @@ only /number-of-keys/number-of-nodes/ keys to be redistributed. It
 achieves this by using the same hash function to both hash objects and
 nodes,
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/consistent-hash-1.png" alt="consistent hashing diagram 1" /></p>
-#+end_html
+#+END_EXPORT
 
 Imagine you have three objects to distribute and three nodes to store
 them in, when you hash them all they will get distributed along a line,
@@ -38,9 +38,9 @@ stored in Node B, Object 2 in Node C and so on. So each node holds
 objects with hashes lower than itself but greater than the
 preceding node.
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/consistent-hash-2.png" alt="consistent hashing diagram 2" /></p>
-#+end_html
+#+END_EXPORT
 
 But what happens when we remove a node, above diagram shows the cache
 after Node C is removed. When we apply the same logic Object 1 still

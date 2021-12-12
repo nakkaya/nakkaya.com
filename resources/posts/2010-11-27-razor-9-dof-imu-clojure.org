@@ -4,9 +4,9 @@
 Something I put together to visualize the data coming from a [[http://www.sparkfun.com/products/9623][Razor
 9DOF IMU]], in case I need it later.
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <img src="/images/post/razor-imu-gui.png" />
-#+END_HTML
+#+END_EXPORT
 
 #+begin_src clojure
   (ns razor.core

@@ -94,14 +94,14 @@ We paint the resulting image on to a JLabel and put it in a JFrame.
   (draw -2.1 -1.4 3.0 3.1 32 400 400)
 #+end_example
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/mandelbrot-32.png" alt="mandelbrot fractal" /></p>
-#+end_html
+#+END_EXPORT
 
 #+begin_example
   (draw -2.1 -1.4 3.0 3.1 100 400 400)
 #+end_example
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/mandelbrot-100.png" alt="mandelbrot fractal" /></p>
-#+end_html
+#+END_EXPORT

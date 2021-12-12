@@ -6,9 +6,9 @@ don't have much use for them other than loading them in to Google
 Earth and brag about being there and done that, so I thought I would
 parse the file myself and paint the route on the World Wind.
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/gpx.png" alt="gpx world wind" /></p>
-#+end_html
+#+END_EXPORT
 
 GPX files are XML files, containing the coordinates you have been to, if
 you draw a line through these points you can rebuild the route you have

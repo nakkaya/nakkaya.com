@@ -11,10 +11,10 @@ points for the bottom layer, i.e altitude hold controls pitch hold to
 climb or decent to the desired altitude and heading hold controls roll
 hold to turn the aircraft to the desired heading.
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <img src="/images/post/clojure-autopilot.png" />
   <p />
-#+END_HTML
+#+END_EXPORT
 
 Even though a simple proportional controller worked for the previous
 example it won't work for the real thing, the reason being that a
@@ -33,11 +33,11 @@ just like a human would, derivative term tries to predict the future by
 calculating a response to the rate of change of the error basically it
 makes the controller anticipate approaching the set point. 
 
-#+begin_html
+#+BEGIN_EXPORT html
   \begin{equation}
     correction = K_p \times error + K_d \times (error - prevError) + K_i \times (sumOfErrors)
   \end{equation}
-#+end_html
+#+END_EXPORT
 
 PID formula won't change from application to application, what will
 change however are those constants (K_p, K_d and K_i). i.e. the more you

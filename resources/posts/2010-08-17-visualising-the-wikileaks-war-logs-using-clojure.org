@@ -44,9 +44,9 @@ Starting with the obvious,
                                       CategoryLabelPositions/UP_90))))
 #+end_src
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/incanter-taliban-casualties.png" alt="incanter-taliban-casualties" /></p>
-#+end_html
+#+END_EXPORT
 
 #+begin_src clojure
   (def all-casualties  
@@ -62,9 +62,9 @@ Starting with the obvious,
                     :legend true)))
 #+end_src
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/incanter-all-casualties.png" alt="incanter-all-casualties" /></p>
-#+end_html
+#+END_EXPORT
 
 #+begin_src clojure
   (def ied-region (let [dat (to-map ied-region)] 
@@ -74,9 +74,9 @@ Starting with the obvious,
                                :legend true)))
 #+end_src
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/incanter-ied-region.png" alt="incanter-ied-region" /></p>
-#+end_html
+#+END_EXPORT
 
 Here comes the tricky part, marking latitudes and longitudes on a
 map. There are various map projections with different usages, and
@@ -159,12 +159,12 @@ All thats left to do is to iterate the data set and paint,
 
 All deaths,
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/incanter-all-death.png" alt="incanter-all-death" /></p>
-#+end_html
+#+END_EXPORT
 
 All woundings,
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/incanter-all-woundings.png" alt="incanter-all-woundings" /></p>
-#+end_html
+#+END_EXPORT

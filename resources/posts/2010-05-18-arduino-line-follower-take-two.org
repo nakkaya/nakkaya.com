@@ -24,21 +24,21 @@ Pin arrangement for this particular project,
  - Reflectance Sensor #7 Digital Pin 8
  - Reflectance Sensor #8 Digital Pin 9
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <p><img src="/images/post/arduino-line-follower.jpeg" alt="arduino line follower 1"></p>
-#+END_HTML
+#+END_EXPORT
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <p><img src="/images/post/arduino-line-follower-2.jpeg" alt="arduino line follower 2"></p>
-#+END_HTML
+#+END_EXPORT
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <p><img src="/images/post/arduino-line-follower-3.jpeg" alt="arduino line follower 3"></p>
-#+END_HTML
+#+END_EXPORT
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <p><img src="/images/post/arduino-line-follower-4.jpeg" alt="arduino line follower 4"></p>
-#+END_HTML
+#+END_EXPORT
 
 Code for this project is divided into two modules, engine and
 navigation. Engine is responsible for all movement while navigation is
@@ -361,20 +361,20 @@ in config.h). We set the motor speeds to these freshly calculated motor
 speeds. These pretty much covers the meat of the code, following videos
 shows the robot in action.
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <p>
     <video src="/video/arduino-line-follower.m4v" width="80%" controls>
       Looks like HTML5 Video tag did not work you can download
       the video <a href="/video/arduino-line-follower.m4v">here</a>.
     </video>
   </p>
-#+END_HTML
+#+END_EXPORT
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <p>
     <video src="/video/arduino-line-follower-1.m4v" width="80%" controls>
       Looks like HTML5 Video tag did not work you can download
       the video <a href="/video/arduino-line-follower-1.m4v">here</a>.
     </video>
   </p>
-#+END_HTML
+#+END_EXPORT

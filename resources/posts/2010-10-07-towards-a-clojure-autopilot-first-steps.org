@@ -13,14 +13,14 @@ aircraft which makes it a great simulation environment. This document
 goes over the process of creating a simple [[http://en.wikipedia.org/wiki/Proportional_control][proportional controller]] for
 stabilizing the aircraft.
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <p>
     <video src="/video/simple-autopilot.m4v" width="80%" controls>
       Looks like HTML5 Video tag did not work you can download
       the video <a href="/video/simple-autopilot.m4v">here</a>.
     </video>
   </p>
-#+END_HTML
+#+END_EXPORT
 
 Programs can interact with FlightGear through FlightGear's [[http://wiki.flightgear.org/index.php/Property_Tree][property
 tree]], it contains

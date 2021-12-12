@@ -31,9 +31,9 @@ that a trace is left of where it has traveled.
     (show turtle))
 #+end_src
 
-#+begin_html
+#+BEGIN_EXPORT html
   <img src="/images/post/fib.png" alt="fractal fern">
-#+end_html
+#+END_EXPORT
 
 #+begin_src clojure
   (defn fern [turtle size]
@@ -55,6 +55,6 @@ that a trace is left of where it has traveled.
     (write turtle "test.png"))
 #+end_src
 
-#+begin_html
+#+BEGIN_EXPORT html
   <img src="/images/post/fern.png" alt="fractal tree">
-#+end_html
+#+END_EXPORT

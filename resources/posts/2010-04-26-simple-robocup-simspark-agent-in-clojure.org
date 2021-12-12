@@ -11,14 +11,14 @@ how to install SimSpark you can checkout their [[http://simspark.sourceforge.net
 pages. (For Mac OS X they provide pre-compiled binaries check out their
 sourceforge download section.)
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <p>
     <video src="/video/robocup-simspark-agent.mp4" width="80%" controls>
       Looks like HTML5 Video tag did not work you can download
       the video <a href="/video/robocup-simspark-agent.mp4">here</a>.
     </video>
   </p>
-#+END_HTML
+#+END_EXPORT
 
 #+begin_src clojure
   (ns robocup.core

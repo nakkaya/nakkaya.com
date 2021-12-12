@@ -5,14 +5,14 @@ This write up is part two of cloning pong, we will modify the pong
 game we created in [[http://nakkaya.com/2009/12/19/cloning-pong-part-1/][part one]], to be able to control it with knobs, like
 the original using [[http://www.arduino.cc/][Arduino]].
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <p>
     <video src="/video/clojure-arduino-pong.mp4" width="80%" controls>
       Looks like HTML5 Video tag did not work you can download
       the video <a href="/video/clojure-arduino-pong.mp4">here</a>.
     </video>
   </p>
-#+END_HTML
+#+END_EXPORT
 
 To get Java communicate via Serial Port there are two options,
 [[http://java.sun.com/products/javacomm/][JavaComm]] API and [[http://users.frii.com/jarvi/rxtx/][rxtx]] API. Arduino uses rxtx so I went with
@@ -141,6 +141,6 @@ reading between 0 and board height and write it to serial. Hardware
 setup looks like the following, fritzing project is also available check
 below for a list of files.
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/arduino-pong-schema.png" alt="clojure arduino pong" /></p>
-#+end_html
+#+END_EXPORT

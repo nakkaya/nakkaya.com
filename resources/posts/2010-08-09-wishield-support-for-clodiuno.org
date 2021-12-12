@@ -40,11 +40,11 @@ through Firmata to another Arduino,
   ;;(close wishield)
 #+end_src
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <p>
     <video src="/video/wishield-demo.mp4" width="80%" controls>
       Looks like HTML5 Video tag did not work you can download
       the video <a href="/video/wishield-demo.mp4">here</a>.
     </video>
   </p>
-#+END_HTML
+#+END_EXPORT

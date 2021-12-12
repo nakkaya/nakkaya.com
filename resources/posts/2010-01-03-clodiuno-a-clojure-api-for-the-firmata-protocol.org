@@ -55,7 +55,7 @@ examples folder included with the project.
 This will make your Arduino call for help. Result will be similar to the
 following but with a single LED.
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p id='preview'>Player</p>
   <script type='text/javascript' src='/swfobject.js'></script>
   <script type='text/javascript'>
@@ -65,4 +65,4 @@ following but with a single LED.
           s1.addParam('flashvars','file=/video/arduino-led.mp4');
           s1.write('preview');
   </script>
-#+end_html
+#+END_EXPORT

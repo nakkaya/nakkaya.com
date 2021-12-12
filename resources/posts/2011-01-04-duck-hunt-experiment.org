@@ -11,14 +11,14 @@ reading which is used as a reference point, then it paints each target
 on the frame white and takes another reading the difference between the
 two is used to determine if the gun is pointing to the target or not.
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <p>
     <video src="/video/duck-hunt.m4v" width="80%" controls>
       Looks like HTML5 Video tag did not work you can download
       the video <a href="/video/duck-hunt.m4v">here</a>.
     </video>
   </p>
-#+END_HTML
+#+END_EXPORT
 
 #+begin_src clojure
   (ns duck-hunt
@@ -45,9 +45,9 @@ two is used to determine if the gun is pointing to the target or not.
 On the Arduino side we don't need much, we only need a [[http://en.wikipedia.org/wiki/Photoresistor][photoresistor]] /
 [[http://en.wikipedia.org/wiki/Photodiode][photodiode]] and a button. 
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <img src="/images/post/duck-hunt-schema.png" />
-#+END_HTML
+#+END_EXPORT
 
 #+begin_src clojure
   (defn place-duck []

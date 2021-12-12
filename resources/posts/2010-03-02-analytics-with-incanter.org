@@ -108,9 +108,9 @@ visualize the data,
   (view (col-names (to-dataset pageview) [:title :path :views]))
 #+end_src
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/analytics_incanter_1.png" alt="incanter dataset" /></p>
-#+end_html
+#+END_EXPORT
 
 or we can filter the data leaving only portions of it which we are
 interested, such as pages with views more than 200 and lower than 800,
@@ -166,9 +166,9 @@ the information we are interested,
                    :y-label "Visits"))
 #+end_src
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/analytics_incanter_2.png" alt="incanter bar-chart plot" /></p>
-#+end_html
+#+END_EXPORT
 
 #+begin_src clojure
   (def view-date (data-feed analytics 
@@ -186,6 +186,6 @@ the information we are interested,
                     :y-label "Visits"))
 #+end_src
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/analytics_incanter_3.png" alt="incanter line-chart plot" /></p>
-#+end_html
+#+END_EXPORT

@@ -7,14 +7,14 @@ for it, the idea here was to see if I can control a camera from
 Clojure because a drone without a camera is useless.
 
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <p>
     <video src="/video/gphoto-time-lapse.mp4" width="80%" controls>
       Looks like HTML5 Video tag did not work you can download
       the video <a href="/video/gphoto-time-lapse.mp4">here</a>.
     </video>
   </p>
-#+END_HTML
+#+END_EXPORT
 
 This time instead of calling /libgphoto2/ functions directly, I used a
 custom library to interact with /libgphoto2/ that way I only

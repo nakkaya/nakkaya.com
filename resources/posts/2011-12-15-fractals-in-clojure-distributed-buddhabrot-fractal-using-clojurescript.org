@@ -14,9 +14,9 @@ code did compile to JavaScript I only did minor cosmetic changes and
 noir did collected the data from clients but clients were way too slow
 to make any difference.
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p> <img src="/images/post/clj-fractal-buddhabrot.png" /> </p>
-#+end_html
+#+END_EXPORT
 
 #+begin_src clojure :exports none :mkdirp yes :tangle source/project.clj :eval never :exports none
   (defproject buddhabrot "1.0.0-SNAPSHOT"

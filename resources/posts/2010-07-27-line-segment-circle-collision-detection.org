@@ -11,9 +11,9 @@ then we check each circle for collision with the line segment if non
 collides we assume it is a safe pass, following images shows a safe
 pass where non of the three opposing players can intercept the pass,
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/line-segment-collision.png" alt="line segment collision" /></p>
-#+end_html
+#+END_EXPORT
 
 #+begin_src clojure
   (defn closest-point-on-line [a b c]

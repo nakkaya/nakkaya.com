@@ -21,10 +21,10 @@ captured from my iPhone along the X axis,
     (view (line-chart time acc) :width 1400 :height 200))
 #+end_src
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <img src="/images/post/x-acc-raw.png" />
   <p/>
-#+END_HTML
+#+END_EXPORT
 
 Running the data set through the low pass filter, removes the jittering
 and gives us smoother values,
@@ -38,10 +38,10 @@ and gives us smoother values,
     (view (line-chart time acc) :width 1400 :height 200))
 #+end_src
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <img src="/images/post/x-acc-low-pass.png" />
   <p/>
-#+END_HTML
+#+END_EXPORT
 
 #+begin_src clojure
   (ns filter.core)

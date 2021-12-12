@@ -4,9 +4,9 @@
 Buddhabrot is a special rendering of the [[http://en.wikipedia.org/wiki/Mandelbrot_set][Mandelbrot]]
 fractal. Rendering technique we will use is developed by [[http://www.superliminal.com/fractals/bbrot/bbrot.htm][Melinda Green]].
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/buddhabrot-400mil400ite.png" alt="buddhabrot fractal" /></p>
-#+end_html
+#+END_EXPORT
 
 First we create a 2D array that will map to the pixel's on the
 screen. Next we start picking random points on the image and apply the
@@ -165,26 +165,26 @@ Check the result at intervals until you are satisfied.
 
 Below are the some shots on how the image progresses,
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/buddhabrot-10mil.png" alt="buddhabrot fractal" /></p>
-#+end_html
+#+END_EXPORT
 
 10 Million Points
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/buddhabrot-30mil.png" alt="buddhabrot fractal" /></p>
-#+end_html
+#+END_EXPORT
 
 30 Million Points
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/buddhabrot-60mil.png" alt="buddhabrot fractal" /></p>
-#+end_html
+#+END_EXPORT
 
 60 Million Points
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/buddhabrot-400mil400ite.png" alt="buddhabrot fractal" /></p>
-#+end_html
+#+END_EXPORT
 
 400 Million Points 400 Iterations

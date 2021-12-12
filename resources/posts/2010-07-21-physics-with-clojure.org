@@ -116,6 +116,6 @@ let the engine step 0.05 seconds,
       (.start timer)))
 #+end_src
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/ode4j-pendulum.png" alt="ode4j bang-bang pendulum" /></p>
-#+end_html
+#+END_EXPORT

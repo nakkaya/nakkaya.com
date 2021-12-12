@@ -99,14 +99,14 @@ function. Now lets see the results,
   (view (sktch pop-given) :size [1052 744])
 #+end_example
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/incanter-pop-given.png" alt="incanter processing map" /></p>
-#+end_html
+#+END_EXPORT
 
 #+begin_example
   (view (sktch pop-taken) :size [1052 744])
 #+end_example
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/incanter-pop-taken.png" alt="incanter processing map" /></p>
-#+end_html
+#+END_EXPORT

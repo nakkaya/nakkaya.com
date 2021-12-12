@@ -9,9 +9,9 @@ approximating the root first then iterating it using the formula
 with each iteration we get a more accurate root, this is
 done until we get a accurate enough root.
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/newton-fractal-1.png" alt="newton fractal" /></p>
-#+end_html
+#+END_EXPORT
 
 #+begin_src clojure
   (ns newton.core
@@ -87,18 +87,18 @@ convergence to a particular solution).
         0.000006 0.003 [512 512] [-1.0 1.0 -1.0 1.0])
 #+end_src
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/newton-fractal-2.png" alt="newton fractal" /></p>
-#+end_html
+#+END_EXPORT
 
 #+begin_src clojure
   (draw (fn [z] (+ (- (* z z z) (* 2 z)) 2))
         0.000006 0.003 [512 512] [-1.0 1.0 -1.0 1.0])
 #+end_src
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/newton-fractal-3.png" alt="newton fractal" /></p>
-#+end_html
+#+END_EXPORT
 
 #+begin_src clojure
   (draw (fn [z] 
@@ -107,15 +107,15 @@ convergence to a particular solution).
         0.000006 0.003 [512 512] [-2.0 2.0 -2.0 2.0])
 #+end_src
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/newton-fractal-4.png" alt="newton fractal" /></p>
-#+end_html
+#+END_EXPORT
 
 #+begin_src clojure
   (draw (fn [z] (- (* z z z z) 1)) 
         0.000006 0.003 [512 512] [-1.0 1.0 -1.0 1.0])
 #+end_src
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/newton-fractal-1.png" alt="newton fractal" /></p>
-#+end_html
+#+END_EXPORT

@@ -6,9 +6,9 @@ Another round of code dump, I've been playing with an A.R. Drone,
 following is a simple autopilot implementation which uses an overhead
 camera for tracking and guidance.
 
-#+begin_html
+#+BEGIN_EXPORT html
   <center><p><img src="/images/post/ar-drone-overhad-cam.png" width="50%" alt="A Clojure Autopilot for Parrot A.R. Drone" /></p></center>
-#+end_html
+#+END_EXPORT
 
 The way this whole setup works is, I've glued two circles on top of
 the drone, an overhead camera tracks these two circles. Big blue

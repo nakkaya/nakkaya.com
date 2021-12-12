@@ -14,9 +14,9 @@ afternoon this was before I actually made a google search and found
 out that there a lot of them in production. I scrapped the idea,
 following is the meat of the code if anyone is interested.
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/temp-mailbox.png" alt="Fractal Fern Explained" /></p>
-#+end_html
+#+END_EXPORT
 
 #+name: inboxes
 #+begin_src clojure

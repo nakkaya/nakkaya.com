@@ -11,9 +11,9 @@ From [[http://en.wikipedia.org/wiki/Rapidly-exploring_random_tree][Wikipedia]],
  sample already in the tree.
 #+end_quote
 
-#+begin_html
+#+BEGIN_EXPORT html
   <img src="/images/post/rrt-5-0.png" />
-#+end_html
+#+END_EXPORT
 
 #+begin_src clojure
   (ns rrt
@@ -154,25 +154,25 @@ and search,
   (view w (vector-2d 10 10) (vector-2d 600 400) 15 0.3)
 #+end_src
 
-#+begin_html
+#+BEGIN_EXPORT html
   <img src="/images/post/rrt-15-0.3.png" />
-#+end_html
+#+END_EXPORT
 
 #+begin_src clojure
   (view w (vector-2d 10 10) (vector-2d 600 400) 15 0.1)
 #+end_src
 
-#+begin_html
+#+BEGIN_EXPORT html
   <img src="/images/post/rrt-15-0.1.png" />
-#+end_html
+#+END_EXPORT
 
 #+begin_src clojure
   (view w (vector-2d 10 10) (vector-2d 400 400) 50 0.3)
 #+end_src
 
-#+begin_html
+#+BEGIN_EXPORT html
   <img src="/images/post/rrt-50-0.3.png" />
-#+end_html
+#+END_EXPORT
 
 To give you an idea about its performance following table shows the
 average time for 1000 path finds with various /epsilon/ and /p-goal/

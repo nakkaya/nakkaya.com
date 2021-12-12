@@ -9,14 +9,14 @@ it here, the only difference is that instead of dropping a sphere onto
 a surface, this example stacks some boxes on top of each other and
 shoots them with a sphere. You can grab JBullet from [[http://clojars.org/org.clojars.nakkaya/jbullet][Clojars]].
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <p>
     <video src="/video/jbullet-collision.mp4" width="80%" controls>
       Looks like HTML5 Video tag did not work you can download
       the video <a href="/video/jbullet-collision.mp4">here</a>.
     </video>
   </p>
-#+END_HTML
+#+END_EXPORT
 
 #+begin_src clojure
   (ns ball.core

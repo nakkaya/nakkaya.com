@@ -9,14 +9,14 @@ wrapper for Clojure. I found out about [[https://github.com/aperiodic/bifocals][
 [[https://github.com/quil/quil][quil]] while uploading dependencies to Clojars. You can use that instead
 and skip directly to the core namespace.
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <p>
     <video src="/video/ar-drone-kinect.mp4" width="80%" controls>
       Looks like HTML5 Video tag did not work you can download
       the video <a href="/video/ar-drone-kinect.mp4">here</a>.
     </video>
   </p>
-#+END_HTML
+#+END_EXPORT
 
 #+begin_src clojure :mkdirp yes :tangle src/kinect_ardrone/class.clj
   (ns kinect-ardrone.class

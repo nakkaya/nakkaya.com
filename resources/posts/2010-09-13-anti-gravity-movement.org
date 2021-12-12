@@ -20,14 +20,14 @@ point using the formula \(\frac{strength}{distance\^n}\), summing all the forces
 from all the points on the map will yield the total gravitational force
 acting on us then we let it push us in whatever direction it push us in.
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <p>
     <video src="/video/anti-gravity-movement.mp4" width="80%" controls>
       Looks like HTML5 Video tag did not work you can download
       the video <a href="/video/anti-gravity-movement.mp4">here</a>.
     </video>
   </p>
-#+END_HTML
+#+END_EXPORT
 
 All vector operations used are from my [[http://github.com/nakkaya/vector-2d][vector-2d]] library you can grab it
 from [[http://clojars.org/vector-2d][clojars]].

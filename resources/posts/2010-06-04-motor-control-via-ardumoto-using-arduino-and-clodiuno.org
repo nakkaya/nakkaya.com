@@ -11,14 +11,14 @@ Control for motor attached to OUT 1-2 is connected to digital line 12
 3-4 is connected to digital line 13 (direction) and digital line 11
 (PWM).
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <p>
     <video src="/video/clodiuno-ardumoto.mp4" width="80%" controls>
       Looks like HTML5 Video tag did not work you can download
       the video <a href="/video/clodiuno-ardumoto.mp4">here</a>.
     </video>
   </p>
-#+END_HTML
+#+END_EXPORT
 
 #+begin_src clojure
   (ns ardumoto.core

@@ -72,9 +72,9 @@ Everyone says it is very easy to decompile Java applications, but
 actually how easy it is? My favorite tool for this job is the
 [[http://java.decompiler.free.fr/?q=jdgui][JD-GUI]]. Try opening the jar file we produced.
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
 <img src="/images/post/jd-reverse.png" alt="JD-GUI">
-#+END_HTML
+#+END_EXPORT
 
 As you can see, for this application you do not need to do anything to
 crack it, serial is written in plain text. For demonstration purposes,
@@ -208,9 +208,9 @@ We add the yGuard task to our build process, we keep the main class
 intact not to break the jar file, if we open the resulting
 jar file "hello-final.jar" in the JD-GUI,
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
 <img src="/images/post/yguard.png" alt="JD-GUI">
-#+END_HTML
+#+END_EXPORT
 
 We see that the method name has been changed to A, well for this simple
 example it is still trivial to figure out what is going on but in a code

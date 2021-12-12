@@ -588,9 +588,9 @@ List of all functions and macros defined,
 | reverse | pin-mode | digital-write | digital-read | sleep   |
 |---------+----------+---------------+--------------+---------|
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
 </br>
-#+END_HTML
+#+END_EXPORT
 
 * Example Code
 

@@ -5,9 +5,9 @@ This post will cover the process of controlling multiple LED's using an
 Arduino. With this hack we'll make the Arduino, send a distress signal
 using a LED, a second LED is used to indicate the end of SOS cycle.
 
-#+begin_html
+#+BEGIN_EXPORT html
   <img src="/images/post/arduino-led-circuit.jpeg" /> <p />
-#+end_html
+#+END_EXPORT
 
 Both LED's are connected the same way except to different pins (Digital
 10 and 9). +5V is connected to the resistor which is connected to the +
@@ -104,12 +104,12 @@ Main loop just cycles through the letters and blink the yellow LED to
 signal us that the cycle is complete.  When the circuit is hooked-up
 and code uploaded, it should look like this.
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <p>
     <video src="/video/arduino-led.mp4" width="80%" controls>
       Looks like HTML5 Video tag did not work you can download
       the video <a href="/video/arduino-led.mp4">here</a>.
     </video>
   </p>
-#+END_HTML
+#+END_EXPORT
 

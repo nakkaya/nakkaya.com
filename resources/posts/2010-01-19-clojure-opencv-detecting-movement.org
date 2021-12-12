@@ -6,14 +6,14 @@ device. I've put together a sample application which uses difference
 between frames to detect movement and perform collision detection with
 objects on the screen.
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <p>
     <video src="/video/opencv-motion-detection.mp4" width="80%" controls>
       Looks like HTML5 Video tag did not work you can download
       the video <a href="/video/opencv-motion-detection.mp4">here</a>.
     </video>
   </p>
-#+END_HTML
+#+END_EXPORT
 
 #+begin_src clojure
   (ns movement-detect

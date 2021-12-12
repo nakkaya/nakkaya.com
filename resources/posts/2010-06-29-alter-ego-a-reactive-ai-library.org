@@ -30,9 +30,9 @@ one of its children returns success or it runs out of children at which
 point it will return failure. This property allows us to choose which
 behavior to run next,
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p> <img src="/images/post/selector.png" alt="An Example Selector Node"/> </p>
-#+end_html
+#+END_EXPORT
 
 On the other hand a sequence represents a series of behaviors that we
 need to accomplish. A sequence will try to execute all its children from
@@ -40,9 +40,9 @@ left to right, if all of its children succeeds sequence will also
 succeed, if one of its children fails sequence will stop and return
 failure.
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p> <img src="/images/post/sequence.png" alt="An Example Sequence Node"/> </p>
-#+end_html
+#+END_EXPORT
 
 With the above tree, root selector first checks attack sequence,
 attack in return executes action *Player In Range?* if it succeeds we
@@ -52,9 +52,9 @@ to execute Taunt sequence.
 
 Thats enough theory to put together something that works, 
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p> <img src="/images/post/robocode.png" alt="Simple Robocode AI"/> </p>
-#+end_html
+#+END_EXPORT
 
 This represents a very simple AI logic for a robocode bot, every time we
 execute the tree, we scan for others bots in the arena, pick one to
@@ -168,14 +168,14 @@ and execute it,
       (exec (forever tree))))
 #+end_src
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <p>
     <video src="/video/alter-ego-robocode-1.mp4" width="80%" controls>
       Looks like HTML5 Video tag did not work you can download
       the video <a href="/video/alter-ego-robocode-1.mp4">here</a>.
     </video>
   </p>
-#+END_HTML
+#+END_EXPORT
 
 Appendix in the [[https://raw.github.com/nakkaya/nakkaya.com/master/resources/posts/2010-06-29-alter-ego-a-reactive-ai-library.org][raw]] file contains instructions on how to extract the
 source and interact with robocode.

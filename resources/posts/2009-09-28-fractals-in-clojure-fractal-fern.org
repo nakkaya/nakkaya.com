@@ -58,9 +58,9 @@ frond on the left. Transformation three draws the bottom frond on the
 right. Transformation four generates successive copies of the stem and
 bottom fronds to make the complete fern.
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/150px-Fractal-fern-explained.png" alt="Fractal Fern Explained" /></p>
-#+end_html
+#+END_EXPORT
 
 We can call transform repeatedly to get points to draw on the canvas. We
 can use loop for this but there is better way.
@@ -121,14 +121,14 @@ points we want from the sequence.
 Next we paint everything on a BufferedImage and paint that on a
 JLabel, and voila.
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/fern400x400x10000.png" alt="Fractal Fern" /></p>
-#+end_html
+#+END_EXPORT
 
 400 by 400 10,000 points
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/fern400x400x100000.png" alt="Fractal Fern" /></p>
-#+end_html
+#+END_EXPORT
 
 400 by 400 100,000 points

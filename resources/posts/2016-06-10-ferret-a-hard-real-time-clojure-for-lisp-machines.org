@@ -26,9 +26,9 @@ time.
 Starting with a simple example, following shows a simple Arduino Due
 example to generate a Sawtooth wave,
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><center><img src="/images/post/ferret-saw-tooth.jpg" alt="Ferret Real Time Lisp Saw Tooth Wave" width="500" /></center></p>
-#+end_html
+#+END_EXPORT
 
 #+begin_src clojure
   ;; saw.clj
@@ -84,9 +84,9 @@ robot, following shows the built in primitives of Ferret for control
 libraries using an Arduino Due and a [[https://www.pololu.com/product/2510][Zumo]] robot platform.
 
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><center><img src="/images/post/ferret-line-follower.gif" alt="Ferret Real Time Lisp Line Follower" width="750" /></center></p>
-#+end_html
+#+END_EXPORT
 
 #+begin_src clojure
   (configure-runtime! FERRET_DISABLE_STD_OUT true ;;save memory
@@ -217,6 +217,6 @@ button again to continue following the line.
 Pin 53 is used to produce to following oscilloscope output to show the
 jitter in the system.
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><center><img src="/images/post/ferret-line-follower.jpg" alt="Ferret Real Time Lisp Line Follower" width="750" /></center></p>
-#+end_html
+#+END_EXPORT

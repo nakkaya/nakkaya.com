@@ -8,14 +8,13 @@
  :blog-as-index false
  :create-archives false
  :atomic-build true
- :emacs "/usr/bin/emacs"
- :emacs-eval ['(add-to-list 'load-path "/resources/org-mode/lisp/")
-              '(require 'package)
+ :emacs "emacs"
+ :emacs-eval ['(require 'package)
               '(package-initialize)
               '(setq package-list '(htmlize clojure-mode clojure-mode-extra-font-locking))
-              '(setq package-archives '(("elpa" . "http://tromey.com/elpa/")
-                                        ("gnu" . "http://elpa.gnu.org/packages/")
-                                        ("marmalade" . "http://marmalade-repo.org/packages/")))
+              '(setq package-archives
+                     '(("melpa" . "http://melpa.org/packages/")
+	               ("gnu" . "https://elpa.gnu.org/packages/")))
               '(package-initialize)
               '(unless package-archive-contents
                        (package-refresh-contents))
@@ -34,4 +33,4 @@
               '(set-face-foreground 'font-lock-keyword-face "#ff5f00")
               '(set-face-foreground 'font-lock-function-name-face "#d7af00")
               '(set-face-foreground 'font-lock-builtin-face "#afd700")
-              '(set-face-foreground 'font-lock-comment-face "#008787")]]
+              '(set-face-foreground 'font-lock-comment-face "#3d3d3d")]]

@@ -6,12 +6,12 @@ Intelligence]] that is used to define similarities between items called
 [[http://en.wikipedia.org/wiki/Pearson_product-moment_correlation_coefficient][Pearson correlation score]], the formula for this algorithm looks like
 the following,
 
-#+begin_html
+#+BEGIN_EXPORT html
   \begin{equation}
     r = \frac{\sum XY - \frac{\sum X \times \sum Y }{N}}
              {\sqrt{(\sum X^2- \frac{(\sum X)^2}{N}) - (\sum Y^2- \frac{(\sum Y)^2}{N})}}
   \end{equation}
-#+end_html
+#+END_EXPORT
 
 This calculation returns a value between -1 and 1. Two users with a
 similarity of 1 have rated every item identically. Unlike [[http://nakkaya.com/2009/11/11/euclidean-distance-score/][Euclidean Distance Score]]

@@ -158,6 +158,6 @@ Once the image is rendered all thats left to do is to paint it on a panel,
     )
 #+end_src
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <img src="/images/post/ray-tracing.png" />
-#+END_HTML
+#+END_EXPORT

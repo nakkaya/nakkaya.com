@@ -11,9 +11,9 @@ or interesting.
 
 You can reach me at [[mailto:nurullah@nakkaya.com][nurullah@nakkaya.com]]
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <p><img src="/images/nurullahAkkaya.jpeg" /></p>
-#+END_HTML
+#+END_EXPORT
 
 *** Other Places I am At
 

@@ -13,9 +13,9 @@ can and more, so I decided to release it, you can grab it [[http://nakkaya.com/v
 Following snippet demonstrates a quick and dirty way to do lane
 detection.
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <img src="/images/post/lane-detection-raw.png" />
-#+END_HTML
+#+END_EXPORT
 
 #+begin_src clojure
   (ns lane-detection
@@ -35,9 +35,9 @@ when done, ---> works just like the -> in Clojure with the only
 difference being, it will call release for each intermediate
 image. After edge detection we end up with the following,
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <img src="/images/post/lane-detection-edges.png" />
-#+END_HTML
+#+END_EXPORT
 
 #+begin_src clojure
   (defn points [i]
@@ -116,8 +116,8 @@ Dawson-Howe. I made a copy of it for people to play with the code in
 case the original gets deleted.
 #+END_QUOTE
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
 <ul>
  <li><a href="/video/StayingInLane_MPEG4.avi">StayingInLane_MPEG4.avi</a></li>
 </ul>
-#+END_HTML
+#+END_EXPORT

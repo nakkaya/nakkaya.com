@@ -9,9 +9,9 @@ library supports servos on pins 2 through 13, following code
 demonstrates how to control a servo using values read from an analog
 input in this case a [[http://en.wikipedia.org/wiki/Potentiometer][potentiometer]].
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/pot-servo-circuit.png" alt="clodiuno servo setup" /></p>
-#+end_html
+#+END_EXPORT
 
 Code is made up of two functions, one of which I stole directly from the
 Arduino libraries,
@@ -80,11 +80,11 @@ Now we are ready to read input, map it into an angle, then write it to servo,
      (analog-write board servo-pin angle)))
 #+end_example
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <p>
     <video src="/video/arduino-servo-clojure.mp4" width="80%" controls>
       Looks like HTML5 Video tag did not work you can download
       the video <a href="/video/arduino-servo-clojure.mp4">here</a>.
     </video>
   </p>
-#+END_HTML
+#+END_EXPORT

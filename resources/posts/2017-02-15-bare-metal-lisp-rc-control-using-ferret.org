@@ -10,9 +10,9 @@ control systems. See [[http://ferret-lang.org][Project Home Page]]. Mobile platf
 post is a [[https://www.pololu.com/product/2506][Zumo Robot]] (required [[https://github.com/pololu/zumo-shield][third party libraries]]) and the
 microcontroller is a Arduino Uno / Atmega328.
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <p> <img width="60%" src="/images/post/bare-metal-lisp-rc-control-using-ferret.jpg" /> </p>
-#+END_HTML
+#+END_EXPORT
 
 #+name: header
 #+BEGIN_SRC clojure

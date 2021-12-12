@@ -96,10 +96,10 @@ triangle.
   (draw 4 400 400)
 #+end_example
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/sierpinski1.png" alt="Sierpinski Triangle" /></p>
-#+end_html
+#+END_EXPORT
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/sierpinski2.png" alt="Sierpinski Triangle" /></p>
-#+end_html
+#+END_EXPORT

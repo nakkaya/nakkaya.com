@@ -43,7 +43,7 @@
      [:a {:href "/contact.html", :class "page" :rel "author"} "About"]
 
      [:form {:method "get" 
-	     :action "http://www.google.com/search" :id "searchform"}
+	     :action "https://www.google.com/search" :id "searchform"}
       [:div
        [:input {:type "text" :name "q" :class "box" :id "s"}]
        [:input {:type "hidden" :name "sitesearch"
@@ -87,7 +87,7 @@
    [:div
     {:id "footer"}
     [:a {:href "/rss-feed"} " RSS Feed"]
-    [:p "&copy; 2018" 
+    [:p "&copy; 2022" 
      [:a {:href "http://nakkaya.com"} " Nurullah Akkaya"]]]]
   ;;
   ;;

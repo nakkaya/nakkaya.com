@@ -8,9 +8,9 @@ and plot a table depending on the response from the server, they draw
 the graph using a fractal called a [[http://en.wikipedia.org/wiki/Hilbert_curve][Hilbert Curve]], following uses my
 [[http://nakkaya.com/2010/01/09/a-simple-turtle-graphics-implementation-in-clojure/][turtle graphics]] implementation to draw the curve.
 
-#+begin_html
+#+BEGIN_EXPORT html
   <img src="/images/post/hilbert.png" alt="hilbert curve">
-#+end_html
+#+END_EXPORT
 
 #+begin_src clojure
   (ns hilbert

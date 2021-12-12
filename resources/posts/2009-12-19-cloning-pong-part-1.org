@@ -209,6 +209,6 @@ start it's timer.
       (.start timer)))
 #+end_src
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/pong.png" alt="clojure pong" /></p>
-#+end_html
+#+END_EXPORT

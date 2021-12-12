@@ -95,9 +95,9 @@ the letter.
     (show))
 #+end_src
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/dragon-curve.png" alt="Lindenmayer Dragon Curve" /></p>
-#+end_html
+#+END_EXPORT
 
 #+begin_src clojure
   (def pentigree
@@ -115,9 +115,9 @@ the letter.
     (show))
 #+end_src
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/pentigree.png" alt="Lindenmayer System Pentigree" /></p>
-#+end_html
+#+END_EXPORT
 
 #+begin_src clojure
   (def sierpinski-triangle
@@ -136,6 +136,6 @@ the letter.
     (show))
 #+end_src
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/sierpinski-triangle.png" alt="Lindenmayer System Sierpinski Triangle" /></p>
-#+end_html
+#+END_EXPORT

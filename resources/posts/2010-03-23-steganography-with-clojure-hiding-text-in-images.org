@@ -199,9 +199,9 @@ At Down!!".
 
 Image before steganography,
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/drive.png" alt="Image Before Steganography" /></p>
-#+end_html
+#+END_EXPORT
 
 #+begin_example
   steganography=> (encode "drive.png" "Attack At Down!!")
@@ -211,9 +211,9 @@ Image before steganography,
 
 Image after steganography,
 
-#+begin_html
+#+BEGIN_EXPORT html
   <p><img src="/images/post/encoded_drive.png" alt="Image After Steganography" /></p>
-#+end_html
+#+END_EXPORT
 
 You are not limited to encoding text in images, you can embed images
 within images, although I used 4 bits per pixel if you think you can

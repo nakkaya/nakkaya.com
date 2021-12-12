@@ -41,11 +41,11 @@ difference in ranks and square it, when we sum all squares we a get
 similarity score, all that is need to be done is normalize that score so
 that it falls between 0 and 1.
 
-#+begin_html
+#+BEGIN_EXPORT html
 \begin{equation}
   d(p,q) = \sqrt{\sum_{i=1}^{n}(p_i-q_i)^2}
 \end{equation}
-#+end_html
+#+END_EXPORT
 
 This is basically Euclidean distance between two points in n-dimensions,
 except we don't take the square root of the sum, because it is

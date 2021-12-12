@@ -19,14 +19,14 @@ of my old estimate of the measurement, and only trust this new data
 point 20%"). It does get rid of the jiggling behaviour but introduces
 latency.
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
   <p>
     <video src="/video/accelerometer.m4v" width="80%" controls>
       Looks like HTML5 Video tag did not work you can download
       the video <a href="/video/accelerometer.m4v">here</a>.
     </video>
   </p>
-#+END_HTML
+#+END_EXPORT
 
 #+begin_src clojure
   (ns acc.core
